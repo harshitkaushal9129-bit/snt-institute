@@ -112,9 +112,8 @@
             const qrContainer = document.getElementById("qrcode");
             qrContainer.innerHTML = ""; 
 
-            // वर्तमान वेबसाइट का URL लें और उसे v-receipt.html पर भेजें
-            const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-            const verifyLink = `${currentPath}/v-receipt.html?sid=${studentId}&rid=${receiptIndex}`;
+            // आपका GitHub लाइव लिंक यहाँ सेट किया गया है
+            const verifyLink = `https://harshitkaushal9129-bit.github.io/snt-institute/v-receipt.html?sid=${studentId}&rid=${receiptIndex}`;
 
             new QRCode(qrContainer, {
                 text: verifyLink,
@@ -196,8 +195,6 @@
         window.onload = function() {
             const lastData = JSON.parse(localStorage.getItem('lastReceipt'));
             if(lastData) {
-                // नोट: लोकल स्टोरेज से आने वाले डेटा के लिए ID मिलना मुश्किल है, 
-                // इसलिए 'findReceipt' का उपयोग करना बेहतर है।
                 document.getElementById('searchName').value = lastData.name;
                 findReceipt();
             }
