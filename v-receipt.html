@@ -8,19 +8,26 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 15px; }
-        .receipt-card { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 10px solid #059669; }
-        .verified-tick { color: #059669; text-align: center; font-size: 40px; margin-bottom: 10px; }
+        .receipt-card { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 10px solid #059669; position: relative; }
+        .verified-tick { color: #059669; text-align: center; font-size: 35px; margin-bottom: 5px; }
         .header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        
+        /* Photo Style */
+        .v-photo-container { text-align: center; margin-bottom: 15px; }
+        .v-profile-img { width: 80px; height: 85px; border-radius: 8px; object-fit: cover; border: 2px solid #059669; padding: 2px; background: white; }
+
         .row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid #f9f9f9; padding-bottom: 5px; }
         .label { color: #666; font-size: 13px; }
-        .value { font-weight: bold; color: #111; font-size: 14px; }
+        .value { font-weight: bold; color: #111; font-size: 14px; text-align: right; }
+        
         .amt-box { background: #ecfdf5; padding: 20px; border-radius: 10px; text-align: center; margin-top: 15px; }
         .amt-box h1 { margin: 0; color: #059669; }
+        #loader { text-align: center; margin-top: 50px; font-weight: bold; color: #059669; }
     </style>
 </head>
 <body>
 
-<div id="loader">वेरिफिकेशन हो रहा है...</div>
+<div id="loader">🔒 सुरक्षा जाँच (Verification) हो रही है...</div>
 
 <div class="receipt-card" id="main-receipt" style="display:none;">
     <div class="verified-tick">✅</div>
@@ -28,8 +35,14 @@
         <h3 style="margin:0;">SNT COMPUTER INSTITUTE</h3>
         <p style="font-size:12px; color:gray;">Verified Digital Receipt</p>
     </div>
+
+    <div class="v-photo-container">
+        <img id="v-photo" src="https://via.placeholder.com/100" class="v-profile-img">
+    </div>
     
     <div class="row"><span class="label">Student Name:</span> <span class="value" id="v-name"></span></div>
+    <div class="row"><span class="label">Student ID:</span> <span class="value" id="v-id"></span></div>
+    <div class="row"><span class="label">Course:</span> <span class="value" id="v-course"></span></div>
     <div class="row"><span class="label">Date:</span> <span class="value" id="v-date"></span></div>
     <div class="row"><span class="label">Description:</span> <span class="value" id="v-desc"></span></div>
     
@@ -54,7 +67,7 @@
     
     const params = new URLSearchParams(window.location.search);
     const sid = params.get('sid');
-    const rid = params.get('rid'); // Receipt Index
+    const rid = params.get('rid'); 
 
     if(sid && rid !== null) {
         firebase.database().ref('students/' + sid).once('value', snap => {
@@ -62,17 +75,34 @@
             if(s) {
                 const history = [...(s.paymentHistory || []), ...(s.extraHistory || [])];
                 const rec = history[rid];
+                
                 if(rec) {
                     document.getElementById('v-name').innerText = s.name;
+                    document.getElementById('v-id').innerText = s.studentId || "N/A";
+                    
+                    // Student Photo load karna
+                    document.getElementById('v-photo').src = s.profilePicture || 'https://via.placeholder.com/100';
+                    
+                    let courseName = "N/A";
+                    if(s.courses && s.courses.length > 0) { courseName = s.courses[0]; }
+                    else if(s.course) { courseName = s.course; }
+                    document.getElementById('v-course').innerText = courseName;
+
                     document.getElementById('v-date').innerText = rec.date;
                     document.getElementById('v-desc').innerText = rec.month || rec.reason;
                     document.getElementById('v-amt').innerText = "₹" + rec.amount;
                     
                     document.getElementById('main-receipt').style.display = 'block';
                     document.getElementById('loader').style.display = 'none';
+                } else {
+                    document.getElementById('loader').innerText = "❌ रसीद का रिकॉर्ड नहीं मिला!";
                 }
+            } else {
+                document.getElementById('loader').innerText = "❌ विद्यार्थी नहीं मिला!";
             }
         });
+    } else {
+        document.getElementById('loader').innerText = "❌ इनवैलिड लिंक!";
     }
 </script>
 </body>
