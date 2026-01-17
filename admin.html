@@ -18,6 +18,7 @@
 <body>
     <div class="form-card">
         <h2 style="text-align:center; color:#3b5998;">SNT Certificate Control</h2>
+        
         <div class="input-group">
             <label>Student ID</label>
             <div style="display: flex; gap: 5px;">
@@ -25,37 +26,57 @@
                 <button type="button" onclick="fetchStudent()" style="width: 100px; margin-top:0; background:#3b5998;">Verify</button>
             </div>
         </div>
+
         <div class="input-group" style="display: flex; gap: 10px;">
             <div style="flex:1"><label>Start Date</label><input type="date" id="startDate"></div>
             <div style="flex:1"><label>End Date</label><input type="date" id="endDate"></div>
         </div>
+
         <div class="input-group">
             <label>Grade</label>
-            <select id="grade"><option value="Grade A+">Grade A+</option><option value="Grade A">Grade A</option></select>
+            <select id="grade">
+                <option value="Grade A+">Grade A+</option>
+                <option value="Grade A">Grade A</option>
+                <option value="Grade B">Grade B</option>
+                <option value="Grade C">Grade C</option>
+            </select>
         </div>
+
         <div class="input-group">
             <label>Examining Authority (Write Name)</label>
             <input type="text" id="sigName1" placeholder="e.g. Harshit Kaushal">
         </div>
+
         <div class="input-group">
             <label>Managing Director (Write Name)</label>
             <input type="text" id="sigName2" placeholder="e.g. S.N. Tiwari">
         </div>
+
         <button onclick="sendToBasic()" id="genBtn" disabled>Generate Certificate</button>
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+            authDomain: "snt-computer-institute.firebaseapp.com", 
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+            projectId: "snt-computer-institute" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         function fetchStudent() {
             const id = document.getElementById('stuId').value.trim().toUpperCase();
+            if(!id) return alert("Please enter ID");
+            
             db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
                     document.getElementById('genBtn').disabled = false;
-                    alert("Verified!");
-                } else { alert("ID Not Found"); }
+                    alert("Student Found & Verified!");
+                } else { 
+                    alert("ID Not Found in Database"); 
+                    document.getElementById('genBtn').disabled = true;
+                }
             });
         }
 
@@ -64,10 +85,16 @@
             const sDate = document.getElementById('startDate').value;
             const eDate = document.getElementById('endDate').value;
             const grade = encodeURIComponent(document.getElementById('grade').value);
-            const n1 = encodeURIComponent(document.getElementById('sigName1').value);
-            const n2 = encodeURIComponent(document.getElementById('sigName2').value);
             
-            window.open(`basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}&n1=${n1}&n2=${n2}`, '_blank');
+            // Authority aur Director ke naam ko encode kar rahe hain
+            const n1 = encodeURIComponent(document.getElementById('sigName1').value || "Authorized Signature");
+            const n2 = encodeURIComponent(document.getElementById('sigName2').value || "Director Signature");
+            
+            // Yeh link basic.html par jayega aur wahan se QR code verify.html ke liye banega
+            // Isme n1 aur n2 pass karne se Verification page par bhi wahi signatures dikhenge
+            const url = `basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}&n1=${n1}&n2=${n2}`;
+            
+            window.open(url, '_blank');
         }
     </script>
 </body>
