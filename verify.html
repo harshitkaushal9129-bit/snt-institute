@@ -28,7 +28,7 @@
             overflow: hidden;
             text-align: center;
             border: 1px solid #e0e0e0;
-            display: none; /* Data load hone par dikhega */
+            display: none; 
         }
         .header {
             background: var(--primary);
@@ -54,10 +54,11 @@
             height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            margin-top: -60px;
+            margin: -60px auto 0;
             border: 5px solid white;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             background: #eee;
+            display: block;
         }
 
         .details { padding: 30px 20px; }
@@ -94,7 +95,7 @@
         </div>
         
         <div style="height: 60px;"></div>
-        <img id="s-img" src="" alt="Student">
+        <img id="s-img" src="" class="student-img" alt="Student">
 
         <div class="details">
             <div class="detail-row">
@@ -127,11 +128,11 @@
     <div id="error" style="display:none; text-align:center;">
         <h1 style="color:#d32f2f;">Invalid Certificate!</h1>
         <p>This record was not found in our database.</p>
-        <button onclick="location.href='index.html'" style="padding:10px 20px; cursor:pointer;">Back to Home</button>
+        <button onclick="location.href='index.html'" style="padding:10px 20px; cursor:pointer; background: #1a73e8; color:white; border:none; border-radius:5px;">Back to Home</button>
     </div>
 
     <script>
-        // Firebase Configuration (Aapki purani config)
+        // Firebase Configuration (Same as your database)
         const firebaseConfig = {
             apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
             authDomain: "snt-computer-institute.firebaseapp.com",
@@ -141,17 +142,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // URL se 'id' parameter nikalna
+        // URL parameter se Student ID uthana (URL example: verify.html?id=SNT-123)
         const urlParams = new URLSearchParams(window.location.search);
         const studentId = urlParams.get('id');
 
         if (studentId) {
-            // Database mein Student ID ke liye search karna
+            // StudentId field se data fetch karna
             db.ref('students').orderByChild('studentId').equalTo(studentId.toUpperCase()).once('value', snapshot => {
                 document.getElementById('loader').style.display = 'none';
                 
                 if (snapshot.exists()) {
                     const data = snapshot.val();
+                    // Firebase query return object of objects, so we take the first key
                     const student = Object.values(data)[0];
 
                     document.getElementById('card').style.display = 'block';
@@ -166,7 +168,7 @@
             });
         } else {
             document.getElementById('loader').style.display = 'none';
-            document.getElementById('error').innerHTML = "<h1>No ID Provided!</h1><p>Please scan a valid QR code.</p>";
+            document.getElementById('error').innerHTML = "<h1>No ID Provided!</h1><p>Please scan a valid certificate QR code.</p>";
             document.getElementById('error').style.display = 'block';
         }
     </script>
