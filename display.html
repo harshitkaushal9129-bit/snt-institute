@@ -71,9 +71,9 @@
   <div class="controls">
     <button class="btn btn-green" onclick="showForm('payment-form')">💰 फीस जोड़ें</button>
     <button class="btn btn-blue" onclick="showForm('extra-charge-form')">📑 अन्य चार्ज</button>
-    <button class="btn btn-orange" onclick="location.href='attendence.html'">📝 अटेंडेंस भरें</button>
+    <button class="btn btn-orange" onclick="openPinGate('attendance')">📝 अटेंडेंस भरें</button>
     <button class="btn btn-yellow" onclick="openScracityModal()">🎁 स्क्रैच कूपन</button>
-    <button class="btn btn-red" onclick="openDeleteLock()">🗑️ चयनित डेटा डिलीट करें</button>
+    <button class="btn btn-red" onclick="openPinGate('delete')">🗑️ चयनित डेटा डिलीट करें</button>
   </div>
 
   <div id="payment-form" class="form-box">
@@ -92,8 +92,8 @@
 
   <div id="password-modal">
     <div class="modal-content">
-        <h3>🔒 एडमिन पिन दर्ज करें</h3>
-        <input type="password" id="pin-input" readonly placeholder="******" style="text-align:center; font-size:20px; border:2px solid #eee;">
+        <h3 id="pin-msg">🔒 एडमिन पिन दर्ज करें</h3>
+        <input type="password" id="pin-input" readonly placeholder="******" style="text-align:center; font-size:20px; border:2px solid #eee; width:80%;">
         <div class="calc-grid">
             <button class="calc-btn" onclick="addPin('1')">1</button>
             <button class="calc-btn" onclick="addPin('2')">2</button>
@@ -108,7 +108,7 @@
             <button class="calc-btn" onclick="addPin('0')">0</button>
             <button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button>
         </div>
-        <button onclick="closePinModal()" style="margin-top:10px; border:none; background:none;">वापस जाएं</button>
+        <button onclick="closePinModal()" style="margin-top:15px; border:none; background:none; cursor:pointer; color:gray;">रद्द करें</button>
     </div>
   </div>
 
@@ -146,24 +146,20 @@
     let usersData = [];
     let currentId = null; 
     let enteredPin = "";
+    let pinTarget = ""; // 'attendance' or 'delete'
     const MASTER_PIN = "912919";
 
     function fetchStudents() {
         db.ref('students').on('value', (snapshot) => {
             const data = snapshot.val();
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = ''; // इसे साफ़ करना ज़रूरी है ताकि डबल न दिखे
+            tbody.innerHTML = '';
             usersData = [];
-
             if (data) {
                 Object.keys(data).forEach((key) => {
-                    let u = data[key];
-                    u.id = key; 
-                    usersData.push(u);
-
+                    let u = data[key]; u.id = key; usersData.push(u);
                     let pHist = (u.paymentHistory || []).map(p => `<span class="fee-badge">${p.month}: ₹${p.amount}</span>`).join('');
                     let eHist = (u.extraHistory || []).map(e => `<span class="fee-badge extra-badge">${e.reason}: ₹${e.amount}</span>`).join('');
-
                     tbody.innerHTML += `<tr>
                       <td><input type="checkbox" class="st-check" data-id="${key}"></td>
                       <td><img src="${u.profilePicture || 'https://via.placeholder.com/50'}" class="profile-img"></td>
@@ -179,12 +175,17 @@
         });
     }
 
-    function openDeleteLock() {
-        let chks = document.querySelectorAll('.st-check:checked');
-        if(chks.length == 0) return alert("विद्यार्थी चुनें!");
+    // --- PIN SYSTEM ---
+    function openPinGate(target) {
+        if(target === 'delete') {
+            let chks = document.querySelectorAll('.st-check:checked');
+            if(chks.length == 0) return alert("विद्यार्थी चुनें!");
+        }
+        pinTarget = target;
         enteredPin = "";
         document.getElementById('pin-input').value = "";
         document.getElementById('password-modal').style.display = 'flex';
+        document.getElementById('pin-msg').innerText = target === 'attendance' ? "🔒 हाजिरी एक्सेस पिन डालें" : "🔒 डिलीट एक्सेस पिन डालें";
     }
 
     function addPin(num) {
@@ -199,7 +200,11 @@
     
     function verifyPin() {
         if(enteredPin === MASTER_PIN) {
-            deleteRows();
+            if(pinTarget === 'attendance') {
+                location.href = 'attendence.html';
+            } else if(pinTarget === 'delete') {
+                deleteRows();
+            }
             closePinModal();
         } else {
             alert("गलत पासवर्ड!");
@@ -214,6 +219,7 @@
         alert("डिलीट सफल!");
     }
 
+    // --- OTHER FUNCTIONS ---
     function genQRCode(type) {
         const sel = document.querySelector('.st-check:checked');
         if(!sel) return alert("विद्यार्थी चुनें!");
@@ -221,7 +227,6 @@
         let amt = (type === 'fee') ? document.getElementById('p-amount').value : document.getElementById('e-amount').value;
         let label = (type === 'fee') ? document.getElementById('p-month').value : (document.getElementById('e-reason').value || "Charge");
         if(!amt) return alert("राशि भरें!");
-
         document.getElementById('common-modal').style.display='flex';
         document.getElementById('qr-ui').style.display='block';
         document.getElementById('scratch-ui').style.display='none';
@@ -255,6 +260,33 @@
             row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
         });
     }
+
+    // Scratch Logic
+    const canvas = document.getElementById('scratch-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    function openScracityModal() {
+        const sel = document.querySelector('.st-check:checked');
+        if(!sel) return alert("विद्यार्थी चुनें!");
+        currentId = sel.dataset.id;
+        const win = Math.floor(Math.random() * 20) + 1;
+        document.getElementById('win-txt').innerText = `₹${win}`;
+        window.lastWin = win;
+        document.getElementById('common-modal').style.display='flex';
+        document.getElementById('scratch-ui').style.display='block';
+        document.getElementById('qr-ui').style.display='none';
+        ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, 260, 260);
+    }
+    canvas.addEventListener('mousedown', () => isDrawing = true);
+    canvas.addEventListener('touchstart', (e) => { isDrawing = true; e.preventDefault(); });
+    window.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        const r = canvas.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+        ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 40; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y); ctx.stroke();
+    });
 
     window.onload = fetchStudents;
   </script>
