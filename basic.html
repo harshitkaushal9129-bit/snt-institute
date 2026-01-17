@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        /* Admin Search Bar Styling */
         .admin-controls {
             background: #f0f2f5; padding: 15px; display: flex; justify-content: center; gap: 10px; border-bottom: 2px solid #3b5998;
         }
@@ -21,10 +20,14 @@
         #certificate-container { display: flex; justify-content: center; padding: 20px; }
         
         #certificate { 
-            width: 1050px; height: 750px; display: flex; position: relative;
-            border: 12px solid #3b5998; box-sizing: border-box; /* Thick Blue Border */
-            -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+            width: 1150px; 
+            height: 750px; 
+            display: flex; 
+            position: relative;
+            border: 12px solid #3b5998; 
+            box-sizing: border-box;
             background: white;
+            -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
         }
         .sidebar { 
             width: 250px; background: #3b5998 !important; color: white !important; 
@@ -33,21 +36,53 @@
         .sidebar h3 { font-size: 22px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
         .sidebar ul { list-style: none; padding: 0; }
         .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; }
-        .main-content { flex: 1; padding: 40px; text-align: center; position: relative; }
         
-        #student-photo { position: absolute; top: 70px; right: 40px; width: 130px; height: 160px; border: 2px solid #000; object-fit: cover; }
+        .main-content { flex: 1; padding: 40px 150px 40px 40px; text-align: center; position: relative; }
         
-        /* Fixed QR Code Position - Name se dur right side mein niche */
-        #qrcode-container { 
+        #student-photo { 
             position: absolute; 
-            top: 360px; /* Thoda aur niche */
-            right: 40px; /* Side mein aligned */
-            background: white; padding: 6px; border: 1px solid #000; text-align: center; 
+            top: 60px; 
+            right: 20px; 
+            width: 135px; 
+            height: 165px; 
+            border: 2px solid #000; 
+            object-fit: cover; 
+            z-index: 10;
         }
         
-        .title-main { font-size: 70px; color: #3b5998 !important; letter-spacing: 10px; margin: 10px 0; font-weight: bold; }
-        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 40px; text-transform: uppercase; margin: 15px 0; }
-        .footer-info { position: absolute; bottom: 50px; width: 88%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
+        #qrcode-container { 
+            position: absolute; 
+            top: 380px; 
+            right: 25px; 
+            background: white; 
+            padding: 6px; 
+            border: 1px solid #000; 
+            text-align: center; 
+        }
+        
+        .title-main { 
+            font-size: 70px; 
+            color: #3b5998 !important; 
+            letter-spacing: 4px; 
+            margin: 10px 0; 
+            font-weight: bold; 
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .student-name { 
+            font-size: 45px; 
+            font-weight: bold; 
+            border-bottom: 2px solid #000; 
+            display: inline-block; 
+            padding: 0 30px; 
+            text-transform: uppercase; 
+            margin: 15px 0; 
+            max-width: 500px; 
+        }
+        
+        .footer-info { position: absolute; bottom: 50px; width: 92%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
         
         .sig-box { text-align: center; width: 200px; }
         .sig-cursive { font-family: 'Dancing Script', cursive; font-size: 28px; color: #1a237e; height: 40px; margin-bottom: 2px; }
@@ -57,7 +92,7 @@
             .admin-controls { display: none !important; } 
             body { background: white; }
             #certificate-container { padding: 0; }
-            #certificate { border: 12px solid #3b5998 !important; }
+            #certificate { border: 12px solid #3b5998 !important; width: 1150px; height: 750px; }
         }
     </style>
 </head>
@@ -73,7 +108,14 @@
         <div id="certificate">
             <div class="sidebar">
                 <h3>TOPIC COVERED</h3>
-                <ul><li>• MS OFFICE</li><li>• PHOTOSHOP & CORELDRAW</li><li>• INTERNET & WEB</li><li>• HARDWARE</li><li>• HTML & CSS</li><li>• TYPING</li></ul>
+                <ul id="topic-list">
+                    <li>• MS OFFICE</li>
+                    <li>• PHOTOSHOP & CORELDRAW</li>
+                    <li>• INTERNET & WEB</li>
+                    <li>• HARDWARE</li>
+                    <li>• HTML & CSS</li>
+                    <li>• TYPING</li>
+                </ul>
             </div>
             <div class="main-content">
                 <div style="text-align: left; display: flex; align-items: center;">
@@ -132,20 +174,36 @@
         }
 
         function updateUI(student, id) {
-            document.getElementById('disp-name').innerText = student.name;
-            document.getElementById('student-photo').src = student.profilePicture || '';
-            document.getElementById('disp-course').innerText = (student.courses && student.courses[0]) ? student.courses[0] : "Course Name";
-            
             const params = new URLSearchParams(window.location.search);
+            
+            document.getElementById('disp-name').innerText = student.name;
+            document.getElementById('student-photo').src = student.profilePicture || 'SNT.jpg';
+            document.getElementById('disp-course').innerText = (student.courses && student.courses[0]) ? student.courses[0] : (student.course || "Course Name");
+            
             document.getElementById('disp-start').innerText = params.get('start') || student.admissionDate || '---';
             document.getElementById('disp-end').innerText = params.get('end') || '---';
             document.getElementById('disp-grade').innerText = decodeURIComponent(params.get('grade') || '---');
             document.getElementById('s1-name').innerText = decodeURIComponent(params.get('n1') || '');
             document.getElementById('s2-name').innerText = decodeURIComponent(params.get('n2') || '');
 
+            // Topic Covered Logic: Agar URL mein topics hain to naye dikhao, varna purane rehne do
+            const rawTopics = params.get('topics');
+            if (rawTopics) {
+                const topicArray = decodeURIComponent(rawTopics).split(',');
+                const listContainer = document.getElementById('topic-list');
+                listContainer.innerHTML = ""; // Purane topics hatane ke liye
+                topicArray.forEach(topic => {
+                    if(topic.trim() !== "") {
+                        const li = document.createElement('li');
+                        li.innerText = `• ${topic.trim().toUpperCase()}`;
+                        listContainer.appendChild(li);
+                    }
+                });
+            }
+
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), { 
-                text: `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${id}`, 
+                text: `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${id}&n1=${params.get('n1')}&n2=${params.get('n2')}`, 
                 width: 90, height: 90 
             });
         }
