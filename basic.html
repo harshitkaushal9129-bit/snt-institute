@@ -39,7 +39,7 @@
 
         #certificate {
             width: 1120px; height: 790px;
-            background-image: url('https://i.ibb.co/XfXf8xR/snt-cert-bg.png'); /* अपना बैकग्राउंड बदलें */
+            background-image: url('https://i.ibb.co/XfXf8xR/snt-cert-bg.png'); 
             background-size: cover; position: relative;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             transform-origin: top center;
@@ -75,7 +75,7 @@
 <body>
 
     <div class="top-nav">
-        <input type="text" id="searchInput" class="search-box" placeholder="Student ID डालें (eg: 101)">
+        <input type="text" id="searchInput" class="search-box" placeholder="SNT-ID ya Phone डालें">
         <button class="print-btn" onclick="handleSearch()">Search & Verify</button>
         <button class="print-btn" style="background:#2980b9" onclick="window.print()">Print PDF</button>
     </div>
@@ -92,11 +92,10 @@
 
     <div id="notFound" style="display:none; color:white; margin-top:100px; text-align:center;">
         <h1>ID नहीं मिली!</h1>
-        <p>कृपया सही Student ID दर्ज करें।</p>
+        <p>कृपया सही Student ID दर्ज करें। (Eg: SNT-XXXXX)</p>
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
             authDomain: "snt-computer-institute.firebaseapp.com",
@@ -107,11 +106,9 @@
         const db = firebase.database();
 
         function generateQR(studentId) {
-            // यहाँ आपका GitHub लाइव लिंक अपडेट कर दिया गया है
             const verifyURL = `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${studentId}`;
-            
             const qrContainer = document.getElementById("qrcode");
-            qrContainer.innerHTML = ""; // पिछला QR साफ़ करें
+            qrContainer.innerHTML = ""; 
 
             new QRCode(qrContainer, {
                 text: verifyURL,
@@ -123,15 +120,21 @@
             });
         }
 
+        // Updated checkData: Ab ye Student ID se search karega
         function checkData(searchId) {
             const wrapper = document.getElementById('certificate-wrapper');
             const notFound = document.getElementById('notFound');
 
             if(!searchId) return;
 
-            db.ref('students/' + searchId).once('value', snap => {
-                const student = snap.val();
-                if (student) {
+            // Search logic optimized: Ye "studentId" field ke andar check karega
+            db.ref('students').orderByChild('studentId').equalTo(searchId.toUpperCase()).once('value', snap => {
+                const data = snap.val();
+                if (data) {
+                    // Firebase query ek object return karti hai, uska pehla record lenge
+                    const key = Object.keys(data)[0];
+                    const student = data[key];
+
                     wrapper.style.display = 'flex';
                     notFound.style.display = 'none';
                     
@@ -139,13 +142,27 @@
                     document.getElementById('dCourse').innerText = student.course || (student.courses ? student.courses[0] : "Computer Application");
                     document.getElementById('userImg').src = student.profilePicture || 'https://via.placeholder.com/115x140';
                     
-                    // QR कोड जनरेट करें
-                    generateQR(searchId);
+                    // QR mein wahi ID jayegi jo database mein hai
+                    generateQR(student.studentId || key);
                     
                     fitToScreen();
                 } else {
-                    wrapper.style.display = 'none';
-                    notFound.style.display = 'block';
+                    // Agar StudentId se nahi mila, toh purana logic (Firebase Key) bhi check kar lete hain backup ke liye
+                    db.ref('students/' + searchId).once('value', snap2 => {
+                        const student2 = snap2.val();
+                        if(student2) {
+                            wrapper.style.display = 'flex';
+                            notFound.style.display = 'none';
+                            document.getElementById('dName').innerText = student2.name;
+                            document.getElementById('dCourse').innerText = student2.course || (student2.courses ? student2.courses[0] : "Computer Application");
+                            document.getElementById('userImg').src = student2.profilePicture || 'https://via.placeholder.com/115x140';
+                            generateQR(searchId);
+                            fitToScreen();
+                        } else {
+                            wrapper.style.display = 'none';
+                            notFound.style.display = 'block';
+                        }
+                    });
                 }
             });
         }
@@ -167,7 +184,6 @@
 
         window.addEventListener('resize', fitToScreen);
         
-        // URL से ID चेक करें (जैसे: basic.html?id=101)
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
