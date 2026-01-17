@@ -8,91 +8,44 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body {
-            margin: 0; padding: 20px;
-            background: #525659;
-            display: flex; flex-direction: column; align-items: center;
-            font-family: 'Times New Roman', serif;
-        }
-
-        .search-bar {
-            background: #fff; padding: 15px; border-radius: 10px;
-            margin-bottom: 20px; display: flex; gap: 10px; width: 450px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
+        body { margin: 0; padding: 20px; background: #525659; display: flex; flex-direction: column; align-items: center; font-family: 'Times New Roman', serif; }
+        .search-bar { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 10px; width: 450px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .search-bar input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
         .search-bar button { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
-        #certificate {
-            width: 1050px; height: 750px;
-            background: white; position: relative;
-            display: none; 
-            flex-direction: row; overflow: hidden;
-            border: 2px solid #ccc;
-        }
-
-        .sidebar {
-            width: 240px; background: #3b5998; color: white;
-            padding: 40px 20px; box-sizing: border-box;
-        }
+        #certificate { width: 1050px; height: 750px; background: white; position: relative; display: none; flex-direction: row; overflow: hidden; border: 2px solid #ccc; }
+        .sidebar { width: 240px; background: #3b5998; color: white; padding: 40px 20px; box-sizing: border-box; }
         .sidebar h3 { font-size: 20px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; }
         .sidebar ul { list-style: none; padding: 0; }
         .sidebar ul li { font-size: 14px; margin-bottom: 15px; line-height: 1.5; font-weight: bold; }
 
-        .main-content {
-            flex: 1; padding: 40px; text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-            position: relative;
-        }
-
+        .main-content { flex: 1; padding: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; position: relative; }
         .cert-header { width: 100%; text-align: left; display: flex; align-items: center; margin-bottom: 20px; }
         .cert-header img { width: 80px; margin-right: 15px; }
         .cert-header .title { font-weight: bold; font-size: 22px; color: #3b5998; }
 
-        #student-photo {
-            position: absolute; top: 40px; right: 40px;
-            width: 120px; height: 150px;
-            border: 2px solid #000; object-fit: cover; background: #eee;
-        }
+        #student-photo { position: absolute; top: 40px; right: 40px; width: 120px; height: 150px; border: 2px solid #000; object-fit: cover; background: #eee; }
 
-        /* QR Code Styling - Clarity ke liye border aur padding badhai gayi hai */
-        #qrcode-container {
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            background: white;
-            padding: 10px;
-            border: 1px solid #000;
-        }
+        #qrcode-container { position: absolute; bottom: 40px; right: 40px; background: white; padding: 10px; border: 1px solid #000; }
+        #qrcode img { display: block; margin: 0 auto; }
 
         .title-main { font-size: 60px; color: #3b5998; letter-spacing: 8px; margin: 10px 0; font-weight: bold; }
         .award-text { font-size: 24px; font-style: italic; margin-top: 20px; }
-        .student-name { 
-            font-size: 42px; font-weight: bold; margin: 15px 0;
-            border-bottom: 2px solid #000; display: inline-block; padding: 0 50px;
-            text-transform: uppercase; color: #000;
-        }
+        .student-name { font-size: 42px; font-weight: bold; margin: 15px 0; border-bottom: 2px solid #000; display: inline-block; padding: 0 50px; text-transform: uppercase; color: #000; }
         .course-name { font-size: 32px; font-weight: bold; margin: 15px 0; color: #000; }
         .date-info { font-size: 19px; margin: 10px 0; font-weight: bold; }
 
-        .footer-info {
-            position: absolute; bottom: 50px; width: 75%;
-            display: flex; justify-content: space-between; align-items: flex-end;
-        }
+        .footer-info { position: absolute; bottom: 50px; width: 75%; display: flex; justify-content: space-between; align-items: flex-end; }
         .sig-box { text-align: center; width: 180px; font-size: 14px; }
         .sig-line { border-top: 1px solid #000; margin-top: 60px; padding-top: 5px; font-weight: bold; }
 
-        @media print {
-            .search-bar, button { display: none; }
-            body { padding: 0; background: white; }
-            #certificate { display: flex !important; box-shadow: none; border: none; }
-        }
+        @media print { .search-bar, button { display: none; } body { padding: 0; background: white; } #certificate { display: flex !important; box-shadow: none; border: none; } }
     </style>
 </head>
 <body>
 
     <div class="search-bar">
-        <input type="text" id="idInput" placeholder="Enter Student ID (e.g. SNT-101)">
+        <input type="text" id="idInput" placeholder="SNT-ID डालें (जैसे: SNT-101)">
         <button onclick="searchByID()">Generate Certificate</button>
         <button style="background:#22c55e;" onclick="window.print()">Print</button>
     </div>
@@ -117,39 +70,24 @@
             </div>
 
             <img id="student-photo" src="" alt="Student Photo">
-
             <div class="title-main">CERTIFICATE</div>
             <div class="award-text">This Certificate is awarded to</div>
             <div class="student-name" id="display-name">---</div>
-            
             <div class="award-text" style="font-size:18px; margin-top:10px;">in recognition of successful completion of</div>
             <div class="course-name" id="display-course">---</div>
-            
             <p style="font-size:18px;">at Rudauli Center, Ayodhya</p>
-            
-            <div class="date-info">
-                Conducted from <span id="display-start">--/--/--</span> to <span id="display-end">--/--/--</span>
-            </div>
-            
+            <div class="date-info">Conducted from <span id="display-start">--/--/--</span> to <span id="display-end">--/--/--</span></div>
             <div class="date-info">His/Her performance was <span id="display-grade" style="color:#3b5998; font-size:24px;">Grade A</span></div>
 
             <div id="qrcode-container">
                 <div id="qrcode"></div>
-                <p style="font-size: 9px; margin: 5px 0 0 0; font-family: sans-serif; font-weight: bold;">Verify Online</p>
+                <p style="font-size: 9px; margin: 5px 0 0 0; font-family: sans-serif; font-weight: bold;">SCAN TO VERIFY</p>
             </div>
 
             <div class="footer-info">
-                <div style="text-align:left; font-size:11px; font-weight:bold;">
-                    Course Duration: 290 Hrs<br>
-                    Branch Code: Rud<br>
-                    ISO 9001:2015 Certified
-                </div>
-                <div class="sig-box">
-                    <div class="sig-line">Examining Authority</div>
-                </div>
-                <div class="sig-box">
-                    <div class="sig-line">Chairman & Managing Director</div>
-                </div>
+                <div style="text-align:left; font-size:11px; font-weight:bold;">Course Duration: 290 Hrs<br>Branch Code: Rud<br>ISO 9001:2015 Certified</div>
+                <div class="sig-box"><div class="sig-line">Examining Authority</div></div>
+                <div class="sig-box"><div class="sig-line">Chairman & Managing Director</div></div>
             </div>
         </div>
     </div>
@@ -168,16 +106,16 @@
             const qrDiv = document.getElementById("qrcode");
             qrDiv.innerHTML = ""; 
             
-            // Link ko bilkul sahi format mein rakha hai
-            const verifyURL = "https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=" + studentId;
+            // YAHAN DHAYAN DEIN: Apni website ka link check karein
+            const verifyURL = `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${studentId}`;
             
             new QRCode(qrDiv, {
                 text: verifyURL,
-                width: 90,
-                height: 90,
+                width: 100, // Thoda bada kiya clarity ke liye
+                height: 100,
                 colorDark : "#000000",
                 colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H // High error correction for easy scanning
+                correctLevel : QRCode.CorrectLevel.H
             });
         }
 
@@ -192,7 +130,7 @@
 
                     document.getElementById('certificate').style.display = 'flex';
                     document.getElementById('display-name').innerText = student.name;
-                    document.getElementById('display-course').innerText = student.courses ? student.courses[0] : "Computer Foundation";
+                    document.getElementById('display-course').innerText = student.courses ? student.courses[0] : "Computer Application";
                     document.getElementById('student-photo').src = student.profilePicture || 'https://via.placeholder.com/120';
                     document.getElementById('display-start').innerText = student.admissionDate || "N/A";
                     
@@ -202,11 +140,11 @@
                         document.getElementById('display-end').innerText = d.toLocaleDateString();
                     }
 
-                    // QR Code generate
+                    // QR Code Generate Karo
                     generateQR(id);
 
                 } else {
-                    alert("No student found with ID: " + id);
+                    alert("ID: " + id + " नहीं मिली!");
                     document.getElementById('certificate').style.display = 'none';
                 }
             });
