@@ -2,59 +2,45 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>SNT Admin - Digital Sign</title>
+    <title>SNT Admin - Cursive Sign</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .form-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 500px; }
+        .form-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 450px; }
         .input-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
-        
-        /* Signature Canvas Style */
-        .sig-container { border: 2px dashed #3b5998; background: #fafafa; position: relative; margin-top: 5px; border-radius: 5px; }
-        canvas { cursor: crosshair; width: 100%; height: 100px; }
-        .clear-btn { position: absolute; top: 5px; right: 5px; padding: 3px 8px; font-size: 10px; background: #ef4444; color: white; border: none; cursor: pointer; border-radius: 3px; }
-
-        button#genBtn { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:disabled { background: #9ca3af; }
     </style>
 </head>
 <body>
     <div class="form-card">
-        <h2 style="text-align:center; color:#3b5998;">SNT Admin Panel</h2>
-        
+        <h2 style="text-align:center; color:#3b5998;">SNT Certificate Control</h2>
         <div class="input-group">
             <label>Student ID</label>
             <div style="display: flex; gap: 5px;">
                 <input type="text" id="stuId" placeholder="SNT-101">
-                <button type="button" onclick="fetchStudent()" style="background:#3b5998; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">Verify</button>
+                <button type="button" onclick="fetchStudent()" style="width: 100px; margin-top:0; background:#3b5998;">Verify</button>
             </div>
         </div>
-
         <div class="input-group" style="display: flex; gap: 10px;">
-            <div style="flex:1"><label>Start</label><input type="date" id="startDate"></div>
-            <div style="flex:1"><label>End</label><input type="date" id="endDate"></div>
+            <div style="flex:1"><label>Start Date</label><input type="date" id="startDate"></div>
+            <div style="flex:1"><label>End Date</label><input type="date" id="endDate"></div>
         </div>
-
         <div class="input-group">
             <label>Grade</label>
             <select id="grade"><option value="Grade A+">Grade A+</option><option value="Grade A">Grade A</option></select>
         </div>
-
-        <label>Examining Authority Signature:</label>
-        <div class="sig-container">
-            <button class="clear-btn" onclick="clearSig('sig1')">Clear</button>
-            <canvas id="sig1"></canvas>
+        <div class="input-group">
+            <label>Examining Authority (Write Name)</label>
+            <input type="text" id="sigName1" placeholder="e.g. Harshit Kaushal">
         </div>
-
-        <label>Managing Director Signature:</label>
-        <div class="sig-container">
-            <button class="clear-btn" onclick="clearSig('sig2')">Clear</button>
-            <canvas id="sig2"></canvas>
+        <div class="input-group">
+            <label>Managing Director (Write Name)</label>
+            <input type="text" id="sigName2" placeholder="e.g. S.N. Tiwari">
         </div>
-
         <button onclick="sendToBasic()" id="genBtn" disabled>Generate Certificate</button>
     </div>
 
@@ -63,38 +49,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Canvas Setup
-        function setupCanvas(id) {
-            const canvas = document.getElementById(id);
-            const ctx = canvas.getContext("2d");
-            let drawing = false;
-
-            canvas.addEventListener("mousedown", () => drawing = true);
-            canvas.addEventListener("mouseup", () => { drawing = false; ctx.beginPath(); });
-            canvas.addEventListener("mousemove", (e) => {
-                if (!drawing) return;
-                ctx.lineWidth = 2;
-                ctx.lineCap = "round";
-                ctx.strokeStyle = "#000";
-                const rect = canvas.getBoundingClientRect();
-                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-                ctx.stroke();
-            });
-        }
-        setupCanvas('sig1'); setupCanvas('sig2');
-
-        function clearSig(id) {
-            const canvas = document.getElementById(id);
-            canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-        }
-
         function fetchStudent() {
             const id = document.getElementById('stuId').value.trim().toUpperCase();
             db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
                     document.getElementById('genBtn').disabled = false;
                     alert("Verified!");
-                } else { alert("Not Found"); }
+                } else { alert("ID Not Found"); }
             });
         }
 
@@ -103,15 +64,10 @@
             const sDate = document.getElementById('startDate').value;
             const eDate = document.getElementById('endDate').value;
             const grade = encodeURIComponent(document.getElementById('grade').value);
+            const n1 = encodeURIComponent(document.getElementById('sigName1').value);
+            const n2 = encodeURIComponent(document.getElementById('sigName2').value);
             
-            // Convert signatures to images (Base64)
-            const s1 = encodeURIComponent(document.getElementById('sig1').toDataURL());
-            const s2 = encodeURIComponent(document.getElementById('sig2').toDataURL());
-
-            // URL par data bhej rahe hain
-            sessionStorage.setItem('sig1', s1);
-            sessionStorage.setItem('sig2', s2);
-            window.open(`basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}`, '_blank');
+            window.open(`basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}&n1=${n1}&n2=${n2}`, '_blank');
         }
     </script>
 </body>
