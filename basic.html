@@ -2,111 +2,58 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>SNT Certificate - Print View</title>
+    <title>SNT Certificate - Print</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { margin: 0; padding: 0; background: #fff; font-family: 'Times New Roman', serif; }
-        
         #certificate { 
             width: 1050px; height: 750px; display: flex; position: relative;
-            background: white; border: 1px solid #eee;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
         }
-
-        /* Sidebar with Background Graphics Fix */
         .sidebar { 
             width: 250px; background: #3b5998 !important; color: white !important; 
-            padding: 50px 25px; box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
+            padding: 50px 25px; box-sizing: border-box; -webkit-print-color-adjust: exact;
         }
-        .sidebar h3 { font-size: 22px; border-bottom: 2px solid white; padding-bottom: 15px; margin-bottom: 25px; }
+        .sidebar h3 { font-size: 22px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
         .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; letter-spacing: 0.5px; }
-
+        .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; }
         .main-content { flex: 1; padding: 40px; text-align: center; position: relative; }
-        
-        #student-photo { 
-            position: absolute; top: 40px; right: 40px; 
-            width: 125px; height: 155px; border: 2px solid #000; object-fit: cover; 
-        }
-
-        /* QR Code: Ooper set kiya gaya hai taaki text se na mile */
-        #qrcode-container { 
-            position: absolute; 
-            bottom: 200px; /* Kaafi ooper kar diya */
-            right: 45px; 
-            background: white; padding: 10px; border: 1px solid #000; 
-            text-align: center;
-        }
-
+        #student-photo { position: absolute; top: 40px; right: 40px; width: 125px; height: 155px; border: 2px solid #000; object-fit: cover; }
+        #qrcode-container { position: absolute; bottom: 220px; right: 45px; background: white; padding: 8px; border: 1px solid #000; text-align: center; }
         .title-main { font-size: 70px; color: #3b5998 !important; letter-spacing: 10px; margin: 15px 0; font-weight: bold; }
-        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 50px; text-transform: uppercase; margin: 20px 0; }
-        
-        .footer-info { position: absolute; bottom: 60px; width: 80%; display: flex; justify-content: space-between; align-items: flex-end; }
-        .sig-box { text-align: center; width: 220px; font-weight: bold; font-size: 15px; }
-        .sig-line { border-top: 1px solid #000; margin-top: 60px; padding-top: 8px; }
-
-        @media print {
-            #btn-print { display: none; }
-            body { background: white; }
-            #certificate { border: none; }
-        }
+        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 50px; text-transform: uppercase; margin: 15px 0; }
+        .footer-info { position: absolute; bottom: 60px; width: 85%; display: flex; justify-content: space-between; align-items: flex-end; left: 40px; }
+        .sig-box { text-align: center; width: 220px; font-weight: bold; border-top: 1px solid #000; padding-top: 8px; }
+        @media print { #btn-print { display: none; } }
     </style>
 </head>
 <body>
-
-    <button id="btn-print" onclick="window.print()" style="position:fixed; top:20px; right:20px; z-index:1000; padding:12px 25px; background:#22c55e; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">PRINT NOW</button>
-
+    <button id="btn-print" onclick="window.print()" style="position:fixed; top:20px; right:20px; z-index:1000; padding:10px 20px; background:green; color:white; border:none; border-radius:5px; cursor:pointer;">PRINT</button>
     <div id="certificate">
         <div class="sidebar">
             <h3>TOPIC COVERED</h3>
-            <ul>
-                <li>• MS OFFICE (Word, Excel)</li>
-                <li>• PHOTOSHOP & CORELDRAW</li>
-                <li>• INTERNET & WEB TECH</li>
-                <li>• COMPUTER HARDWARE</li>
-                <li>• HTML5 & CSS3</li>
-                <li>• HINDI & ENG TYPING</li>
-            </ul>
+            <ul><li>• MS OFFICE</li><li>• PHOTOSHOP & CORELDRAW</li><li>• INTERNET & WEB</li><li>• HARDWARE</li><li>• HTML & CSS</li><li>• TYPING</li></ul>
         </div>
-
         <div class="main-content">
-            <div style="text-align: left; display: flex; align-items: center;">
-                <img src="SNT.jpg" style="width: 85px; margin-right: 20px;">
-                <div style="font-weight: bold; font-size: 26px; color: #3b5998;">SNT COMPUTER EDUCATION</div>
-            </div>
-
+            <div style="text-align: left; display: flex; align-items: center;"><img src="SNT.jpg" style="width: 80px; margin-right: 20px;"><div style="font-weight: bold; font-size: 26px; color: #3b5998;">SNT EDUCATION</div></div>
             <img id="student-photo" src="">
-            
             <div class="title-main">CERTIFICATE</div>
-            <p style="font-size: 26px; font-style: italic; margin-top: 10px;">This Certificate is awarded to</p>
-            <div class="student-name" id="disp-name">Fetching...</div>
-            
-            <p style="font-size: 20px;">in recognition of successful completion of</p>
+            <p style="font-size: 26px; font-style: italic;">This Certificate is awarded to</p>
+            <div class="student-name" id="disp-name">...</div>
+            <p style="font-size: 20px;">for successful completion of</p>
             <div id="disp-course" style="font-size: 36px; font-weight: bold;">---</div>
-            
-            <p style="font-size: 22px; font-weight: bold; margin-top: 25px;">
-                Conducted from <span id="disp-start"></span> to <span id="disp-end"></span>
-            </p>
-            
+            <p style="font-size: 22px; font-weight: bold; margin-top: 25px;">Conducted from <span id="disp-start"></span> to <span id="disp-end"></span></p>
             <p style="font-size: 22px; font-weight: bold;">Result: <span id="disp-grade" style="color:#3b5998; font-size:28px;"></span></p>
-
-            <div id="qrcode-container">
-                <div id="qrcode"></div>
-                <p style="font-size: 9px; margin-top: 5px; font-weight: bold; letter-spacing: 0.5px;">VERIFY ONLINE</p>
-            </div>
-
+            <div id="qrcode-container"><div id="qrcode"></div><p style="font-size: 9px; margin-top: 5px; font-weight: bold;">VERIFY ONLINE</p></div>
             <div class="footer-info">
-                <div style="text-align:left; font-size:13px; font-weight:bold;">ISO 9001:2015 Certified<br>Branch: Rudauli, Ayodhya</div>
-                <div class="sig-box"><div class="sig-line">Examining Authority</div></div>
-                <div class="sig-box"><div class="sig-line">Managing Director</div></div>
+                <div style="text-align:left; font-size:13px; font-weight:bold;">ISO 9001:2015 Certified<br>Branch: Rudauli</div>
+                <div class="sig-box">Examining Authority</div>
+                <div class="sig-box">Managing Director</div>
             </div>
         </div>
     </div>
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
@@ -116,30 +63,22 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-
         if(id) {
-            db.ref('students').orderByChild('studentId').equalTo(id.toUpperCase()).once('value', snapshot => {
+            db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
                     const student = Object.values(snapshot.val())[0];
                     document.getElementById('disp-name').innerText = student.name;
-                    document.getElementById('disp-course').innerText = student.courses ? student.courses[0] : "Computer Application";
-                    document.getElementById('student-photo').src = student.profilePicture || 'https://via.placeholder.com/125';
-                    
-                    document.getElementById('disp-start').innerText = params.get('start') || student.admissionDate;
+                    document.getElementById('disp-course').innerText = student.courses ? student.courses[0] : "Course";
+                    document.getElementById('student-photo').src = student.profilePicture || '';
+                    document.getElementById('disp-start').innerText = params.get('start');
                     document.getElementById('disp-end').innerText = params.get('end');
-                    document.getElementById('disp-grade').innerText = params.get('grade');
-
-                    // QR Code generation
+                    document.getElementById('disp-grade').innerText = decodeURIComponent(params.get('grade'));
                     new QRCode(document.getElementById("qrcode"), {
                         text: `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${id}`,
-                        width: 95, height: 95,
-                        correctLevel : QRCode.CorrectLevel.H
+                        width: 95, height: 95
                     });
-                } else {
-                    alert("ID galat hai!");
                 }
             });
         }
