@@ -11,34 +11,26 @@
         h2 { color: #3b5998; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-        
-        /* Student Info Box */
-        .info-box { background: #eef2ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; border: 1px dashed #3b5998; }
-        .info-box p { margin: 5px 0; font-size: 14px; color: #333; }
-
-        .search-btn { background: #6b7280; margin-bottom: 10px; }
-        button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 5px; transition: 0.3s; }
-        button:hover { opacity: 0.9; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .info-box { background: #eef2ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; border: 1px dashed #3b5998; }
+        button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        button:disabled { background: #9ca3af; }
     </style>
 </head>
 <body>
     <div class="form-card">
         <h2>SNT Certificate Control</h2>
-        
         <div class="input-group">
-            <label>Student ID (SNT-XXX)</label>
+            <label>Student ID</label>
             <div style="display: flex; gap: 5px;">
-                <input type="text" id="stuId" placeholder="e.g. SNT-101">
+                <input type="text" id="stuId" placeholder="SNT-101">
                 <button type="button" onclick="fetchStudent()" style="width: 100px; margin-top:0; background:#3b5998;">Verify</button>
             </div>
         </div>
-
         <div id="studentInfo" class="info-box">
-            <p><b>Name:</b> <span id="resName"></span></p>
-            <p><b>Course:</b> <span id="resCourse"></span></p>
+            <p style="margin:0;"><b>Name:</b> <span id="resName"></span></p>
+            <p style="margin:5px 0 0 0;"><b>Course:</b> <span id="resCourse"></span></p>
         </div>
-
         <div class="input-group" style="display: flex; gap: 10px;">
             <div style="flex:1">
                 <label>Course Start</label>
@@ -49,21 +41,18 @@
                 <input type="date" id="endDate">
             </div>
         </div>
-
         <div class="input-group">
-            <label>Performance Grade</label>
+            <label>Grade</label>
             <select id="grade">
                 <option value="Grade A+">Grade A+</option>
                 <option value="Grade A">Grade A</option>
                 <option value="Grade B">Grade B</option>
             </select>
         </div>
-
-        <button onclick="sendToBasic()" id="genBtn" disabled style="background: #9ca3af;">Generate Certificate</button>
+        <button onclick="sendToBasic()" id="genBtn" disabled>Generate & Open Basic.html</button>
     </div>
 
     <script>
-        // Aapki Firebase API Config
         const firebaseConfig = {
             apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
             authDomain: "snt-computer-institute.firebaseapp.com",
@@ -73,47 +62,29 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Database se Student check karne ka function
         function fetchStudent() {
             const id = document.getElementById('stuId').value.trim().toUpperCase();
-            if(!id) return alert("Pehle ID dalo!");
-
             db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
                     const student = Object.values(snapshot.val())[0];
-                    
-                    // Details dikhao
                     document.getElementById('studentInfo').style.display = 'block';
                     document.getElementById('resName').innerText = student.name;
                     document.getElementById('resCourse').innerText = student.courses ? student.courses[0] : "N/A";
-                    
-                    // Start date agar database mein hai toh fill kar do
-                    if(student.admissionDate) {
-                        document.getElementById('startDate').value = student.admissionDate;
-                    }
-
-                    // Button enable karo
-                    const genBtn = document.getElementById('genBtn');
-                    genBtn.disabled = false;
-                    genBtn.style.background = "#2563eb";
+                    document.getElementById('startDate').value = student.admissionDate || "";
+                    document.getElementById('genBtn').disabled = false;
                 } else {
-                    alert("Record nahi mila! Sahi ID dalein.");
-                    document.getElementById('studentInfo').style.display = 'none';
-                    document.getElementById('genBtn').disabled = true;
-                    document.getElementById('genBtn').style.background = "#9ca3af";
+                    alert("ID nahi mili!");
                 }
             });
         }
 
         function sendToBasic() {
-            const id = document.getElementById('stuId').value.trim();
+            const id = document.getElementById('stuId').value.trim().toUpperCase();
             const sDate = document.getElementById('startDate').value;
             const eDate = document.getElementById('endDate').value;
             const grade = document.getElementById('grade').value;
-
-            if(!id || !sDate || !eDate) return alert("Sabhi fields bharna zaroori hai!");
-
-            const url = `basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}`;
+            // Clean URL sending
+            const url = `basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${encodeURIComponent(grade)}`;
             window.open(url, '_blank');
         }
     </script>
