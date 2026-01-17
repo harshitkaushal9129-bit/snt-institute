@@ -8,7 +8,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
   <style>
     :root { --primary: #e65100; --secondary: #1a73e8; --success: #2e7d32; --danger: #d32f2f; --bg: #fffbf5; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; }
@@ -45,29 +44,27 @@
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>SNT Computer Institute</h1>
-    <button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="exportFullData()">📥</button>
-  </header>
-
-  <div class="search-container">
-    <input type="text" id="search-input" placeholder="विद्यार्थी का नाम खोजें..." onkeyup="filterTable()">
-  </div>
-
+  <header><h1>SNT Computer Institute</h1><button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="exportFullData()">📥</button></header>
+  <div class="search-container"><input type="text" id="search-input" placeholder="विद्यार्थी का नाम खोजें..." onkeyup="filterTable()"></div>
   <div class="outer-wrapper">
     <div class="table-scroll">
         <table id="data-table">
           <thead>
             <tr>
-              <th>चुनें</th><th>फोटो</th><th>विद्यार्थी विवरण</th><th>कोर्स</th><th>हाजिरी</th><th>फीस इतिहास</th><th>इनाम</th><th>प्रिंट</th>
+              <th>चुनें</th>
+              <th>Student ID</th> <th>फोटो</th>
+              <th>विद्यार्थी विवरण</th>
+              <th>कोर्स</th>
+              <th>हाजिरी</th>
+              <th>फीस इतिहास</th>
+              <th>इनाम</th>
+              <th>प्रिंट</th>
             </tr>
           </thead>
           <tbody id="table-body"></tbody>
         </table>
     </div>
   </div>
-
   <div class="controls">
     <button class="btn btn-green" onclick="showForm('payment-form')">💰 फीस जोड़ें</button>
     <button class="btn btn-blue" onclick="showForm('extra-charge-form')">📑 अन्य चार्ज</button>
@@ -78,75 +75,36 @@
 
   <div id="payment-form" class="form-box">
     <h3>मासिक फीस जमा करें</h3>
-    <select id="p-month"><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+    <select id="p-month"><option>Admission Fee</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
     <input type="number" id="p-amount" placeholder="राशि ₹">
     <button class="btn btn-green" style="width:100%" onclick="genQRCode('fee')">QR कोड दिखाएँ</button>
   </div>
 
   <div id="extra-charge-form" class="form-box">
-    <h3>अन्य चार्ज</h3>
-    <input type="text" id="e-reason" placeholder="कारण">
-    <input type="number" id="e-amount" placeholder="राशि ₹">
-    <button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
+    <h3>अन्य चार्ज</h3><input type="text" id="e-reason" placeholder="कारण"><input type="number" id="e-amount" placeholder="राशि ₹"><button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
   </div>
 
   <div id="password-modal">
     <div class="modal-content">
-        <h3 id="pin-msg">🔒 एडमिन पिन दर्ज करें</h3>
-        <input type="password" id="pin-input" readonly placeholder="******" style="text-align:center; font-size:20px; border:2px solid #eee; width:80%;">
-        <div class="calc-grid">
-            <button class="calc-btn" onclick="addPin('1')">1</button>
-            <button class="calc-btn" onclick="addPin('2')">2</button>
-            <button class="calc-btn" onclick="addPin('3')">3</button>
-            <button class="calc-btn" onclick="addPin('4')">4</button>
-            <button class="calc-btn" onclick="addPin('5')">5</button>
-            <button class="calc-btn" onclick="addPin('6')">6</button>
-            <button class="calc-btn" onclick="addPin('7')">7</button>
-            <button class="calc-btn" onclick="addPin('8')">8</button>
-            <button class="calc-btn" onclick="addPin('9')">9</button>
-            <button class="calc-btn" style="color:red" onclick="clearPin()">C</button>
-            <button class="calc-btn" onclick="addPin('0')">0</button>
-            <button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button>
-        </div>
+        <h3 id="pin-msg">🔒 एडमिन पिन दर्ज करें</h3><input type="password" id="pin-input" readonly placeholder="******" style="text-align:center; font-size:20px; border:2px solid #eee; width:80%;">
+        <div class="calc-grid"><button class="calc-btn" onclick="addPin('1')">1</button><button class="calc-btn" onclick="addPin('2')">2</button><button class="calc-btn" onclick="addPin('3')">3</button><button class="calc-btn" onclick="addPin('4')">4</button><button class="calc-btn" onclick="addPin('5')">5</button><button class="calc-btn" onclick="addPin('6')">6</button><button class="calc-btn" onclick="addPin('7')">7</button><button class="calc-btn" onclick="addPin('8')">8</button><button class="calc-btn" onclick="addPin('9')">9</button><button class="calc-btn" style="color:red" onclick="clearPin()">C</button><button class="calc-btn" onclick="addPin('0')">0</button><button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button></div>
         <button onclick="closePinModal()" style="margin-top:15px; border:none; background:none; cursor:pointer; color:gray;">रद्द करें</button>
     </div>
   </div>
 
   <div id="common-modal">
-      <div class="modal-content" id="qr-ui" style="display:none;">
-          <h3 id="qr-title">Sandeep Kumar</h3>
-          <div id="qrcode-container"></div>
-          <p id="qr-text"></p>
-          <button class="btn btn-green" id="confirm-btn">✅ भुगतान सफल</button>
-          <button onclick="closeModal()">बंद करें</button>
-      </div>
-      <div class="modal-content" id="scratch-ui" style="display:none;">
-          <div class="scratch-container">
-              <div class="reward-under"><h2 id="win-txt">₹0</h2></div>
-              <canvas id="scratch-canvas" width="260" height="260"></canvas>
-          </div>
-          <button onclick="closeModal()" class="btn btn-orange">सेव करें</button>
-      </div>
+      <div class="modal-content" id="qr-ui" style="display:none;"><h3 id="qr-title">Sandeep Kumar</h3><div id="qrcode-container"></div><p id="qr-text"></p><button class="btn btn-green" id="confirm-btn">✅ भुगतान सफल</button><button onclick="closeModal()">बंद करें</button></div>
+      <div class="modal-content" id="scratch-ui" style="display:none;"><div class="scratch-container"><div class="reward-under"><h2 id="win-txt">₹0</h2></div><canvas id="scratch-canvas" width="260" height="260"></canvas></div><button onclick="closeModal()" class="btn btn-orange">सेव करें</button></div>
   </div>
 
   <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
-        authDomain: "snt-computer-institute.firebaseapp.com",
-        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
-        projectId: "snt-computer-institute",
-        storageBucket: "snt-computer-institute.firebasestorage.app",
-        messagingSenderId: "117580784781",
-        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute", storageBucket: "snt-computer-institute.firebasestorage.app", messagingSenderId: "117580784781", appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     let usersData = [];
     let currentId = null; 
     let enteredPin = "";
-    let pinTarget = ""; // 'attendance' or 'delete'
+    let pinTarget = "";
     const MASTER_PIN = "912919";
 
     function fetchStudents() {
@@ -157,13 +115,18 @@
             usersData = [];
             if (data) {
                 Object.keys(data).forEach((key) => {
-                    let u = data[key]; u.id = key; usersData.push(u);
+                    let u = data[key]; 
+                    u.id = key; 
+                    usersData.push(u);
+                    
                     let pHist = (u.paymentHistory || []).map(p => `<span class="fee-badge">${p.month}: ₹${p.amount}</span>`).join('');
                     let eHist = (u.extraHistory || []).map(e => `<span class="fee-badge extra-badge">${e.reason}: ₹${e.amount}</span>`).join('');
+                    let statusColor = u.registrationStatus === "Pending" ? "color:red" : "color:gray";
+                    
                     tbody.innerHTML += `<tr>
                       <td><input type="checkbox" class="st-check" data-id="${key}"></td>
-                      <td><img src="${u.profilePicture || 'https://via.placeholder.com/50'}" class="profile-img"></td>
-                      <td style="text-align:left;"><b>${u.name}</b><br><small>${u.mobile || '---'}</small></td>
+                      <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td> <td><img src="${u.profilePicture || 'https://via.placeholder.com/50'}" class="profile-img"></td>
+                      <td style="text-align:left;"><b>${u.name}</b><br><small style="${statusColor}">${u.registrationStatus || 'Paid'}</small></td>
                       <td><span class="fee-badge extra-badge">${u.courses ? u.courses[0] : (u.course || 'N/A')}</span></td>
                       <td onclick="location.href='calendar.html?id=${key}&name=${u.name}'"><div class="att-count">Check Status</div></td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
@@ -175,51 +138,29 @@
         });
     }
 
-    // --- PIN SYSTEM ---
+    // Baaki saare functions pehle jaise hi kaam karenge
     function openPinGate(target) {
-        if(target === 'delete') {
-            let chks = document.querySelectorAll('.st-check:checked');
-            if(chks.length == 0) return alert("विद्यार्थी चुनें!");
-        }
-        pinTarget = target;
-        enteredPin = "";
-        document.getElementById('pin-input').value = "";
-        document.getElementById('password-modal').style.display = 'flex';
-        document.getElementById('pin-msg').innerText = target === 'attendance' ? "🔒 हाजिरी एक्सेस पिन डालें" : "🔒 डिलीट एक्सेस पिन डालें";
+        if(target === 'delete') { let chks = document.querySelectorAll('.st-check:checked'); if(chks.length == 0) return alert("विद्यार्थी चुनें!"); }
+        pinTarget = target; enteredPin = ""; document.getElementById('pin-input').value = ""; document.getElementById('password-modal').style.display = 'flex';
+        document.getElementById('pin-msg').innerText = target === 'attendance' ? "🔒 हाजिri एक्सेस पिन डालें" : "🔒 डिलीट एक्सेस पिन डालें";
     }
 
-    function addPin(num) {
-        if(enteredPin.length < 6) {
-            enteredPin += num;
-            document.getElementById('pin-input').value = enteredPin.replace(/./g, '●');
-        }
-    }
-
+    function addPin(num) { if(enteredPin.length < 6) { enteredPin += num; document.getElementById('pin-input').value = enteredPin.replace(/./g, '●'); } }
     function clearPin() { enteredPin = ""; document.getElementById('pin-input').value = ""; }
     function closePinModal() { document.getElementById('password-modal').style.display = 'none'; }
-    
     function verifyPin() {
         if(enteredPin === MASTER_PIN) {
-            if(pinTarget === 'attendance') {
-                location.href = 'attendence.html';
-            } else if(pinTarget === 'delete') {
-                deleteRows();
-            }
+            if(pinTarget === 'attendance') { location.href = 'attendence.html'; } else if(pinTarget === 'delete') { deleteRows(); }
             closePinModal();
-        } else {
-            alert("गलत पासवर्ड!");
-            clearPin();
-        }
+        } else { alert("गलत पासवर्ड!"); clearPin(); }
     }
 
     function deleteRows() {
         let chks = Array.from(document.querySelectorAll('.st-check:checked'));
         if(!confirm("क्या आप वाकई डेटा डिलीट करना चाहते हैं?")) return;
-        chks.forEach(c => db.ref('students/' + c.dataset.id).remove());
-        alert("डिलीट सफल!");
+        chks.forEach(c => db.ref('students/' + c.dataset.id).remove()); alert("डिलीट सफल!");
     }
 
-    // --- OTHER FUNCTIONS ---
     function genQRCode(type) {
         const sel = document.querySelector('.st-check:checked');
         if(!sel) return alert("विद्यार्थी चुनें!");
@@ -227,9 +168,7 @@
         let amt = (type === 'fee') ? document.getElementById('p-amount').value : document.getElementById('e-amount').value;
         let label = (type === 'fee') ? document.getElementById('p-month').value : (document.getElementById('e-reason').value || "Charge");
         if(!amt) return alert("राशि भरें!");
-        document.getElementById('common-modal').style.display='flex';
-        document.getElementById('qr-ui').style.display='block';
-        document.getElementById('scratch-ui').style.display='none';
+        document.getElementById('common-modal').style.display='flex'; document.getElementById('qr-ui').style.display='block'; document.getElementById('scratch-ui').style.display='none';
         document.getElementById('qrcode-container').innerHTML = "";
         new QRCode(document.getElementById('qrcode-container'), { text: `upi://pay?pa=9580807075@ybl&pn=Sandeep%20Kumar&am=${amt}&cu=INR`, width:180, height:180 });
         document.getElementById('qr-title').innerText = usersData.find(u => u.id === currentId).name;
@@ -242,6 +181,7 @@
         if(type === 'fee') {
             if(!student.paymentHistory) student.paymentHistory = [];
             student.paymentHistory.push({month: label, amount: amt, date: new Date().toLocaleDateString()});
+            if(label === "Admission Fee") student.registrationStatus = "Paid";
         } else {
             if(!student.extraHistory) student.extraHistory = [];
             student.extraHistory.push({reason: label, amount: amt, date: new Date().toLocaleDateString()});
@@ -249,32 +189,19 @@
         db.ref('students/' + currentId).update(student).then(() => { closeModal(); window.open('receipt.html', '_blank'); });
     }
 
-    function showForm(id) {
-        document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none');
-        if(id !== 'none') document.getElementById(id).style.display = 'block';
-    }
+    function showForm(id) { document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none'); if(id !== 'none') document.getElementById(id).style.display = 'block'; }
     function closeModal() { document.getElementById('common-modal').style.display='none'; }
     function filterTable() {
         let input = document.getElementById('search-input').value.toLowerCase();
-        document.querySelectorAll('#table-body tr').forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
-        });
+        document.querySelectorAll('#table-body tr').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none'; });
     }
 
-    // Scratch Logic
-    const canvas = document.getElementById('scratch-canvas');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
+    const canvas = document.getElementById('scratch-canvas'); const ctx = canvas.getContext('2d'); let isDrawing = false;
     function openScracityModal() {
-        const sel = document.querySelector('.st-check:checked');
-        if(!sel) return alert("विद्यार्थी चुनें!");
-        currentId = sel.dataset.id;
-        const win = Math.floor(Math.random() * 20) + 1;
-        document.getElementById('win-txt').innerText = `₹${win}`;
-        window.lastWin = win;
-        document.getElementById('common-modal').style.display='flex';
-        document.getElementById('scratch-ui').style.display='block';
-        document.getElementById('qr-ui').style.display='none';
+        const sel = document.querySelector('.st-check:checked'); if(!sel) return alert("विद्यार्थी चुनें!");
+        currentId = sel.dataset.id; const win = Math.floor(Math.random() * 20) + 1;
+        document.getElementById('win-txt').innerText = `₹${win}`; window.lastWin = win;
+        document.getElementById('common-modal').style.display='flex'; document.getElementById('scratch-ui').style.display='block'; document.getElementById('qr-ui').style.display='none';
         ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, 260, 260);
     }
     canvas.addEventListener('mousedown', () => isDrawing = true);
@@ -284,8 +211,7 @@
         const r = canvas.getBoundingClientRect();
         const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
         const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-        ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 40; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y); ctx.stroke();
+        ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 40; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y); ctx.stroke();
     });
 
     window.onload = fetchStudents;
