@@ -2,137 +2,116 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1050">
     <title>SNT - Online Verification System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root {
-            --primary: #1a73e8;
-            --success: #2e7d32;
-            --bg: #f8f9fa;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0; padding: 20px;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh;
-        }
-        .verify-card {
-            background: white;
-            width: 100%;
-            max-width: 450px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            overflow: hidden;
-            text-align: center;
-            border: 1px solid #e0e0e0;
-            display: none; 
-        }
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 20px;
-        }
-        .header h2 { margin: 0; font-size: 20px; letter-spacing: 1px; }
+        body { margin: 0; padding: 0; background: #f0f2f5; font-family: 'Times New Roman', serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        .status-badge {
-            background: #e8f5e9;
-            color: var(--success);
-            padding: 8px 15px;
-            border-radius: 50px;
-            display: inline-block;
-            margin-top: 15px;
-            font-weight: bold;
-            font-size: 14px;
-            border: 1px solid #c8e6c9;
+        /* Layout logic copied from Basic.html */
+        #certificate { 
+            width: 1050px; height: 750px; display: flex; position: relative;
+            border: 12px solid #3b5998; box-sizing: border-box;
+            background: white; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            display: none; /* Initially Hidden */
+        }
+        
+        .sidebar { 
+            width: 250px; background: #3b5998 !important; color: white !important; 
+            padding: 50px 25px; box-sizing: border-box;
+        }
+        .sidebar h3 { font-size: 22px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; }
+        
+        .main-content { flex: 1; padding: 40px; text-align: center; position: relative; }
+        
+        #student-photo { position: absolute; top: 70px; right: 40px; width: 130px; height: 160px; border: 2px solid #000; object-fit: cover; }
+        
+        /* Verification Badge Overlay */
+        .verify-badge {
+            position: absolute; top: 320px; right: 40px;
+            border: 2px solid #2e7d32; color: #2e7d32;
+            padding: 10px; font-weight: bold; border-radius: 5px;
+            transform: rotate(-10deg); background: rgba(232, 245, 233, 0.9);
+            font-family: sans-serif;
         }
 
-        .student-img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: -60px auto 0;
-            border: 5px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            background: #eee;
-            display: block;
-        }
+        .title-main { font-size: 70px; color: #3b5998 !important; letter-spacing: 10px; margin: 10px 0; font-weight: bold; }
+        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 40px; text-transform: uppercase; margin: 15px 0; }
+        
+        .footer-info { position: absolute; bottom: 50px; width: 88%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
+        
+        .sig-box { text-align: center; width: 200px; }
+        .sig-cursive { font-family: 'Dancing Script', cursive; font-size: 28px; color: #1a237e; height: 40px; margin-bottom: 2px; }
+        .sig-line { border-top: 1px solid #000; padding-top: 5px; font-weight: bold; font-size: 15px; }
 
-        .details { padding: 30px 20px; }
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f1f1;
-            text-align: left;
-        }
-        .label { color: #666; font-size: 14px; }
-        .value { color: #333; font-weight: bold; font-size: 15px; }
-
-        .footer {
-            padding: 15px;
-            background: #f1f1f1;
-            font-size: 12px;
-            color: #777;
-        }
-
-        /* Loading Spinner */
-        #loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        /* Loader */
+        #loader { border: 6px solid #f3f3f3; border-top: 6px solid #3b5998; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #error-msg { display: none; text-align: center; color: #d32f2f; }
     </style>
 </head>
 <body>
 
     <div id="loader"></div>
 
-    <div class="verify-card" id="card">
-        <div class="header">
-            <h2>VERIFIED STUDENT</h2>
-            <div class="status-badge">✓ Authentic Record</div>
-        </div>
-        
-        <div style="height: 60px;"></div>
-        <img id="s-img" src="" class="student-img" alt="Student">
-
-        <div class="details">
-            <div class="detail-row">
-                <span class="label">Student Name</span>
-                <span class="value" id="s-name">---</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Student ID</span>
-                <span class="value" id="s-id">---</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Course</span>
-                <span class="value" id="s-course">---</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Admission Date</span>
-                <span class="value" id="s-date">---</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Institute</span>
-                <span class="value">SNT Computer Institute</span>
-            </div>
-        </div>
-
-        <div class="footer">
-            © SNT Education - Secure Verification System
-        </div>
+    <div id="error-msg">
+        <h1>Invalid Certificate!</h1>
+        <p>This record was not found in SNT Institute Database.</p>
     </div>
 
-    <div id="error" style="display:none; text-align:center;">
-        <h1 style="color:#d32f2f;">Invalid Certificate!</h1>
-        <p>This record was not found in our database.</p>
-        <button onclick="location.href='index.html'" style="padding:10px 20px; cursor:pointer; background: #1a73e8; color:white; border:none; border-radius:5px;">Back to Home</button>
+    <div id="certificate">
+        <div class="sidebar">
+            <h3>TOPIC COVERED</h3>
+            <ul>
+                <li>• MS OFFICE</li>
+                <li>• PHOTOSHOP & CORELDRAW</li>
+                <li>• INTERNET & WEB</li>
+                <li>• HARDWARE</li>
+                <li>• HTML & CSS</li>
+                <li>• TYPING</li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div style="text-align: left; display: flex; align-items: center;">
+                <img src="SNT.jpg" style="width: 80px; margin-right: 15px;">
+                <div style="font-weight: bold; font-size: 26px; color: #3b5998;">SNT EDUCATION</div>
+            </div>
+            
+            <img id="student-photo" src="">
+
+            <div class="verify-badge">VERIFIED BY SNT<br>✓ ONLINE AUTHENTIC</div>
+
+            <div class="title-main">CERTIFICATE</div>
+            <p style="font-size: 24px; font-style: italic; margin: 5px 0;">Verification Successful for</p>
+            <div class="student-name" id="s-name">---</div>
+            
+            <p style="font-size: 20px; margin-top: 10px;">Course: <b id="s-course">---</b></p>
+            
+            <p style="font-size: 22px; font-weight: bold; margin-top: 20px;">
+                Student ID: <span id="s-id">---</span><br>
+                Registration Date: <span id="s-date">---</span>
+            </p>
+
+            <div class="footer-info">
+                <div style="text-align:left; font-size:13px; font-weight:bold;">ISO 9001:2015 Certified<br>Branch: Rudauli, Ayodhya</div>
+                <div class="sig-box">
+                    <div class="sig-cursive" id="s1-name">Authorized</div>
+                    <div class="sig-line">Examining Authority</div>
+                </div>
+                <div class="sig-box">
+                    <div class="sig-cursive" id="s2-name">Director</div>
+                    <div class="sig-line">Managing Director</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Firebase Configuration (Same as your database)
         const firebaseConfig = {
             apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
             authDomain: "snt-computer-institute.firebaseapp.com",
@@ -142,34 +121,30 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // URL parameter se Student ID uthana (URL example: verify.html?id=SNT-123)
         const urlParams = new URLSearchParams(window.location.search);
         const studentId = urlParams.get('id');
 
         if (studentId) {
-            // StudentId field se data fetch karna
             db.ref('students').orderByChild('studentId').equalTo(studentId.toUpperCase()).once('value', snapshot => {
                 document.getElementById('loader').style.display = 'none';
                 
                 if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    // Firebase query return object of objects, so we take the first key
-                    const student = Object.values(data)[0];
-
-                    document.getElementById('card').style.display = 'block';
+                    const student = Object.values(snapshot.val())[0];
+                    document.getElementById('certificate').style.display = 'flex';
+                    
                     document.getElementById('s-name').innerText = student.name;
                     document.getElementById('s-id').innerText = student.studentId;
-                    document.getElementById('s-course').innerText = student.courses ? student.courses[0] : (student.course || "N/A");
+                    document.getElementById('s-course').innerText = (student.courses && student.courses[0]) ? student.courses[0] : (student.course || "N/A");
                     document.getElementById('s-date').innerText = student.admissionDate || "N/A";
-                    document.getElementById('s-img').src = student.profilePicture || 'https://via.placeholder.com/120';
+                    document.getElementById('student-photo').src = student.profilePicture || 'SNT.jpg';
                 } else {
-                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('error-msg').style.display = 'block';
                 }
             });
         } else {
             document.getElementById('loader').style.display = 'none';
-            document.getElementById('error').innerHTML = "<h1>No ID Provided!</h1><p>Please scan a valid certificate QR code.</p>";
-            document.getElementById('error').style.display = 'block';
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('error-msg').innerHTML = "<h1>No ID Found</h1><p>Please use a valid QR code.</p>";
         }
     </script>
 </body>
