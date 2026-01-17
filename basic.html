@@ -17,11 +17,11 @@
 
         .search-bar {
             background: #fff; padding: 15px; border-radius: 10px;
-            margin-bottom: 20px; display: flex; gap: 10px; width: 400px;
+            margin-bottom: 20px; display: flex; gap: 10px; width: 450px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .search-bar input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .search-bar button { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .search-bar input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        .search-bar button { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
 
         #certificate {
             width: 1050px; height: 750px;
@@ -55,14 +55,14 @@
             border: 2px solid #000; object-fit: cover; background: #eee;
         }
 
-        /* QR Code Styling */
+        /* QR Code Styling - Clarity ke liye border aur padding badhai gayi hai */
         #qrcode-container {
             position: absolute;
             bottom: 40px;
             right: 40px;
             background: white;
-            padding: 5px;
-            border: 1px solid #ddd;
+            padding: 10px;
+            border: 1px solid #000;
         }
 
         .title-main { font-size: 60px; color: #3b5998; letter-spacing: 8px; margin: 10px 0; font-weight: bold; }
@@ -76,7 +76,7 @@
         .date-info { font-size: 19px; margin: 10px 0; font-weight: bold; }
 
         .footer-info {
-            position: absolute; bottom: 50px; width: 80%; /* Width kam ki taaki QR se na takraye */
+            position: absolute; bottom: 50px; width: 75%;
             display: flex; justify-content: space-between; align-items: flex-end;
         }
         .sig-box { text-align: center; width: 180px; font-size: 14px; }
@@ -92,7 +92,7 @@
 <body>
 
     <div class="search-bar">
-        <input type="text" id="idInput" placeholder="Enter Student ID (e.g. SNT-123)">
+        <input type="text" id="idInput" placeholder="Enter Student ID (e.g. SNT-101)">
         <button onclick="searchByID()">Generate Certificate</button>
         <button style="background:#22c55e;" onclick="window.print()">Print</button>
     </div>
@@ -135,7 +135,7 @@
 
             <div id="qrcode-container">
                 <div id="qrcode"></div>
-                <p style="font-size: 8px; margin: 2px 0 0 0; font-family: sans-serif;">Verify Online</p>
+                <p style="font-size: 9px; margin: 5px 0 0 0; font-family: sans-serif; font-weight: bold;">Verify Online</p>
             </div>
 
             <div class="footer-info">
@@ -166,18 +166,18 @@
 
         function generateQR(studentId) {
             const qrDiv = document.getElementById("qrcode");
-            qrDiv.innerHTML = ""; // Purana QR clear karein
+            qrDiv.innerHTML = ""; 
             
-            // Website ka verification URL
-            const verifyURL = `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${studentId}`;
+            // Link ko bilkul sahi format mein rakha hai
+            const verifyURL = "https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=" + studentId;
             
             new QRCode(qrDiv, {
                 text: verifyURL,
-                width: 80,
-                height: 80,
+                width: 90,
+                height: 90,
                 colorDark : "#000000",
                 colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                correctLevel : QRCode.CorrectLevel.H // High error correction for easy scanning
             });
         }
 
@@ -202,7 +202,7 @@
                         document.getElementById('display-end').innerText = d.toLocaleDateString();
                     }
 
-                    // QR Code generate karein
+                    // QR Code generate
                     generateQR(id);
 
                 } else {
