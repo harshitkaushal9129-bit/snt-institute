@@ -2,67 +2,83 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1050">
+    <meta name="viewport" content="width=1200">
     <title>SNT - Online Verification System</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { margin: 0; padding: 0; background: #f0f2f5; font-family: 'Times New Roman', serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { margin: 0; padding: 20px; background: #f0f2f5; font-family: 'Times New Roman', serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        /* Layout logic copied from Basic.html */
         #certificate { 
-            width: 1050px; height: 750px; display: flex; position: relative;
-            border: 12px solid #3b5998; box-sizing: border-box;
-            background: white; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-            display: none; /* Initially Hidden */
+            width: 1150px; 
+            height: 780px; 
+            display: none; 
+            position: relative;
+            border: 12px solid #3b5998; 
+            box-sizing: border-box;
+            background: white; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
         }
         
         .sidebar { 
-            width: 250px; background: #3b5998 !important; color: white !important; 
+            width: 260px; background: #3b5998 !important; color: white !important; 
             padding: 50px 25px; box-sizing: border-box;
         }
-        .sidebar h3 { font-size: 22px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
-        .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; }
+        .sidebar h3 { font-size: 24px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
+        .sidebar ul li { font-size: 16px; margin-bottom: 15px; font-weight: bold; list-style: none; }
         
-        .main-content { flex: 1; padding: 40px; text-align: center; position: relative; }
+        .main-content { 
+            flex: 1; 
+            padding: 40px 60px; 
+            text-align: center; 
+            position: relative; 
+        }
         
-        #student-photo { position: absolute; top: 70px; right: 40px; width: 130px; height: 160px; border: 2px solid #000; object-fit: cover; }
+        #student-photo { 
+            position: absolute; 
+            top: 60px; 
+            right: 25px; 
+            width: 140px; 
+            height: 175px; 
+            border: 2px solid #000; 
+            object-fit: cover; 
+            z-index: 10;
+        }
         
-        /* Verification Badge Overlay */
         .verify-badge {
-            position: absolute; top: 320px; right: 40px;
-            border: 2px solid #2e7d32; color: #2e7d32;
-            padding: 10px; font-weight: bold; border-radius: 5px;
-            transform: rotate(-10deg); background: rgba(232, 245, 233, 0.9);
+            position: absolute; 
+            top: 260px; 
+            right: 25px;
+            width: 140px;
+            border: 2px solid #2e7d32; 
+            color: #2e7d32;
+            padding: 8px; 
+            font-weight: bold; 
+            border-radius: 5px;
+            transform: rotate(-5deg); 
+            background: rgba(232, 245, 233, 0.9);
             font-family: sans-serif;
+            font-size: 12px;
         }
 
-        .title-main { font-size: 70px; color: #3b5998 !important; letter-spacing: 10px; margin: 10px 0; font-weight: bold; }
-        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 40px; text-transform: uppercase; margin: 15px 0; }
+        .title-main { font-size: 75px; color: #3b5998 !important; letter-spacing: 12px; margin: 10px 0; font-weight: bold; }
+        .student-name { font-size: 48px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 50px; text-transform: uppercase; margin: 20px 0; max-width: 600px; }
         
-        .footer-info { position: absolute; bottom: 50px; width: 88%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
+        .footer-info { position: absolute; bottom: 50px; width: 90%; display: flex; justify-content: space-between; align-items: flex-end; left: 40px; }
         
-        .sig-box { text-align: center; width: 200px; }
-        .sig-cursive { font-family: 'Dancing Script', cursive; font-size: 28px; color: #1a237e; height: 40px; margin-bottom: 2px; }
-        .sig-line { border-top: 1px solid #000; padding-top: 5px; font-weight: bold; font-size: 15px; }
+        .sig-box { text-align: center; width: 220px; }
+        /* Cursive style for dynamic names */
+        .sig-cursive { font-family: 'Dancing Script', cursive; font-size: 30px; color: #1a237e; height: 45px; }
+        .sig-line { border-top: 1px solid #000; padding-top: 5px; font-weight: bold; font-size: 16px; }
 
-        /* Loader */
         #loader { border: 6px solid #f3f3f3; border-top: 6px solid #3b5998; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        #error-msg { display: none; text-align: center; color: #d32f2f; }
     </style>
 </head>
 <body>
 
     <div id="loader"></div>
-
-    <div id="error-msg">
-        <h1>Invalid Certificate!</h1>
-        <p>This record was not found in SNT Institute Database.</p>
-    </div>
 
     <div id="certificate">
         <div class="sidebar">
@@ -78,37 +94,41 @@
         </div>
         <div class="main-content">
             <div style="text-align: left; display: flex; align-items: center;">
-                <img src="SNT.jpg" style="width: 80px; margin-right: 15px;">
-                <div style="font-weight: bold; font-size: 26px; color: #3b5998;">SNT EDUCATION</div>
+                <img src="SNT.jpg" style="width: 90px; margin-right: 15px;">
+                <div style="font-weight: bold; font-size: 28px; color: #3b5998;">SNT EDUCATION</div>
             </div>
             
             <img id="student-photo" src="">
-
             <div class="verify-badge">VERIFIED BY SNT<br>✓ ONLINE AUTHENTIC</div>
 
             <div class="title-main">CERTIFICATE</div>
-            <p style="font-size: 24px; font-style: italic; margin: 5px 0;">Verification Successful for</p>
+            <p style="font-size: 26px; font-style: italic; margin: 5px 0;">This is to certify that the record for</p>
             <div class="student-name" id="s-name">---</div>
             
-            <p style="font-size: 20px; margin-top: 10px;">Course: <b id="s-course">---</b></p>
+            <p style="font-size: 22px; margin-top: 15px;">Course: <b id="s-course">---</b></p>
             
-            <p style="font-size: 22px; font-weight: bold; margin-top: 20px;">
-                Student ID: <span id="s-id">---</span><br>
-                Registration Date: <span id="s-date">---</span>
+            <p style="font-size: 24px; font-weight: bold; margin-top: 25px;">
+                Student ID: <span id="s-id" style="color:#3b5998;">---</span><br>
+                <span style="font-size: 18px; color: #555;">Registration Date: <span id="s-date">---</span></span>
             </p>
 
             <div class="footer-info">
-                <div style="text-align:left; font-size:13px; font-weight:bold;">ISO 9001:2015 Certified<br>Branch: Rudauli, Ayodhya</div>
+                <div style="text-align:left; font-size:14px; font-weight:bold;">ISO 9001:2015 Certified<br>Branch: Rudauli, Ayodhya</div>
                 <div class="sig-box">
-                    <div class="sig-cursive" id="s1-name">Authorized</div>
+                    <div class="sig-cursive" id="s1-name">Authorized Signature</div>
                     <div class="sig-line">Examining Authority</div>
                 </div>
                 <div class="sig-box">
-                    <div class="sig-cursive" id="s2-name">Director</div>
+                    <div class="sig-cursive" id="s2-name">Director Signature</div>
                     <div class="sig-line">Managing Director</div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="error-msg" style="display:none; text-align:center;">
+        <h1 style="color:#d32f2f;">Record Not Found!</h1>
+        <p>Please check the Student ID or scan again.</p>
     </div>
 
     <script>
@@ -123,11 +143,14 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const studentId = urlParams.get('id');
+        
+        // URL se names capture karna
+        const authName = urlParams.get('n1');
+        const dirName = urlParams.get('n2');
 
         if (studentId) {
             db.ref('students').orderByChild('studentId').equalTo(studentId.toUpperCase()).once('value', snapshot => {
                 document.getElementById('loader').style.display = 'none';
-                
                 if (snapshot.exists()) {
                     const student = Object.values(snapshot.val())[0];
                     document.getElementById('certificate').style.display = 'flex';
@@ -137,6 +160,11 @@
                     document.getElementById('s-course').innerText = (student.courses && student.courses[0]) ? student.courses[0] : (student.course || "N/A");
                     document.getElementById('s-date').innerText = student.admissionDate || "N/A";
                     document.getElementById('student-photo').src = student.profilePicture || 'SNT.jpg';
+                    
+                    // Signatures mein names set karna
+                    if(authName) document.getElementById('s1-name').innerText = decodeURIComponent(authName);
+                    if(dirName) document.getElementById('s2-name').innerText = decodeURIComponent(dirName);
+
                 } else {
                     document.getElementById('error-msg').style.display = 'block';
                 }
@@ -144,7 +172,7 @@
         } else {
             document.getElementById('loader').style.display = 'none';
             document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('error-msg').innerHTML = "<h1>No ID Found</h1><p>Please use a valid QR code.</p>";
+            document.getElementById('error-msg').innerHTML = "<h1>No ID Found</h1>";
         }
     </script>
 </body>
