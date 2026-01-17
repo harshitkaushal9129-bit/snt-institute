@@ -2,18 +2,18 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>SNT Admin - Certificate Entry</title>
+    <title>SNT Admin - Pro Panel</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
-        .form-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 450px; }
-        h2 { color: #3b5998; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .info-box { background: #eef2ff; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; border: 1px dashed #3b5998; }
-        button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .form-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 480px; }
+        h2 { color: #3b5998; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .info-box { background: #eef2ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; border: 1px dashed #3b5998; }
+        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:disabled { background: #9ca3af; }
     </style>
 </head>
@@ -29,36 +29,28 @@
         </div>
         <div id="studentInfo" class="info-box">
             <p style="margin:0;"><b>Name:</b> <span id="resName"></span></p>
-            <p style="margin:5px 0 0 0;"><b>Course:</b> <span id="resCourse"></span></p>
         </div>
         <div class="input-group" style="display: flex; gap: 10px;">
-            <div style="flex:1">
-                <label>Course Start</label>
-                <input type="date" id="startDate">
-            </div>
-            <div style="flex:1">
-                <label>Course End</label>
-                <input type="date" id="endDate">
-            </div>
+            <div style="flex:1"><label>Start Date</label><input type="date" id="startDate"></div>
+            <div style="flex:1"><label>End Date</label><input type="date" id="endDate"></div>
         </div>
         <div class="input-group">
             <label>Grade</label>
-            <select id="grade">
-                <option value="Grade A+">Grade A+</option>
-                <option value="Grade A">Grade A</option>
-                <option value="Grade B">Grade B</option>
-            </select>
+            <select id="grade"><option value="Grade A+">Grade A+</option><option value="Grade A">Grade A</option></select>
+        </div>
+        <div class="input-group">
+            <label>Examining Auth Signature (URL)</label>
+            <input type="text" id="sig1" placeholder="Paste Signature Image URL">
+        </div>
+        <div class="input-group">
+            <label>Managing Director Signature (URL)</label>
+            <input type="text" id="sig2" placeholder="Paste Signature Image URL">
         </div>
         <button onclick="sendToBasic()" id="genBtn" disabled>Generate & Open Basic.html</button>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
-            authDomain: "snt-computer-institute.firebaseapp.com",
-            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
-            projectId: "snt-computer-institute",
-        };
+        const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -69,12 +61,9 @@
                     const student = Object.values(snapshot.val())[0];
                     document.getElementById('studentInfo').style.display = 'block';
                     document.getElementById('resName').innerText = student.name;
-                    document.getElementById('resCourse').innerText = student.courses ? student.courses[0] : "N/A";
                     document.getElementById('startDate').value = student.admissionDate || "";
                     document.getElementById('genBtn').disabled = false;
-                } else {
-                    alert("ID nahi mili!");
-                }
+                } else { alert("ID Not Found"); }
             });
         }
 
@@ -82,10 +71,11 @@
             const id = document.getElementById('stuId').value.trim().toUpperCase();
             const sDate = document.getElementById('startDate').value;
             const eDate = document.getElementById('endDate').value;
-            const grade = document.getElementById('grade').value;
-            // Clean URL sending
-            const url = `basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${encodeURIComponent(grade)}`;
-            window.open(url, '_blank');
+            const grade = encodeURIComponent(document.getElementById('grade').value);
+            const s1 = encodeURIComponent(document.getElementById('sig1').value);
+            const s2 = encodeURIComponent(document.getElementById('sig2').value);
+            
+            window.open(`basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}&s1=${s1}&s2=${s2}`, '_blank');
         }
     </script>
 </body>
