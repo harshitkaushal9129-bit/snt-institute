@@ -2,177 +2,130 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1200">
-    <title>SNT - Online Verification System</title>
+    <title>SNT - Verification Page</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { margin: 0; padding: 20px; background: #f0f2f5; font-family: 'Times New Roman', serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { margin: 0; padding: 0; background: #f0f2f5; font-family: 'Times New Roman', serif; display: flex; flex-direction: column; align-items: center; }
+        
+        .verify-header { background: #3b5998; color: white; width: 100%; text-align: center; padding: 15px 0; font-weight: bold; font-size: 20px; margin-bottom: 20px; }
+
+        #certificate-container { display: flex; justify-content: center; padding: 20px; transform: scale(0.9); transform-origin: top; }
         
         #certificate { 
-            width: 1150px; 
-            height: 780px; 
-            display: none; 
-            position: relative;
-            border: 12px solid #3b5998; 
-            box-sizing: border-box;
-            background: white; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            width: 1150px; height: 750px; display: flex; position: relative;
+            border: 12px solid #3b5998; box-sizing: border-box; background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
         .sidebar { 
-            width: 260px; background: #3b5998 !important; color: white !important; 
+            width: 250px; background: #3b5998; color: white; 
             padding: 50px 25px; box-sizing: border-box;
         }
-        .sidebar h3 { font-size: 24px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
-        .sidebar ul li { font-size: 16px; margin-bottom: 15px; font-weight: bold; list-style: none; }
+        .sidebar h3 { font-size: 22px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; }
         
-        .main-content { 
-            flex: 1; 
-            padding: 40px 60px; 
-            text-align: center; 
-            position: relative; 
-        }
+        .main-content { flex: 1; padding: 40px 150px 40px 40px; text-align: center; position: relative; }
         
         #student-photo { 
-            position: absolute; 
-            top: 60px; 
-            right: 25px; 
-            width: 140px; 
-            height: 175px; 
-            border: 2px solid #000; 
-            object-fit: cover; 
-            z-index: 10;
-        }
-        
-        .verify-badge {
-            position: absolute; 
-            top: 260px; 
-            right: 25px;
-            width: 140px;
-            border: 2px solid #2e7d32; 
-            color: #2e7d32;
-            padding: 8px; 
-            font-weight: bold; 
-            border-radius: 5px;
-            transform: rotate(-5deg); 
-            background: rgba(232, 245, 233, 0.9);
-            font-family: sans-serif;
-            font-size: 12px;
+            position: absolute; top: 60px; right: 20px; width: 135px; height: 165px; 
+            border: 2px solid #000; object-fit: cover; 
         }
 
-        .title-main { font-size: 75px; color: #3b5998 !important; letter-spacing: 12px; margin: 10px 0; font-weight: bold; }
-        .student-name { font-size: 48px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 50px; text-transform: uppercase; margin: 20px 0; max-width: 600px; }
+        .verified-stamp {
+            position: absolute; top: 380px; right: 30px; border: 4px double #22c55e;
+            color: #22c55e; padding: 10px; font-weight: bold; transform: rotate(-15px);
+            font-size: 18px; border-radius: 8px; text-transform: uppercase;
+        }
         
-        .footer-info { position: absolute; bottom: 50px; width: 90%; display: flex; justify-content: space-between; align-items: flex-end; left: 40px; }
+        .title-main { font-size: 70px; color: #3b5998; letter-spacing: 4px; margin: 10px 0; font-weight: bold; }
+        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 30px; text-transform: uppercase; margin: 15px 0; }
         
-        .sig-box { text-align: center; width: 220px; }
-        /* Cursive style for dynamic names */
-        .sig-cursive { font-family: 'Dancing Script', cursive; font-size: 30px; color: #1a237e; height: 45px; }
-        .sig-line { border-top: 1px solid #000; padding-top: 5px; font-weight: bold; font-size: 16px; }
+        .footer-info { position: absolute; bottom: 50px; width: 92%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
+        .sig-box { text-align: center; width: 200px; }
+        .sig-cursive { font-family: 'Dancing Script', cursive; font-size: 28px; color: #1a237e; height: 40px; }
+        .sig-line { border-top: 1px solid #000; padding-top: 5px; font-weight: bold; font-size: 15px; }
 
-        #loader { border: 6px solid #f3f3f3; border-top: 6px solid #3b5998; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 1200px) { #certificate-container { transform: scale(0.6); } }
+        @media (max-width: 800px) { #certificate-container { transform: scale(0.4); } }
     </style>
 </head>
 <body>
 
-    <div id="loader"></div>
+    <div class="verify-header">✓ OFFICIAL VERIFICATION RECORD - SNT EDUCATION</div>
 
-    <div id="certificate">
-        <div class="sidebar">
-            <h3>TOPIC COVERED</h3>
-            <ul>
-                <li>• MS OFFICE</li>
-                <li>• PHOTOSHOP & CORELDRAW</li>
-                <li>• INTERNET & WEB</li>
-                <li>• HARDWARE</li>
-                <li>• HTML & CSS</li>
-                <li>• TYPING</li>
-            </ul>
-        </div>
-        <div class="main-content">
-            <div style="text-align: left; display: flex; align-items: center;">
-                <img src="SNT.jpg" style="width: 90px; margin-right: 15px;">
-                <div style="font-weight: bold; font-size: 28px; color: #3b5998;">SNT EDUCATION</div>
+    <div id="certificate-container">
+        <div id="certificate">
+            <div class="sidebar">
+                <h3>TOPIC COVERED</h3>
+                <ul id="topic-list">
+                    <li>• MS OFFICE</li>
+                    <li>• PHOTOSHOP & CORELDRAW</li>
+                    <li>• INTERNET & WEB</li>
+                    <li>• HARDWARE</li>
+                    <li>• HTML & CSS</li>
+                    <li>• TYPING</li>
+                </ul>
             </div>
-            
-            <img id="student-photo" src="">
-            <div class="verify-badge">VERIFIED BY SNT<br>✓ ONLINE AUTHENTIC</div>
-
-            <div class="title-main">CERTIFICATE</div>
-            <p style="font-size: 26px; font-style: italic; margin: 5px 0;">This is to certify that the record for</p>
-            <div class="student-name" id="s-name">---</div>
-            
-            <p style="font-size: 22px; margin-top: 15px;">Course: <b id="s-course">---</b></p>
-            
-            <p style="font-size: 24px; font-weight: bold; margin-top: 25px;">
-                Student ID: <span id="s-id" style="color:#3b5998;">---</span><br>
-                <span style="font-size: 18px; color: #555;">Registration Date: <span id="s-date">---</span></span>
-            </p>
-
-            <div class="footer-info">
-                <div style="text-align:left; font-size:14px; font-weight:bold;">ISO 9001:2015 Certified<br>Branch: Rudauli, Ayodhya</div>
-                <div class="sig-box">
-                    <div class="sig-cursive" id="s1-name">Authorized Signature</div>
-                    <div class="sig-line">Examining Authority</div>
+            <div class="main-content">
+                <div style="text-align: left; display: flex; align-items: center;">
+                    <img src="SNT.jpg" style="width: 80px; margin-right: 15px;">
+                    <div style="font-weight: bold; font-size: 26px; color: #3b5998;">SNT EDUCATION</div>
                 </div>
-                <div class="sig-box">
-                    <div class="sig-cursive" id="s2-name">Director Signature</div>
-                    <div class="sig-line">Managing Director</div>
+                
+                <img id="student-photo" src="">
+
+                <div class="title-main">VERIFIED</div>
+                <p style="font-size: 24px; font-style: italic; margin: 5px 0;">Student Record Confirmation</p>
+                <div class="student-name" id="disp-name">Loading...</div>
+                
+                <p style="font-size: 20px; margin-top: 10px;">successfully completed <b id="disp-course">...</b></p>
+                
+                <div class="verified-stamp">Verified Online</div>
+                
+                <div class="footer-info">
+                    <div style="text-align:left; font-size:13px; font-weight:bold;">ISO 9001:2015 Certified<br>Verification ID: <span id="v-id"></span></div>
+                    <div class="sig-box">
+                        <div id="s1-name" class="sig-cursive"></div>
+                        <div class="sig-line">Examining Authority</div>
+                    </div>
+                    <div class="sig-box">
+                        <div id="s2-name" class="sig-cursive"></div>
+                        <div class="sig-line">Managing Director</div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="error-msg" style="display:none; text-align:center;">
-        <h1 style="color:#d32f2f;">Record Not Found!</h1>
-        <p>Please check the Student ID or scan again.</p>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
-            authDomain: "snt-computer-institute.firebaseapp.com",
-            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
-            projectId: "snt-computer-institute",
-        };
+        const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const studentId = urlParams.get('id');
-        
-        // URL se names capture karna
-        const authName = urlParams.get('n1');
-        const dirName = urlParams.get('n2');
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        const n1 = params.get('n1');
+        const n2 = params.get('n2');
 
-        if (studentId) {
-            db.ref('students').orderByChild('studentId').equalTo(studentId.toUpperCase()).once('value', snapshot => {
-                document.getElementById('loader').style.display = 'none';
+        if (id) {
+            document.getElementById('v-id').innerText = id;
+            db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
                     const student = Object.values(snapshot.val())[0];
-                    document.getElementById('certificate').style.display = 'flex';
-                    
-                    document.getElementById('s-name').innerText = student.name;
-                    document.getElementById('s-id').innerText = student.studentId;
-                    document.getElementById('s-course').innerText = (student.courses && student.courses[0]) ? student.courses[0] : (student.course || "N/A");
-                    document.getElementById('s-date').innerText = student.admissionDate || "N/A";
+                    document.getElementById('disp-name').innerText = student.name;
                     document.getElementById('student-photo').src = student.profilePicture || 'SNT.jpg';
+                    document.getElementById('disp-course').innerText = student.course || (student.courses ? student.courses[0] : "Computer Course");
                     
-                    // Signatures mein names set karna
-                    if(authName) document.getElementById('s1-name').innerText = decodeURIComponent(authName);
-                    if(dirName) document.getElementById('s2-name').innerText = decodeURIComponent(dirName);
-
+                    // Signatures from URL
+                    document.getElementById('s1-name').innerText = decodeURIComponent(n1 || 'Authorized Sign');
+                    document.getElementById('s2-name').innerText = decodeURIComponent(n2 || 'Director Sign');
                 } else {
-                    document.getElementById('error-msg').style.display = 'block';
+                    alert("Invalid Verification ID");
                 }
             });
-        } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('error-msg').innerHTML = "<h1>No ID Found</h1>";
         }
     </script>
 </body>
