@@ -2,17 +2,25 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>SNT Admin - Cursive Sign</title>
+    <title>SNT Admin - Control Panel</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .form-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 450px; }
+        .form-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 500px; }
         .input-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:disabled { background: #9ca3af; }
+        
+        /* Student Info Display */
+        #studentInfo { 
+            display: none; background: #eef2ff; padding: 15px; border-radius: 10px; 
+            margin-bottom: 15px; border-left: 5px solid #3b5998; align-items: center; gap: 15px;
+        }
+        #studentInfo img { width: 70px; height: 85px; border: 1px solid #3b5998; border-radius: 4px; object-fit: cover; }
+        .info-text p { margin: 2px 0; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -24,6 +32,14 @@
             <div style="display: flex; gap: 5px;">
                 <input type="text" id="stuId" placeholder="SNT-101">
                 <button type="button" onclick="fetchStudent()" style="width: 100px; margin-top:0; background:#3b5998;">Verify</button>
+            </div>
+        </div>
+
+        <div id="studentInfo">
+            <img id="viewPhoto" src="" alt="Photo">
+            <div class="info-text">
+                <p><strong>Name:</strong> <span id="viewName">---</span></p>
+                <p><strong>Course:</strong> <span id="viewCourse">---</span></p>
             </div>
         </div>
 
@@ -43,12 +59,17 @@
         </div>
 
         <div class="input-group">
-            <label>Examining Authority (Write Name)</label>
+            <label>Topics Covered (Use comma , to separate)</label>
+            <textarea id="topics" rows="3" placeholder="MS OFFICE, PHOTOSHOP, HARDWARE, HTML"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label>Examining Authority (Name)</label>
             <input type="text" id="sigName1" placeholder="e.g. Harshit Kaushal">
         </div>
 
         <div class="input-group">
-            <label>Managing Director (Write Name)</label>
+            <label>Managing Director (Name)</label>
             <input type="text" id="sigName2" placeholder="e.g. S.N. Tiwari">
         </div>
 
@@ -71,10 +92,18 @@
             
             db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
+                    const student = Object.values(snapshot.val())[0];
+                    
+                    // UI mein details dikhana
+                    document.getElementById('studentInfo').style.display = 'flex';
+                    document.getElementById('viewName').innerText = student.name;
+                    document.getElementById('viewCourse').innerText = student.course || (student.courses ? student.courses[0] : "N/A");
+                    document.getElementById('viewPhoto').src = student.profilePicture || 'SNT.jpg';
+                    
                     document.getElementById('genBtn').disabled = false;
-                    alert("Student Found & Verified!");
                 } else { 
                     alert("ID Not Found in Database"); 
+                    document.getElementById('studentInfo').style.display = 'none';
                     document.getElementById('genBtn').disabled = true;
                 }
             });
@@ -85,14 +114,13 @@
             const sDate = document.getElementById('startDate').value;
             const eDate = document.getElementById('endDate').value;
             const grade = encodeURIComponent(document.getElementById('grade').value);
+            const topics = encodeURIComponent(document.getElementById('topics').value); // New field
             
-            // Authority aur Director ke naam ko encode kar rahe hain
             const n1 = encodeURIComponent(document.getElementById('sigName1').value || "Authorized Signature");
             const n2 = encodeURIComponent(document.getElementById('sigName2').value || "Director Signature");
             
-            // Yeh link basic.html par jayega aur wahan se QR code verify.html ke liye banega
-            // Isme n1 aur n2 pass karne se Verification page par bhi wahi signatures dikhenge
-            const url = `basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}&n1=${n1}&n2=${n2}`;
+            // Ab topics bhi URL mein jayenge
+            const url = `basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}&n1=${n1}&n2=${n2}&topics=${topics}`;
             
             window.open(url, '_blank');
         }
