@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT Institute - Attendance Manager</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --primary: #e65100; --success: #1b5e20; --danger: #b71c1c; --holiday: #f57c00; --bg: #fff8f1; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
+        .card { max-width: 500px; margin: 10px auto; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; }
+        header { background: var(--primary); color: white; padding: 25px; text-align: center; border-bottom: 5px solid #ffb74d; }
+        .date-picker { padding: 20px; display: flex; justify-content: center; gap: 10px; background: #fff3e0; }
+        select, input { padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        
+        .holiday-banner { 
+            display: none; background: #fff3e0; padding: 40px 20px; text-align: center; 
+            border: 2px dashed var(--holiday); margin: 20px; border-radius: 20px;
+        }
+        .holiday-banner h2 { color: var(--holiday); margin: 0; font-size: 28px; }
+        .holiday-banner p { font-size: 18px; font-weight: bold; color: #555; margin: 10px 0; }
+
+        .st-list { padding: 10px 20px; max-height: 400px; overflow-y: auto; }
+        .st-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .btn-group { display: flex; gap: 8px; }
+        .btn { border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; background: #eee; }
+        .p-btn.active { background: var(--success) !important; color: white; }
+        .a-btn.active { background: var(--danger) !important; color: white; }
+        
+        .footer { padding: 20px; text-align: center; }
+        .save-btn { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; }
+        .un-holiday { color: var(--primary); text-decoration: underline; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <header><h2>SNT COMPUTER INSTITUTE</h2><p>Admin Attendance Panel</p></header>
+    
+    <div class="date-picker">
+        <select id="day" onchange="checkCloudHoliday()"></select>
+        <select id="month" onchange="checkCloudHoliday()">
+            <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
+            <option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option>
+            <option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option>
+            <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+        </select>
+        <select id="year" onchange="checkCloudHoliday()"></select>
+    </div>
+
+    <div id="holiday-banner" class="holiday-banner">
+        <div id="holiday-icon" style="font-size: 50px;">🏖️</div>
+        <h2 id="holiday-title">आज छुट्टी है!</h2>
+        <p id="holiday-name-text"></p>
+        <small id="override-msg" style="color: gray; display: block; margin-top: 10px;"></small>
+        <span class="un-holiday" onclick="hideHolidayUI(); loadStudents();">नहीं, आज क्लास है (Mark Attendance)</span>
+    </div>
+
+    <div id="main-content">
+        <div class="st-list" id="st-list"></div>
+        <div style="padding: 10px 20px; background: #fafafa; display: flex; gap: 5px;">
+            <input type="text" id="h-input" placeholder="छुट्टी का नाम लिखें..." style="flex-grow: 1;">
+            <button onclick="setAsHoliday()" style="background:var(--holiday); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">Set Holiday</button>
+        </div>
+    </div>
+
+    <div class="footer"><button class="save-btn" onclick="saveToCloud()">डेटा क्लाउड पर सेव करें</button></div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+        authDomain: "snt-computer-institute.firebaseapp.com",
+        projectId: "snt-computer-institute",
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
+        storageBucket: "snt-computer-institute.firebasestorage.app",
+        messagingSenderId: "117580784781",
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const fixedFestivals = { "2026": { "01-01": "नव वर्ष", "14-01": "मकर संक्रांति", "26-01": "गणतन्त्र दिवस", "15-02": "महाशिवरात्रि", "04-03": "होली", "15-08": "स्वतन्त्रता दिवस", "02-10": "गाँधी जयन्ती", "20-10": "दशहरा", "08-11": "दिवाली", "25-12": "मेरी क्रिसमस" } };
+
+    let dailyRecords = {}, holidayMode = false;
+    const d = new Date(), dayS = document.getElementById('day'), monS = document.getElementById('month'), yerS = document.getElementById('year');
+    
+    for(let i=1; i<=31; i++) dayS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
+    for(let i=2025; i<=2030; i++) yerS.innerHTML += `<option value="${i}">${i}</option>`;
+    
+    dayS.value = String(d.getDate()).padStart(2,'0');
+    monS.value = String(d.getMonth()+1).padStart(2,'0');
+    yerS.value = d.getFullYear();
+
+    function checkCloudHoliday() {
+        const dateKey = `${dayS.value}-${monS.value}-${yerS.value}`;
+        const festivalKey = `${dayS.value}-${monS.value}`;
+        const year = yerS.value;
+
+        // 1. Check for Fixed Festivals
+        if(fixedFestivals[year] && fixedFestivals[year][festivalKey]) {
+            showHolidayUI(fixedFestivals[year][festivalKey], "पंचांग अवकाश");
+            return;
+        }
+
+        // 2. Check if it's Sunday
+        const selectedDate = new Date(`${year}-${monS.value}-${dayS.value}`);
+        if(selectedDate.getDay() === 0) {
+            showHolidayUI("साप्ताहिक अवकाश (Sunday)", "रविवार");
+            return;
+        }
+
+        // 3. Check Cloud Database
+        db.ref('attendance/' + dateKey).once('value', snap => {
+            const data = snap.val();
+            if(data && data.type === 'HOLIDAY') {
+                showHolidayUI(data.name, "एडमिन द्वारा घोषित");
+            } else {
+                hideHolidayUI();
+                loadStudents(data);
+            }
+        });
+    }
+
+    function showHolidayUI(name, type) {
+        holidayMode = true;
+        document.getElementById('holiday-banner').style.display = "block";
+        document.getElementById('main-content').style.display = "none";
+        document.getElementById('holiday-name-text').innerText = name;
+        document.getElementById('override-msg').innerText = `(${type})`;
+        document.getElementById('holiday-icon').innerText = type === "रविवार" ? "🏖️" : "🎉";
+    }
+
+    function hideHolidayUI() {
+        holidayMode = false;
+        document.getElementById('holiday-banner').style.display = "none";
+        document.getElementById('main-content').style.display = "block";
+    }
+
+    function loadStudents(existingData = null) {
+        db.ref('students').once('value', snap => {
+            const list = document.getElementById('st-list');
+            list.innerHTML = "";
+            dailyRecords = (existingData && existingData.details) ? existingData.details : {};
+            
+            if(!snap.exists()) {
+                list.innerHTML = "<p style='text-align:center; color:gray;'>छात्रों का डेटा लोड हो रहा है...</p>";
+                return;
+            }
+
+            snap.forEach(child => {
+                const s = child.val();
+                const studentId = child.key;
+                const status = dailyRecords[studentId] || "";
+                list.innerHTML += `<div class="st-row"><b>${s.name}</b><div class="btn-group">
+                    <button id="p-${studentId}" class="btn ${status==='P'?'p-btn active':''}" onclick="mark('${studentId}','P')">P</button>
+                    <button id="a-${studentId}" class="btn ${status==='A'?'a-btn active':''}" onclick="mark('${studentId}','A')">A</button>
+                </div></div>`;
+            });
+        });
+    }
+
+    function mark(id, status) {
+        dailyRecords[id] = status;
+        document.querySelectorAll(`[id^="p-${id}"], [id^="a-${id}"]`).forEach(b => b.classList.remove('active'));
+        if(status === 'P') document.getElementById(`p-${id}`).classList.add('active');
+        if(status === 'A') document.getElementById(`a-${id}`).classList.add('active');
+    }
+
+    function setAsHoliday() {
+        const hName = document.getElementById('h-input').value;
+        if(!hName) return alert("Holiday Name?");
+        showHolidayUI(hName, "Manual Set");
+    }
+
+    function saveToCloud() {
+        const dateKey = `${dayS.value}-${monS.value}-${yerS.value}`;
+        const data = holidayMode ? 
+            { type: 'HOLIDAY', name: document.getElementById('holiday-name-text').innerText } : 
+            { type: 'ATTENDANCE', details: dailyRecords };
+        
+        db.ref('attendance/' + dateKey).set(data).then(() => {
+            alert("डेटा सफलतापूर्वक सुरक्षित किया गया! ✅");
+        }).catch(err => alert("Error: " + err.message));
+    }
+
+    window.onload = checkCloudHoliday;
+</script>
+</body>
+</html>

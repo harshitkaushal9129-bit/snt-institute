@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verified Receipt - SNT Cloud</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 15px; }
+        .receipt-card { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 10px solid #059669; }
+        .verified-tick { color: #059669; text-align: center; font-size: 40px; margin-bottom: 10px; }
+        .header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid #f9f9f9; padding-bottom: 5px; }
+        .label { color: #666; font-size: 13px; }
+        .value { font-weight: bold; color: #111; font-size: 14px; }
+        .amt-box { background: #ecfdf5; padding: 20px; border-radius: 10px; text-align: center; margin-top: 15px; }
+        .amt-box h1 { margin: 0; color: #059669; }
+    </style>
+</head>
+<body>
+
+<div id="loader">वेरिफिकेशन हो रहा है...</div>
+
+<div class="receipt-card" id="main-receipt" style="display:none;">
+    <div class="verified-tick">✅</div>
+    <div class="header">
+        <h3 style="margin:0;">SNT COMPUTER INSTITUTE</h3>
+        <p style="font-size:12px; color:gray;">Verified Digital Receipt</p>
+    </div>
+    
+    <div class="row"><span class="label">Student Name:</span> <span class="value" id="v-name"></span></div>
+    <div class="row"><span class="label">Date:</span> <span class="value" id="v-date"></span></div>
+    <div class="row"><span class="label">Description:</span> <span class="value" id="v-desc"></span></div>
+    
+    <div class="amt-box">
+        <p style="margin:0; font-size:12px;">Total Paid Amount</p>
+        <h1 id="v-amt">₹0</h1>
+    </div>
+    
+    <p style="text-align:center; font-size:10px; color:#999; margin-top:20px;">
+        यह रसीद SNT Cloud द्वारा सत्यापित है।<br>Rudauli, Ayodhya, UP.
+    </p>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+        authDomain: "snt-computer-institute.firebaseapp.com",
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
+        projectId: "snt-computer-institute",
+    };
+    firebase.initializeApp(firebaseConfig);
+    
+    const params = new URLSearchParams(window.location.search);
+    const sid = params.get('sid');
+    const rid = params.get('rid'); // Receipt Index
+
+    if(sid && rid !== null) {
+        firebase.database().ref('students/' + sid).once('value', snap => {
+            const s = snap.val();
+            if(s) {
+                const history = [...(s.paymentHistory || []), ...(s.extraHistory || [])];
+                const rec = history[rid];
+                if(rec) {
+                    document.getElementById('v-name').innerText = s.name;
+                    document.getElementById('v-date').innerText = rec.date;
+                    document.getElementById('v-desc').innerText = rec.month || rec.reason;
+                    document.getElementById('v-amt').innerText = "₹" + rec.amount;
+                    
+                    document.getElementById('main-receipt').style.display = 'block';
+                    document.getElementById('loader').style.display = 'none';
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

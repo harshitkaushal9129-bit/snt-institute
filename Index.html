@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT Computer Institute - Complete Admission Form</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg: #f0f4f8;
+            --text: #1e293b;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+        }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10000;
+            transition: opacity 0.8s ease;
+        }
+        .splash-content { text-align: center; animation: pulse 2s infinite; }
+        .splash-content img { width: 150px; border-radius: 50%; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* --- CONTAINER --- */
+        .container {
+            max-width: 1000px;
+            margin: 50px auto;
+            background: var(--card);
+            padding: 50px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            visibility: hidden;
+        }
+
+        /* --- HEADER & BIG LOGO --- */
+        header { 
+            text-align: center; 
+            margin-bottom: 50px; 
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        header img { 
+            width: 380px; 
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+        }
+        header h2 { text-transform: uppercase; letter-spacing: 4px; color: var(--primary); margin: 10px 0; font-size: 32px; font-weight: 800; }
+        header p { color: #64748b; font-size: 18px; margin: 0; }
+
+        /* --- LAYOUT GRID --- */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .section-title {
+            background: #eff6ff;
+            color: var(--primary);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            margin: 40px 0 25px 0;
+            border-left: 6px solid var(--primary);
+            font-size: 18px;
+        }
+
+        .form-group { margin-bottom: 22px; }
+        label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 14.5px; color: #475569; }
+        
+        input[type="text"], input[type="email"], input[type="number"], input[type="date"], select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 16px;
+        }
+
+        .checkbox-item { display: flex; align-items: center; font-size: 14px; cursor: pointer; }
+        .checkbox-item input { margin-right: 12px; width: 19px; height: 19px; accent-color: var(--primary); }
+
+        .radio-group { padding: 10px 0; }
+        .radio-group input { margin-right: 8px; margin-left: 15px; cursor: pointer; }
+        .radio-group input:first-child { margin-left: 0; }
+
+        .btn-next {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; padding: 20px;
+            font-size: 20px; font-weight: bold; border-radius: 14px;
+            cursor: pointer; width: 100%; margin-top: 30px;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        /* --- PAYMENT OVERLAY --- */
+        #payment-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9); z-index: 9999; backdrop-filter: blur(10px);
+        }
+        #payment-box {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 40px; text-align: center; border-radius: 30px; width: 400px;
+        }
+        #qr-container img { margin: 0 auto; }
+
+        @media (max-width: 850px) {
+            .row { grid-template-columns: 1fr; }
+            .grid-container { grid-template-columns: repeat(2, 1fr); }
+            header img { width: 280px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="splash-content">
+            <img src="SNT.jpg" alt="Logo">
+            <h1 style="color: var(--primary); font-size: 28px; margin-top: 20px;">SNT Computer Institute</h1>
+        </div>
+    </div>
+
+    <div class="container" id="main-app-content">
+        <header>
+            <img src="Logo.jpg" alt="Institute Logo">
+            <h2>Admission Form</h2>
+            <p>Rudauli Ayodhya | Success Starts Here</p>
+        </header>
+
+        <form id="admission-form">
+            <div class="form-group">
+                <label>Admission Required For:</label>
+                <input type="text" name="required" placeholder="e.g. Skill Development / Job">
+            </div>
+
+            <div class="section-title">Step 1: Select Your Course(s)</div>
+            <div class="grid-container">
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Computer Basics"> Computer Basics</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Computer Foundation"> Foundation</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="C++"> C++ Language</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Java"> Java</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="DCA & ADCA"> DCA & ADCA</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="CCC"> CCC</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="O Level"> 'O' Level</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Web Design"> Web Design</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Python"> Python</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Tally"> Tally ERP 9</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Adv Excel"> Adv. Excel</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Hardware"> Hardware & Net.</label>
+            </div>
+
+            <div class="section-title">Step 2: Personal Details</div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="name" name="name" required placeholder="Student Name">
+                </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <div class="radio-group">
+                        <input type="radio" name="gender" value="Male"> Male 
+                        <input type="radio" name="gender" value="Female"> Female
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="dob-day" style="flex:1;"></select>
+                        <select id="dob-month" style="flex:2;">
+                            <option value="">Month</option>
+                            <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+                            <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+                            <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+                            <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+                        </select>
+                        <select id="dob-year" style="flex:1.5;"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Father's Name</label>
+                    <input type="text" name="fatherName" placeholder="Father's Name">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Mobile Number (WhatsApp)</label>
+                    <input type="number" id="phone" name="phone" required placeholder="10-digit number">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="example@email.com">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Full Address</label>
+                <input type="text" name="address" placeholder="Village/City, Post, District">
+            </div>
+
+            <div class="section-title">Step 3: Education & Batch</div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Last Qualification</label>
+                    <input type="text" name="lastQualification" placeholder="e.g. 10th, 12th, B.A.">
+                </div>
+                <div class="form-group">
+                    <label>Passing Year</label>
+                    <input type="number" name="passingYear" placeholder="e.g. 2023">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>English Knowledge</label>
+                    <div class="radio-group">
+                        <input type="radio" name="english" value="Average"> Average 
+                        <input type="radio" name="english" value="Good"> Good 
+                        <input type="radio" name="english" value="Excellent"> Excellent
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Working Status</label>
+                    <div class="radio-group">
+                        <input type="radio" name="working" value="Yes"> Yes 
+                        <input type="radio" name="working" value="No"> No
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Preferred Batch Time</label>
+                <div class="grid-container" style="grid-template-columns: repeat(4, 1fr); padding: 15px;">
+                    <label class="checkbox-item"><input type="checkbox" name="batch" value="Mon-Fri (M)"> Mon-Fri (M)</label>
+                    <label class="checkbox-item"><input type="checkbox" name="batch" value="Mon-Fri (E)"> Mon-Fri (E)</label>
+                    <label class="checkbox-item"><input type="checkbox" name="batch" value="Mon-Sat"> Mon-Sat</label>
+                    <label class="checkbox-item"><input type="checkbox" name="batch" value="Sat-Sun"> Sat-Sun</label>
+                </div>
+            </div>
+
+            <div class="section-title">Step 4: Verification & Photo</div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Upload Profile Picture</label>
+                    <input type="file" id="profile-picture" name="profilePicture" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>How did you know about us?</label>
+                    <select name="source">
+                        <option value="Friends">Friends</option>
+                        <option value="Newspaper">Newspaper</option>
+                        <option value="Banner">Banner</option>
+                        <option value="Social Media">Social Media</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Digital Signature (Type Name)</label>
+                    <input type="text" name="signature" placeholder="Full Name">
+                </div>
+                <div class="form-group">
+                    <label>Current Date</label>
+                    <input type="date" id="current-date" name="date">
+                </div>
+            </div>
+
+            <button type="button" id="btn-next" class="btn-next">PROCEED TO ADMISSION FEE (₹100)</button>
+
+            <div id="payment-overlay">
+                <div id="payment-box">
+                    <h2 style="font-size: 45px; margin: 0;">₹100</h2>
+                    <p style="color: #64748b; margin-bottom: 20px;">Admission Registration Fee</p>
+                    <div id="qr-container" style="background:#f1f5f9; padding:20px; border-radius:15px; margin-bottom: 20px; display: flex; justify-content: center;">
+                        <p id="qr-loading">Generating QR...</p>
+                    </div>
+                    <button type="submit" style="width:100%; padding:16px; background:#10b981; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">I HAVE PAID - FINAL SUBMIT</button>
+                    <p onclick="document.getElementById('payment-overlay').style.display='none'" style="margin-top:20px; color:#ef4444; cursor:pointer; font-weight:600;">Go Back & Edit</p>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+
+        // SNT API Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+            authDomain: "snt-computer-institute.firebaseapp.com",
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
+            projectId: "snt-computer-institute",
+            storageBucket: "snt-computer-institute.firebasestorage.app",
+            messagingSenderId: "117580784781",
+            appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const form = document.getElementById('admission-form');
+        const btnNext = document.getElementById('btn-next');
+        const paymentOverlay = document.getElementById('payment-overlay');
+        const UPI_ID = "9580807075@ybl"; 
+        const MERCHANT_NAME = "Sandip kumar";
+
+        // Dropdowns & Splash Logic
+        window.onload = function() {
+            setTimeout(function() {
+                const splash = document.getElementById('splash-screen');
+                const main = document.getElementById('main-app-content');
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    main.style.visibility = 'visible';
+                }, 800);
+            }, 2500);
+
+            const daySel = document.getElementById('dob-day');
+            for(let i=1; i<=31; i++) {
+                let opt = document.createElement('option');
+                opt.value = i; opt.innerHTML = i;
+                daySel.appendChild(opt);
+            }
+
+            const yearSel = document.getElementById('dob-year');
+            const currY = new Date().getFullYear();
+            for(let i=currY; i>=1990; i--) {
+                let opt = document.createElement('option');
+                opt.value = i; opt.innerHTML = i;
+                yearSel.appendChild(opt);
+            }
+            document.getElementById('current-date').valueAsDate = new Date();
+        };
+
+        // QR Generate
+        btnNext.addEventListener('click', () => {
+            const nameVal = document.getElementById('name').value.trim();
+            const phoneVal = document.getElementById('phone').value.trim();
+
+            if(!nameVal || !phoneVal) {
+                alert("कृपया अपना नाम और मोबाइल नंबर भरें!");
+                return;
+            }
+
+            const qrContainer = document.getElementById('qr-container');
+            qrContainer.innerHTML = ""; 
+            const upiString = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=100&cu=INR`;
+
+            try {
+                new QRCode(qrContainer, {
+                    text: upiString,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                });
+            } catch (err) {
+                qrContainer.innerHTML = "<p style='color:red'>QR Error</p>";
+            }
+            paymentOverlay.style.display = 'block';
+        });
+
+        // Final Submit to Firebase
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const profilePictureFile = document.getElementById('profile-picture').files[0];
+            const reader = new FileReader();
+
+            const processAndSave = (imgResult) => {
+                let selectedCourses = [];
+                document.querySelectorAll('input[name="course"]:checked').forEach(c => selectedCourses.push(c.value));
+                let selectedBatches = [];
+                document.querySelectorAll('input[name="batch"]:checked').forEach(b => selectedBatches.push(b.value));
+                
+                const fullDOB = `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${document.getElementById('dob-year').value}`;
+
+                const data = {
+                    name: formData.get('name').toUpperCase(),
+                    mobile: formData.get('phone'), 
+                    email: formData.get('email'),
+                    fatherName: formData.get('fatherName'),
+                    address: formData.get('address'),
+                    gender: (document.querySelector('input[name="gender"]:checked') || {}).value || 'N/A',
+                    dob: fullDOB,
+                    courses: selectedCourses, 
+                    batches: selectedBatches,
+                    lastQualification: formData.get('lastQualification'),
+                    passingYear: formData.get('passingYear'),
+                    profilePicture: imgResult,
+                    signature: formData.get('signature'),
+                    admissionDate: formData.get('date'),
+                    registrationStatus: "Paid",
+                    paymentHistory: [{month: "Admission Fee", amount: 100, date: new Date().toLocaleDateString()}]
+                };
+
+                // Push to Firebase
+                const studentsRef = ref(database, 'students');
+                const newStudentRef = push(studentsRef);
+                
+                set(newStudentRef, data).then(() => {
+                    localStorage.setItem('lastReceipt', JSON.stringify({
+                        name: data.name,
+                        photo: data.profilePicture || 'https://via.placeholder.com/100',
+                        course: selectedCourses[0] || "N/A",
+                        type: "Admission Registration",
+                        amount: 100,
+                        date: new Date().toLocaleString()
+                    }));
+                    alert("बधाई हो! आपका एडमिशन SNT Cloud पर सुरक्षित हो गया है।");
+                    window.open('receipt.html', '_blank');
+                    window.location.reload(); 
+                }).catch(err => alert("Error: " + err.message));
+            };
+
+            if (profilePictureFile) {
+                reader.onload = () => processAndSave(reader.result);
+                reader.readAsDataURL(profilePictureFile);
+            } else {
+                processAndSave('');
+            }
+        });
+    </script>
+</body>
+</html>

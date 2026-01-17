@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT Attendance & Festival Calendar</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --tp-header-red: #d32f2f;
+            --present: #2e7d32;
+            --absent: #c62828;
+            --star-gold: #ff9800;
+            --event-blue: #1976d2;
+            --bg-light: #f4f7f6;
+            --holiday: #f57c00;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-light); margin: 0; padding: 10px; display: flex; justify-content: center; overflow-x: hidden; }
+        
+        /* Calendar Card */
+        .calendar-card { background: white; width: 100%; max-width: 450px; border: 2px solid #ddd; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
+        
+        /* Header & Profile */
+        .header { background: var(--tp-header-red); color: white; padding: 15px; text-align: center; }
+        .st-profile-box { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px; margin-top: 10px; text-align: left; }
+        .st-photo-circle { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #eee; }
+
+        /* Navigation */
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fff; border-bottom: 1px solid #eee; }
+        .nav h2 { font-size: 1.1rem; margin: 0; color: #333; font-weight: 700; }
+        .nav button { background: #f0f0f0; border: 1px solid #ddd; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        .nav button:hover { background: #e0e0e0; }
+
+        /* Calendar Grid */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; }
+        .day-head { text-align: center; font-size: 12px; font-weight: bold; color: #666; padding: 12px 0; background: #f9f9f9; }
+        .cell { height: 85px; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; }
+        .cell:hover { background: #f0f7ff; }
+        .date-num { font-size: 18px; font-weight: 600; color: #333; z-index: 5; }
+
+        /* Markers */
+        .fest-star-marker { color: var(--star-gold); font-size: 10px; position: absolute; top: 6px; left: 6px; z-index: 10; }
+        .today { background: #fffde7 !important; border: 1.5px solid #fbc02d !important; }
+        .sunday .date-num { color: #d32f2f; }
+        .att-status { position: absolute; bottom: 8px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: block; border: 1px solid white; }
+        .bg-p { background: var(--present); }
+        .bg-a { background: var(--absent); }
+
+        /* Sidebar (Festival List) */
+        .fest-btn { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--tp-header-red); color: white; padding: 15px 8px; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 10px 0 0 10px; cursor: pointer; font-weight: bold; z-index: 100; box-shadow: -2px 0 10px rgba(0,0,0,0.2); }
+        .sidebar { position: fixed; right: -320px; top: 0; width: 300px; height: 100%; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 101; display: flex; flex-direction: column; }
+        .sidebar.active { right: 0; }
+        .sidebar-header { background: var(--tp-header-red); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        #fest-list-container { flex: 1; overflow-y: auto; padding: 15px; }
+        .fest-item { background: #fff9f0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--star-gold); box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 100; }
+        .overlay.active { display: block; }
+        
+        .footer { padding: 15px; display: flex; justify-content: space-around; font-size: 12px; background: #fff; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div class="fest-btn" onclick="toggleSidebar()"><i class="fas fa-calendar-alt"></i> त्यौहार सूची</div>
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3>महीने के त्यौहार</h3>
+        <span onclick="toggleSidebar()" style="cursor:pointer; font-size: 24px;">&times;</span>
+    </div>
+    <div id="fest-list-container"></div>
+</div>
+
+<div class="calendar-card">
+    <div class="header" id="header-box">
+        <div style="font-weight: 700; font-size: 1.1rem;">SNT ATTENDANCE PORTAL</div>
+    </div>
+    
+    <div class="nav">
+        <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+        <h2 id="month-info"></h2>
+        <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <div class="grid">
+        <div class="day-head">रवि</div><div class="day-head">सोम</div><div class="day-head">मंगल</div>
+        <div class="day-head">बुध</div><div class="day-head">गुरु</div><div class="day-head">शुक्र</div><div class="day-head">शनि</div>
+    </div>
+    <div id="calendar-body" class="grid"></div>
+
+    <div class="footer">
+        <span><i class="fas fa-circle" style="color:var(--present)"></i> Present</span>
+        <span><i class="fas fa-circle" style="color:var(--absent)"></i> Absent</span>
+        <span><i class="fas fa-circle" style="color:var(--holiday)"></i> Holiday</span>
+    </div>
+</div>
+
+<script>
+    // 1. Firebase API Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+        authDomain: "snt-computer-institute.firebaseapp.com",
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
+        projectId: "snt-computer-institute",
+        storageBucket: "snt-computer-institute.firebasestorage.app",
+        messagingSenderId: "117580784781",
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 2. Global Variables
+    const params = new URLSearchParams(window.location.search);
+    const studentId = params.get('id'); // URL से छात्र की ID लेगा
+    let displayDate = new Date();
+    const today = new Date();
+
+    const fixedFestivals = { 
+        "2026": { 
+            "01-01": "नया साल (New Year)", "14-01": "मकर संक्रांति", "26-01": "गणतंत्र दिवस", 
+            "15-02": "महाशिवरात्रि", "04-03": "होली", "28-03": "राम नवमी",
+            "15-08": "स्वतंत्रता दिवस", "02-10": "गांधी जयंती", "20-10": "दशहरा", 
+            "08-11": "दिवाली", "25-12": "क्रिसमस" 
+        } 
+    };
+
+    // 3. UI Functions
+    function toggleSidebar() { 
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.toggle('active'); 
+        overlay.classList.toggle('active'); 
+        if(sidebar.classList.contains('active')) updateFestivalList(); 
+    }
+    
+    function closeAll() { 
+        document.getElementById('sidebar').classList.remove('active'); 
+        document.getElementById('overlay').classList.remove('active'); 
+    }
+
+    // 4. Calendar Logic
+    function renderCalendar() {
+        const body = document.getElementById('calendar-body');
+        body.innerHTML = '';
+        const year = displayDate.getFullYear(), month = displayDate.getMonth();
+        
+        const monthName = new Date(year, month).toLocaleString('hi-IN', {month:'long'});
+        document.getElementById('month-info').innerText = `${monthName} ${year}`;
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Empty Cells
+        for (let x = 0; x < firstDay; x++) body.innerHTML += `<div class="cell" style="background:#f9f9f9"></div>`;
+
+        // Render Days
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dStr = `${day}-${month + 1}-${year}`; // Firebase Date Key Format
+            const fKey = `${String(day).padStart(2,'0')}-${String(month+1).padStart(2,'0')}`;
+            const isToday = new Date(year, month, day).toDateString() === today.toDateString();
+            
+            body.innerHTML += `
+                <div class="cell ${isToday?'today':''} ${new Date(year, month, day).getDay()===0?'sunday':''}">
+                    ${fixedFestivals[year] && fixedFestivals[year][fKey] ? '<i class="fas fa-star fest-star-marker"></i>' : ''}
+                    <span class="date-num">${day}</span>
+                    <div class="att-status" id="stat-${dStr}"></div>
+                </div>`;
+
+            // Fetch Real-time Cloud Attendance
+            db.ref(`attendance/${dStr}`).once('value', snap => {
+                const data = snap.val();
+                const target = document.getElementById(`stat-${dStr}`);
+                if(data && target) {
+                    if(data.type === 'HOLIDAY') {
+                        target.parentElement.style.background = "#fff3e0";
+                        target.innerHTML = `<span style="font-size:8px; color:var(--holiday); font-weight:bold;">HOLIDAY</span>`;
+                    } else if(data.details && data.details[studentId]) {
+                        target.innerHTML = `<span class="dot ${data.details[studentId]==='P'?'bg-p':'bg-a'}"></span>`;
+                    }
+                }
+            });
+        }
+    }
+
+    // 5. Festival Sidebar List
+    function updateFestivalList() {
+        const container = document.getElementById('fest-list-container');
+        const monthNum = String(displayDate.getMonth() + 1).padStart(2, '0');
+        container.innerHTML = "";
+        const fests = fixedFestivals[displayDate.getFullYear()] || {};
+        
+        let found = false;
+        for(let k in fests) {
+            if(k.split('-')[1] === monthNum) {
+                container.innerHTML += `<div class="fest-item"><b>${k.split('-')[0]} तारीख</b>: ${fests[k]}</div>`;
+                found = true;
+            }
+        }
+        if(!found) container.innerHTML = "<p style='text-align:center; color:#999;'>इस महीने कोई त्यौहार नहीं है।</p>";
+    }
+
+    function changeMonth(s) { displayDate.setMonth(displayDate.getMonth() + s); renderCalendar(); }
+
+    // 6. Init
+    window.onload = () => {
+        if(studentId) {
+            // Fetch student profile from cloud
+            db.ref('students').once('value', snap => {
+                const students = snap.val();
+                let s = null;
+                if(students) {
+                    // Find by node key or student object ID property
+                    if(students[studentId]) s = students[studentId];
+                    else Object.keys(students).forEach(k => { if(students[k].id == studentId) s = students[k]; });
+                }
+
+                if(s) {
+                    document.getElementById('header-box').innerHTML += `
+                        <div class="st-profile-box">
+                            <img src="${s.profilePicture || 'https://via.placeholder.com/100'}" class="st-photo-circle">
+                            <div><b>${s.name}</b><br><small>Student ID: ${studentId}</small></div>
+                        </div>`;
+                }
+            });
+        }
+        renderCalendar();
+    };
+</script>
+</body>
+</html>

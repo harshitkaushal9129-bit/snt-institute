@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT Certificate Verification</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .verify-card { background: white; width: 100%; max-width: 400px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; text-align: center; border-top: 8px solid #27ae60; }
+        .status-badge { background: #e8f5e9; color: #2e7d32; padding: 10px; font-weight: bold; margin-bottom: 20px; display: inline-block; border-radius: 50px; font-size: 14px; }
+        .profile-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-top: 20px; }
+        .info-table { width: 100%; padding: 20px; text-align: left; }
+        .info-table th { color: #777; font-size: 12px; text-transform: uppercase; padding-top: 10px; }
+        .info-table td { font-size: 16px; font-weight: bold; color: #333; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        header { background: #1a252f; color: white; padding: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="verify-card" id="content" style="display:none;">
+    <header><h3>SNT INSTITUTE VERIFIED</h3></header>
+    <img id="v-img" class="profile-img" src="">
+    <div style="padding: 20px;">
+        <div class="status-badge">✅ Original Certificate Verified</div>
+        <table class="info-table">
+            <tr><th>Student Name</th><td id="v-name">-</td></tr>
+            <tr><th>Student ID</th><td id="v-id">-</td></tr>
+            <tr><th>Course</th><td id="v-course">-</td></tr>
+            <tr><th>Issue Date</th><td id="v-date">-</td></tr>
+        </table>
+    </div>
+</div>
+
+<div id="loader">वेरिफिकेशन हो रहा है...</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+        authDomain: "snt-computer-institute.firebaseapp.com",
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
+        projectId: "snt-computer-institute",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sId = urlParams.get('id');
+
+    if(sId) {
+        db.ref('students/' + sId).once('value', snap => {
+            const s = snap.val();
+            if(s) {
+                document.getElementById('v-name').innerText = s.name;
+                document.getElementById('v-id').innerText = sId;
+                document.getElementById('v-course').innerText = s.courses ? s.courses[0] : (s.course || 'N/A');
+                document.getElementById('v-date').innerText = s.admissionDate || 'N/A';
+                document.getElementById('v-img').src = s.profilePicture || 'https://via.placeholder.com/150';
+                
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('loader').style.display = 'none';
+            } else {
+                document.body.innerHTML = "<h3>गलत लिंक या डेटा उपलब्ध नहीं है।</h3>";
+            }
+        });
+    } else {
+        document.body.innerHTML = "<h3>Invalid QR Scan.</h3>";
+    }
+</script>
+</body>
+</html>
