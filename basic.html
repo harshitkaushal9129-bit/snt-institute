@@ -2,97 +2,156 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>SNT Certificate - Verification System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT Certificate - Search by ID</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
     <style>
-        html, body { 
-            margin: 0; padding: 0; width: 100%; min-height: 100vh;
-            background: #2c3e50; font-family: 'Arial', sans-serif;
+        body {
+            margin: 0; padding: 20px;
+            background: #525659;
             display: flex; flex-direction: column; align-items: center;
+            font-family: 'Times New Roman', serif;
         }
 
-        /* Nav Bar */
-        .top-nav {
-            width: 100%; background: #1a252f; padding: 15px 20px;
-            display: flex; justify-content: center; gap: 20px;
-            align-items: center; position: sticky; top: 0; z-index: 1001;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        .search-bar {
+            background: #fff; padding: 15px; border-radius: 10px;
+            margin-bottom: 20px; display: flex; gap: 10px; width: 400px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-
-        .search-box {
-            padding: 10px 15px; width: 300px; border-radius: 5px;
-            border: 2px solid #00b0f0; font-size: 16px; outline: none;
-        }
-
-        .print-btn {
-            background: #27ae60; color: white; border: none; padding: 10px 25px;
-            font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer;
-        }
-
-        /* Certificate Design */
-        #certificate-wrapper {
-            margin-top: 30px; display: none; justify-content: center; padding-bottom: 50px;
-        }
+        .search-bar input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .search-bar button { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
 
         #certificate {
-            width: 1120px; height: 790px;
-            background-image: url('https://i.ibb.co/XfXf8xR/snt-cert-bg.png'); 
-            background-size: cover; position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            transform-origin: top center;
+            width: 1050px; height: 750px;
+            background: white; position: relative;
+            display: none; 
+            flex-direction: row; overflow: hidden;
+            border: 2px solid #ccc;
         }
 
-        #userImg {
-            position: absolute; top: 58px; right: 65px;
-            width: 115px; height: 140px;
-            border: 3px solid #000; object-fit: cover;
+        .sidebar {
+            width: 240px; background: #3b5998; color: white;
+            padding: 40px 20px; box-sizing: border-box;
+        }
+        .sidebar h3 { font-size: 20px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar ul li { font-size: 14px; margin-bottom: 15px; line-height: 1.5; font-weight: bold; }
+
+        .main-content {
+            flex: 1; padding: 40px; text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+            position: relative;
         }
 
-        .text-overlay {
-            position: absolute; width: 100%; text-align: center;
-            font-weight: bold; color: #1a252f;
-        }
+        .cert-header { width: 100%; text-align: left; display: flex; align-items: center; margin-bottom: 20px; }
+        .cert-header img { width: 80px; margin-right: 15px; }
+        .cert-header .title { font-weight: bold; font-size: 22px; color: #3b5998; }
 
-        #dName { top: 385px; font-size: 48px; text-transform: uppercase; color: #b45f06; }
-        #dCourse { top: 535px; font-size: 32px; color: #073763; }
+        #student-photo {
+            position: absolute; top: 40px; right: 40px;
+            width: 120px; height: 150px;
+            border: 2px solid #000; object-fit: cover; background: #eee;
+        }
 
         /* QR Code Styling */
-        #qrcode {
-            position: absolute; bottom: 60px; right: 75px;
-            background: white; padding: 8px; border: 1px solid #ccc;
+        #qrcode-container {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            background: white;
+            padding: 5px;
+            border: 1px solid #ddd;
         }
 
+        .title-main { font-size: 60px; color: #3b5998; letter-spacing: 8px; margin: 10px 0; font-weight: bold; }
+        .award-text { font-size: 24px; font-style: italic; margin-top: 20px; }
+        .student-name { 
+            font-size: 42px; font-weight: bold; margin: 15px 0;
+            border-bottom: 2px solid #000; display: inline-block; padding: 0 50px;
+            text-transform: uppercase; color: #000;
+        }
+        .course-name { font-size: 32px; font-weight: bold; margin: 15px 0; color: #000; }
+        .date-info { font-size: 19px; margin: 10px 0; font-weight: bold; }
+
+        .footer-info {
+            position: absolute; bottom: 50px; width: 80%; /* Width kam ki taaki QR se na takraye */
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+        .sig-box { text-align: center; width: 180px; font-size: 14px; }
+        .sig-line { border-top: 1px solid #000; margin-top: 60px; padding-top: 5px; font-weight: bold; }
+
         @media print {
-            .top-nav { display: none; }
-            body { background: white; }
-            #certificate-wrapper { margin: 0; }
+            .search-bar, button { display: none; }
+            body { padding: 0; background: white; }
+            #certificate { display: flex !important; box-shadow: none; border: none; }
         }
     </style>
 </head>
 <body>
 
-    <div class="top-nav">
-        <input type="text" id="searchInput" class="search-box" placeholder="SNT-ID ya Phone डालें">
-        <button class="print-btn" onclick="handleSearch()">Search & Verify</button>
-        <button class="print-btn" style="background:#2980b9" onclick="window.print()">Print PDF</button>
+    <div class="search-bar">
+        <input type="text" id="idInput" placeholder="Enter Student ID (e.g. SNT-123)">
+        <button onclick="searchByID()">Generate Certificate</button>
+        <button style="background:#22c55e;" onclick="window.print()">Print</button>
     </div>
 
-    <div id="certificate-wrapper">
-        <div id="certificate">
-            <img id="userImg" src="https://via.placeholder.com/115x140" alt="Photo">
-            <div id="dName" class="text-overlay">STUDENT NAME</div>
-            <div id="dCourse" class="text-overlay">COURSE NAME</div>
-            
-            <div id="qrcode"></div>
+    <div id="certificate">
+        <div class="sidebar">
+            <h3>TOPIC COVERED</h3>
+            <ul>
+                <li>• APPLICATION (MS OFFICE)</li>
+                <li>• DESIGNING (PHOTOSHOP, CORELDRAW, PAGEMAKER)</li>
+                <li>• INTERNET</li>
+                <li>• PC ASSEMBLING & INSTALLATION</li>
+                <li>• HTML & WEB DESIGN</li>
+                <li>• TYPING (HINDI & ENGLISH)</li>
+            </ul>
         </div>
-    </div>
 
-    <div id="notFound" style="display:none; color:white; margin-top:100px; text-align:center;">
-        <h1>ID नहीं मिली!</h1>
-        <p>कृपया सही Student ID दर्ज करें। (Eg: SNT-XXXXX)</p>
+        <div class="main-content">
+            <div class="cert-header">
+                <img src="SNT.jpg" alt="Logo">
+                <div class="title">SNT EDUCATION<br><span style="font-size:12px; color:gray;">Success Starts Here</span></div>
+            </div>
+
+            <img id="student-photo" src="" alt="Student Photo">
+
+            <div class="title-main">CERTIFICATE</div>
+            <div class="award-text">This Certificate is awarded to</div>
+            <div class="student-name" id="display-name">---</div>
+            
+            <div class="award-text" style="font-size:18px; margin-top:10px;">in recognition of successful completion of</div>
+            <div class="course-name" id="display-course">---</div>
+            
+            <p style="font-size:18px;">at Rudauli Center, Ayodhya</p>
+            
+            <div class="date-info">
+                Conducted from <span id="display-start">--/--/--</span> to <span id="display-end">--/--/--</span>
+            </div>
+            
+            <div class="date-info">His/Her performance was <span id="display-grade" style="color:#3b5998; font-size:24px;">Grade A</span></div>
+
+            <div id="qrcode-container">
+                <div id="qrcode"></div>
+                <p style="font-size: 8px; margin: 2px 0 0 0; font-family: sans-serif;">Verify Online</p>
+            </div>
+
+            <div class="footer-info">
+                <div style="text-align:left; font-size:11px; font-weight:bold;">
+                    Course Duration: 290 Hrs<br>
+                    Branch Code: Rud<br>
+                    ISO 9001:2015 Certified
+                </div>
+                <div class="sig-box">
+                    <div class="sig-line">Examining Authority</div>
+                </div>
+                <div class="sig-box">
+                    <div class="sig-line">Chairman & Managing Director</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -106,90 +165,59 @@
         const db = firebase.database();
 
         function generateQR(studentId) {
+            const qrDiv = document.getElementById("qrcode");
+            qrDiv.innerHTML = ""; // Purana QR clear karein
+            
+            // Website ka verification URL
             const verifyURL = `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${studentId}`;
-            const qrContainer = document.getElementById("qrcode");
-            qrContainer.innerHTML = ""; 
-
-            new QRCode(qrContainer, {
+            
+            new QRCode(qrDiv, {
                 text: verifyURL,
-                width: 90,
-                height: 90,
-                colorDark : "#000",
+                width: 80,
+                height: 80,
+                colorDark : "#000000",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
             });
         }
 
-        // Updated checkData: Ab ye Student ID se search karega
-        function checkData(searchId) {
-            const wrapper = document.getElementById('certificate-wrapper');
-            const notFound = document.getElementById('notFound');
+        function searchByID() {
+            const id = document.getElementById('idInput').value.trim().toUpperCase();
+            if(!id) return alert("Please enter an ID!");
 
-            if(!searchId) return;
+            db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const student = Object.values(data)[0];
 
-            // Search logic optimized: Ye "studentId" field ke andar check karega
-            db.ref('students').orderByChild('studentId').equalTo(searchId.toUpperCase()).once('value', snap => {
-                const data = snap.val();
-                if (data) {
-                    // Firebase query ek object return karti hai, uska pehla record lenge
-                    const key = Object.keys(data)[0];
-                    const student = data[key];
+                    document.getElementById('certificate').style.display = 'flex';
+                    document.getElementById('display-name').innerText = student.name;
+                    document.getElementById('display-course').innerText = student.courses ? student.courses[0] : "Computer Foundation";
+                    document.getElementById('student-photo').src = student.profilePicture || 'https://via.placeholder.com/120';
+                    document.getElementById('display-start').innerText = student.admissionDate || "N/A";
+                    
+                    const d = new Date(student.admissionDate);
+                    if(!isNaN(d)) {
+                        d.setFullYear(d.getFullYear() + 1);
+                        document.getElementById('display-end').innerText = d.toLocaleDateString();
+                    }
 
-                    wrapper.style.display = 'flex';
-                    notFound.style.display = 'none';
-                    
-                    document.getElementById('dName').innerText = student.name;
-                    document.getElementById('dCourse').innerText = student.course || (student.courses ? student.courses[0] : "Computer Application");
-                    document.getElementById('userImg').src = student.profilePicture || 'https://via.placeholder.com/115x140';
-                    
-                    // QR mein wahi ID jayegi jo database mein hai
-                    generateQR(student.studentId || key);
-                    
-                    fitToScreen();
+                    // QR Code generate karein
+                    generateQR(id);
+
                 } else {
-                    // Agar StudentId se nahi mila, toh purana logic (Firebase Key) bhi check kar lete hain backup ke liye
-                    db.ref('students/' + searchId).once('value', snap2 => {
-                        const student2 = snap2.val();
-                        if(student2) {
-                            wrapper.style.display = 'flex';
-                            notFound.style.display = 'none';
-                            document.getElementById('dName').innerText = student2.name;
-                            document.getElementById('dCourse').innerText = student2.course || (student2.courses ? student2.courses[0] : "Computer Application");
-                            document.getElementById('userImg').src = student2.profilePicture || 'https://via.placeholder.com/115x140';
-                            generateQR(searchId);
-                            fitToScreen();
-                        } else {
-                            wrapper.style.display = 'none';
-                            notFound.style.display = 'block';
-                        }
-                    });
+                    alert("No student found with ID: " + id);
+                    document.getElementById('certificate').style.display = 'none';
                 }
             });
         }
 
-        function handleSearch() {
-            let input = document.getElementById('searchInput').value.trim();
-            if(input) checkData(input);
-        }
-
-        function fitToScreen() {
-            const cert = document.getElementById('certificate');
-            const winW = window.innerWidth - 40;
-            if (winW < 1120) {
-                cert.style.transform = `scale(${winW / 1120})`;
-            } else {
-                cert.style.transform = `scale(1)`;
-            }
-        }
-
-        window.addEventListener('resize', fitToScreen);
-        
         window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-            if(id) {
-                document.getElementById('searchInput').value = id;
-                checkData(id);
+            const params = new URLSearchParams(window.location.search);
+            const idParam = params.get('id');
+            if(idParam) {
+                document.getElementById('idInput').value = idParam;
+                searchByID();
             }
         };
     </script>
