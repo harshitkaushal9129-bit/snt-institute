@@ -18,7 +18,7 @@
     #search-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(230,81,0,0.1); }
     .outer-wrapper { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
     .table-scroll { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1100px; } /* Width thoda badhaya */
     th { background: #f8f9fa; color: #666; padding: 15px; font-size: 13px; text-align: center; border-bottom: 2px solid #eee; }
     td { padding: 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; text-align: center; vertical-align: middle; }
     .profile-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); padding: 2px; }
@@ -40,22 +40,23 @@
     .scratch-container { position: relative; width: 260px; height: 260px; background: #fff; margin: auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
     #scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 2; transition: opacity 0.5s; }
     .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; }
-    .att-count { background: #333; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 11px; }
+    .att-count { background: #333; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; }
   </style>
 </head>
 <body>
   <header><h1>SNT Computer Institute</h1><button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="exportFullData()">📥</button></header>
-  <div class="search-container"><input type="text" id="search-input" placeholder="विद्यार्थी का नाम खोजें..." onkeyup="filterTable()"></div>
+  <div class="search-container"><input type="text" id="search-input" placeholder="नाम या मोबाइल नंबर से खोजें..." onkeyup="filterTable()"></div>
   <div class="outer-wrapper">
     <div class="table-scroll">
         <table id="data-table">
           <thead>
             <tr>
               <th>चुनें</th>
-              <th>Student ID</th> <th>फोटो</th>
+              <th>Student ID</th> 
+              <th>फोटो</th>
               <th>विद्यार्थी विवरण</th>
               <th>कोर्स</th>
-              <th>हाजिरी</th>
+              <th>मोबाइल</th> <th>हाजिरी</th>
               <th>फीस इतिहास</th>
               <th>इनाम</th>
               <th>प्रिंट</th>
@@ -65,6 +66,7 @@
         </table>
     </div>
   </div>
+
   <div class="controls">
     <button class="btn btn-green" onclick="showForm('payment-form')">💰 फीस जोड़ें</button>
     <button class="btn btn-blue" onclick="showForm('extra-charge-form')">📑 अन्य चार्ज</button>
@@ -87,7 +89,7 @@
   <div id="password-modal">
     <div class="modal-content">
         <h3 id="pin-msg">🔒 एडमिन पिन दर्ज करें</h3><input type="password" id="pin-input" readonly placeholder="******" style="text-align:center; font-size:20px; border:2px solid #eee; width:80%;">
-        <div class="calc-grid"><button class="calc-btn" onclick="addPin('1')">1</button><button class="calc-btn" onclick="addPin('2')">2</button><button class="calc-btn" onclick="addPin('3')">3</button><button class="calc-btn" onclick="addPin('4')">4</button><button class="calc-btn" onclick="addPin('5')">5</button><button class="calc-btn" onclick="addPin('6')">6</button><button class="calc-btn" onclick="addPin('7')">7</button><button class="calc-btn" onclick="addPin('8')">8</button><button class="calc-btn" onclick="addPin('9')">9</button><button class="calc-btn" style="color:red" onclick="clearPin()">C</button><button class="calc-btn" onclick="addPin('0')">0</button><button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button></div>
+        <div class="calc-grid"><button class="calc-btn" onclick="addPin('1')">1</button><button class="calc-btn" onclick="addPin('2')">2</button><button class="calc-btn" onclick="addPin('3')">3</button><button class="calc-btn" onclick="addPin('4')">4</button><button class="calc-btn" onclick="addPin('5')">5</button><button class="calc-btn" onclick="6">6</button><button class="calc-btn" onclick="addPin('7')">7</button><button class="calc-btn" onclick="addPin('8')">8</button><button class="calc-btn" onclick="addPin('9')">9</button><button class="calc-btn" style="color:red" onclick="clearPin()">C</button><button class="calc-btn" onclick="addPin('0')">0</button><button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button></div>
         <button onclick="closePinModal()" style="margin-top:15px; border:none; background:none; cursor:pointer; color:gray;">रद्द करें</button>
     </div>
   </div>
@@ -125,10 +127,11 @@
                     
                     tbody.innerHTML += `<tr>
                       <td><input type="checkbox" class="st-check" data-id="${key}"></td>
-                      <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td> <td><img src="${u.profilePicture || 'https://via.placeholder.com/50'}" class="profile-img"></td>
+                      <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td> 
+                      <td><img src="${u.profilePicture || 'https://via.placeholder.com/50'}" class="profile-img"></td>
                       <td style="text-align:left;"><b>${u.name}</b><br><small style="${statusColor}">${u.registrationStatus || 'Paid'}</small></td>
                       <td><span class="fee-badge extra-badge">${u.courses ? u.courses[0] : (u.course || 'N/A')}</span></td>
-                      <td onclick="location.href='calendar.html?id=${key}&name=${u.name}'"><div class="att-count">Check Status</div></td>
+                      <td style="font-weight:500;">${u.mobile || u.phone || '-'}</td> <td onclick="location.href='calendar.html?id=${key}&name=${u.name}'"><div class="att-count">Check Status</div></td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
                       <td style="color:var(--success); font-weight:bold;">₹${u.wonCash || 0}</td>
                       <td><button class="btn" onclick="window.location.href='basic.html?search=${u.name}'">🖨️</button></td>
@@ -138,11 +141,11 @@
         });
     }
 
-    // Baaki saare functions pehle jaise hi kaam karenge
+    // Previous functions (openPinGate, addPin, etc.) remain same
     function openPinGate(target) {
         if(target === 'delete') { let chks = document.querySelectorAll('.st-check:checked'); if(chks.length == 0) return alert("विद्यार्थी चुनें!"); }
         pinTarget = target; enteredPin = ""; document.getElementById('pin-input').value = ""; document.getElementById('password-modal').style.display = 'flex';
-        document.getElementById('pin-msg').innerText = target === 'attendance' ? "🔒 हाजिri एक्सेस पिन डालें" : "🔒 डिलीट एक्सेस पिन डालें";
+        document.getElementById('pin-msg').innerText = target === 'attendance' ? "🔒 हाजिरी एक्सेस पिन डालें" : "🔒 डिलीट एक्सेस पिन डालें";
     }
 
     function addPin(num) { if(enteredPin.length < 6) { enteredPin += num; document.getElementById('pin-input').value = enteredPin.replace(/./g, '●'); } }
@@ -191,9 +194,13 @@
 
     function showForm(id) { document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none'); if(id !== 'none') document.getElementById(id).style.display = 'block'; }
     function closeModal() { document.getElementById('common-modal').style.display='none'; }
+    
     function filterTable() {
         let input = document.getElementById('search-input').value.toLowerCase();
-        document.querySelectorAll('#table-body tr').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none'; });
+        document.querySelectorAll('#table-body tr').forEach(row => { 
+            // Name aur Mobile dono check karega
+            row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none'; 
+        });
     }
 
     const canvas = document.getElementById('scratch-canvas'); const ctx = canvas.getContext('2d'); let isDrawing = false;
@@ -204,6 +211,7 @@
         document.getElementById('common-modal').style.display='flex'; document.getElementById('scratch-ui').style.display='block'; document.getElementById('qr-ui').style.display='none';
         ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, 260, 260);
     }
+    // Scratch logic same as before
     canvas.addEventListener('mousedown', () => isDrawing = true);
     canvas.addEventListener('touchstart', (e) => { isDrawing = true; e.preventDefault(); });
     window.addEventListener('mousemove', (e) => {
