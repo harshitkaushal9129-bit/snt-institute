@@ -82,14 +82,31 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const fixedFestivals = { "2026": { "01-01": "नव वर्ष", "14-01": "मकर संक्रांति", "26-01": "गणतन्त्र दिवस", "15-02": "महाशिवरात्रि", "04-03": "होली", "15-08": "स्वतन्त्रता दिवस", "02-10": "गाँधी जयन्ती", "20-10": "दशहरा", "08-11": "दिवाली", "25-12": "मेरी क्रिसमस" } };
+    // Corrected Object with Date Keys
+    const fixedFestivals = {
+      "2026": {
+        "01-01": "New Year's Day", "03-01": "Savitribai Phule Jayanti", "04-01": "World Braille Day",
+        "10-01": "World Hindi Day", "12-01": "National Youth Day", "13-01": "Lohri",
+        "14-01": "Makar Sankranti / Pongal", "15-01": "Indian Army Day", "23-01": "Netaji Jayanti / Basant Panchami",
+        "25-01": "National Voters Day", "26-01": "Republic Day", "30-01": "Martyrs' Day",
+        "01-02": "Guru Ravidas Jayanti", "15-02": "Maha Shivaratri", "19-02": "Shivaji Jayanti",
+        "04-03": "Holi (Dhulandi)", "20-03": "Eid-ul-Fitr (Tentative)", "26-03": "Ram Navami",
+        "31-03": "Mahavir Jayanti", "03-04": "Good Friday", "14-04": "Ambedkar Jayanti",
+        "01-05": "Labour Day / Buddha Purnima", "27-05": "Eid-ul-Adha (Bakrid)", "15-08": "Independence Day",
+        "28-08": "Raksha Bandhan", "04-09": "Janmashtami", "14-09": "Ganesh Chaturthi / Hindi Diwas",
+        "02-10": "Gandhi Jayanti", "20-10": "Dussehra", "08-11": "Diwali", "15-11": "Chhath Puja",
+        "24-11": "Guru Nanak Jayanti", "25-12": "Merry Christmas"
+      }
+    };
 
     let dailyRecords = {}, holidayMode = false;
     const d = new Date(), dayS = document.getElementById('day'), monS = document.getElementById('month'), yerS = document.getElementById('year');
     
-    for(let i=1; i<=31; i++) dayS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
+    // Populate Dropdowns
     for(let i=2025; i<=2030; i++) yerS.innerHTML += `<option value="${i}">${i}</option>`;
+    for(let i=1; i<=31; i++) dayS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
     
+    // Set Current Date
     dayS.value = String(d.getDate()).padStart(2,'0');
     monS.value = String(d.getMonth()+1).padStart(2,'0');
     yerS.value = d.getFullYear();
@@ -99,20 +116,20 @@
         const festivalKey = `${dayS.value}-${monS.value}`;
         const year = yerS.value;
 
-        // 1. Check for Fixed Festivals
+        // 1. Check Fixed Festivals
         if(fixedFestivals[year] && fixedFestivals[year][festivalKey]) {
             showHolidayUI(fixedFestivals[year][festivalKey], "पंचांग अवकाश");
             return;
         }
 
-        // 2. Check if it's Sunday
+        // 2. Check Sunday
         const selectedDate = new Date(`${year}-${monS.value}-${dayS.value}`);
         if(selectedDate.getDay() === 0) {
             showHolidayUI("साप्ताहिक अवकाश (Sunday)", "रविवार");
             return;
         }
 
-        // 3. Check Cloud Database
+        // 3. Check Firebase
         db.ref('attendance/' + dateKey).once('value', snap => {
             const data = snap.val();
             if(data && data.type === 'HOLIDAY') {
@@ -146,7 +163,7 @@
             dailyRecords = (existingData && existingData.details) ? existingData.details : {};
             
             if(!snap.exists()) {
-                list.innerHTML = "<p style='text-align:center; color:gray;'>छात्रों का डेटा लोड हो रहा है...</p>";
+                list.innerHTML = "<p style='text-align:center; color:gray;'>छात्रों का डेटा लोड करें...</p>";
                 return;
             }
 
@@ -182,7 +199,7 @@
             { type: 'ATTENDANCE', details: dailyRecords };
         
         db.ref('attendance/' + dateKey).set(data).then(() => {
-            alert("डेटा सफलतापूर्वक सुरक्षित किया गया! ✅");
+            alert("डेटा सुरक्षित किया गया! ✅");
         }).catch(err => alert("Error: " + err.message));
     }
 
