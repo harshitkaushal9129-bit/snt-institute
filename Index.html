@@ -3,15 +3,11 @@
 <head>
     <link rel="icon" type="image/jpeg" href="SNT.jpg">
     <meta charset="UTF-8">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-<meta property="og:title" content="Official Verification System">
-
-    <title>SNT Computer Institute - Admission Form for registration</title>
+    <title>SNT Computer Institute - Complete Admission Form</title>
     <style>
         :root { --primary: #2563eb; --primary-dark: #1e40af; --bg: #f0f4f8; --text: #1e293b; --card: #ffffff; }
-        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; user-select: none; } /* user-select: none adds basic copy protection */
         #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10000; transition: opacity 0.8s ease; }
         .splash-content { text-align: center; animation: pulse 2s infinite; }
         .splash-content img { width: 150px; border-radius: 50%; }
@@ -40,8 +36,7 @@
         @media (max-width: 850px) { .row { grid-template-columns: 1fr; } .grid-container { grid-template-columns: repeat(2, 1fr); } header img { width: 280px; } }
     </style>
 </head>
-<body>
-    <div id="splash-screen">
+<body oncontextmenu="return false;"> <div id="splash-screen">
         <div class="splash-content"><img src="SNT.jpg" alt="Logo"><h1 style="color: var(--primary); font-size: 28px; margin-top: 20px;">SNT Computer Institute</h1></div>
     </div>
     <div class="container" id="main-app-content">
@@ -117,6 +112,21 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.onkeydown = function(e) {
+            if(event.keyCode == 123) { return false; }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; }
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; }
+        };
+        // Disable Developer Tools loop
+        setInterval(function() {
+            debugger;
+        }, 100);
+    </script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
@@ -129,6 +139,7 @@
         const paymentOverlay = document.getElementById('payment-overlay');
         const UPI_ID = "9580807075@ybl"; 
         const MERCHANT_NAME = "Sandip kumar";
+
         window.onload = function() {
             setTimeout(function() {
                 const splash = document.getElementById('splash-screen');
@@ -143,6 +154,7 @@
             for(let i=currY; i>=1990; i--) { let opt = document.createElement('option'); opt.value = i; opt.innerHTML = i; yearSel.appendChild(opt); }
             document.getElementById('current-date').valueAsDate = new Date();
         };
+
         btnNext.addEventListener('click', () => {
             const nameVal = document.getElementById('name').value.trim();
             const phoneVal = document.getElementById('phone').value.trim();
@@ -153,6 +165,7 @@
             try { new QRCode(qrContainer, { text: upiString, width: 180, height: 180, colorDark : "#000000", colorLight : "#ffffff", }); } catch (err) { qrContainer.innerHTML = "<p style='color:red'>QR Error</p>"; }
             paymentOverlay.style.display = 'block';
         });
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const formData = new FormData(form);
@@ -165,16 +178,13 @@
                 document.querySelectorAll('input[name="batch"]:checked').forEach(b => selectedBatches.push(b.value));
                 const fullDOB = `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${document.getElementById('dob-year').value}`;
                 
-                // 1. Generate Firebase Push Reference first to get a unique key
                 const studentsRef = ref(database, 'students');
                 const newStudentRef = push(studentsRef);
                 const fbKey = newStudentRef.key;
-
-                // 2. Generate a readable Student ID (Last 5 chars of Firebase key)
                 const customId = "SNT-" + fbKey.substring(fbKey.length - 5).toUpperCase();
 
                 const data = {
-                    studentId: customId, // Nayi ID yahan add ho gayi
+                    studentId: customId,
                     name: formData.get('name').toUpperCase(),
                     mobile: formData.get('phone'), 
                     email: formData.get('email'),
@@ -193,7 +203,6 @@
                     paymentHistory: [] 
                 };
 
-                // 3. Save with the generated ID
                 set(newStudentRef, data).then(() => {
                     localStorage.setItem('lastReceipt', JSON.stringify({ name: data.name, photo: data.profilePicture || 'https://via.placeholder.com/100', course: selectedCourses[0] || "N/A", type: "Admission Registration", amount: 100, date: new Date().toLocaleString() }));
                     alert("सफल! आपकी Student ID है: " + customId + "\nपेमेंट वेरिफिकेशन के बाद फीस अपडेट होगी।");
