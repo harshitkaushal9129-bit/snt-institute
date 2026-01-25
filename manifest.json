@@ -1,16 +1,16 @@
 {
-  "short_name": "SNT Institute",
-  "name": "SNT Computer Institute Rudauli",
+  "short_name": "SNT",
+  "name": "SNT Computer Institute",
   "description": "Complete Admission Form for SNT Computer Institute",
   "icons": [
     {
-      "src": "SNT.jpg",
+      "src": "https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg",
       "sizes": "192x192",
       "type": "image/jpeg",
       "purpose": "any maskable"
     },
     {
-      "src": "SNT.jpg",
+      "src": "https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any"
