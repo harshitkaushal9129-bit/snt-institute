@@ -10,7 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
     :root { --primary: #e65100; --secondary: #1a73e8; --success: #2e7d32; --danger: #d32f2f; --bg: #fffbf5; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; user-select: none; }
     header { background: var(--primary); color: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(230, 81, 0, 0.2); }
     header h1 { font-size: 20px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
     .search-container { margin: 15px 0; }
@@ -43,9 +43,12 @@
     .att-count { background: #333; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; }
   </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
+
   <header><h1>SNT Computer Institute</h1><button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="exportFullData()">📥</button></header>
+  
   <div class="search-container"><input type="text" id="search-input" placeholder="नाम या मोबाइल नंबर से खोजें..." onkeyup="filterTable()"></div>
+  
   <div class="outer-wrapper">
     <div class="table-scroll">
         <table id="data-table">
@@ -100,9 +103,39 @@
   </div>
 
   <script>
+    // --- सुरक्षा और कीबोर्ड ब्लॉक स्क्रिप्ट ---
+    document.addEventListener('keydown', function(e) {
+        // F1 (112) से F12 (123) ब्लॉक करें
+        if (e.keyCode >= 112 && e.keyCode <= 123) {
+            e.preventDefault();
+            return false;
+        }
+        // Ctrl+Shift+I (73), J (74), C (67) और Ctrl+U (85) ब्लॉक करें
+        if (e.ctrlKey && (e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67) || e.keyCode === 85)) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // फुल स्क्रीन मोड फंक्शन
+    function launchFullScreen() {
+        const doc = document.documentElement;
+        try {
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+            else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
+        } catch (err) { console.log("FullScreen Error"); }
+    }
+    document.addEventListener('click', launchFullScreen, { once: true });
+
+    // Developer Tool ब्लॉक करने के लिए Debugger लूप
+    setInterval(function() { debugger; }, 1000);
+
+    // --- Firebase और डैशबोर्ड लॉजिक ---
     const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute", storageBucket: "snt-computer-institute.firebasestorage.app", messagingSenderId: "117580784781", appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    
     let usersData = [];
     let currentId = null; 
     let enteredPin = "";
@@ -121,18 +154,17 @@
                     let u = data[key]; 
                     u.id = key; 
                     usersData.push(u);
-                    
                     let pHist = (u.paymentHistory || []).map(p => `<span class="fee-badge">${p.month}: ₹${p.amount}</span>`).join('');
                     let eHist = (u.extraHistory || []).map(e => `<span class="fee-badge extra-badge">${e.reason}: ₹${e.amount}</span>`).join('');
                     let statusColor = u.registrationStatus === "Pending" ? "color:red" : "color:gray";
-                    
                     tbody.innerHTML += `<tr>
                       <td><input type="checkbox" class="st-check" data-id="${key}"></td>
                       <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td> 
                       <td><img src="${u.profilePicture || 'https://via.placeholder.com/50'}" class="profile-img"></td>
                       <td style="text-align:left;"><b>${u.name}</b><br><small style="${statusColor}">${u.registrationStatus || 'Paid'}</small></td>
                       <td><span class="fee-badge extra-badge">${u.courses ? u.courses[0] : (u.course || 'N/A')}</span></td>
-                      <td style="font-weight:500;">${u.mobile || u.phone || '-'}</td> <td onclick="location.href='calendar.html?id=${key}&name=${u.name}'"><div class="att-count">Check Status</div></td>
+                      <td style="font-weight:500;">${u.mobile || u.phone || '-'}</td> 
+                      <td onclick="location.href='calendar.html?id=${key}&name=${u.name}'"><div class="att-count">Check Status</div></td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
                       <td style="color:var(--success); font-weight:bold;">₹${u.wonCash || 0}</td>
                       <td><button class="btn" onclick="window.location.href='basic.html?search=${u.name}'">🖨️</button></td>
@@ -143,14 +175,20 @@
     }
 
     function openPinGate(target) {
-        if(target === 'delete') { let chks = document.querySelectorAll('.st-check:checked'); if(chks.length == 0) return alert("विद्यार्थी चुनें!"); }
-        pinTarget = target; enteredPin = ""; document.getElementById('pin-input').value = ""; document.getElementById('password-modal').style.display = 'flex';
+        if(target === 'delete') { 
+          let chks = document.querySelectorAll('.st-check:checked'); 
+          if(chks.length == 0) return alert("विद्यार्थी चुनें!"); 
+        }
+        pinTarget = target; enteredPin = ""; 
+        document.getElementById('pin-input').value = ""; 
+        document.getElementById('password-modal').style.display = 'flex';
         document.getElementById('pin-msg').innerText = target === 'attendance' ? "🔒 हाजिरी एक्सेस पिन डालें" : "🔒 डिलीट एक्सेस पिन डालें";
     }
 
     function addPin(num) { if(enteredPin.length < 6) { enteredPin += num; document.getElementById('pin-input').value = enteredPin.replace(/./g, '●'); } }
     function clearPin() { enteredPin = ""; document.getElementById('pin-input').value = ""; }
     function closePinModal() { document.getElementById('password-modal').style.display = 'none'; }
+    
     function verifyPin() {
         if(enteredPin === MASTER_PIN) {
             if(pinTarget === 'attendance') { location.href = 'attendence.html'; } else if(pinTarget === 'delete') { deleteRows(); }
@@ -171,7 +209,9 @@
         let amt = (type === 'fee') ? document.getElementById('p-amount').value : document.getElementById('e-amount').value;
         let label = (type === 'fee') ? document.getElementById('p-month').value : (document.getElementById('e-reason').value || "Charge");
         if(!amt) return alert("राशि भरें!");
-        document.getElementById('common-modal').style.display='flex'; document.getElementById('qr-ui').style.display='block'; document.getElementById('scratch-ui').style.display='none';
+        document.getElementById('common-modal').style.display='flex'; 
+        document.getElementById('qr-ui').style.display='block'; 
+        document.getElementById('scratch-ui').style.display='none';
         document.getElementById('qrcode-container').innerHTML = "";
         new QRCode(document.getElementById('qrcode-container'), { text: `upi://pay?pa=9580807075@ybl&pn=Sandeep%20Kumar&am=${amt}&cu=INR`, width:180, height:180 });
         document.getElementById('qr-title').innerText = usersData.find(u => u.id === currentId).name;
@@ -192,7 +232,11 @@
         db.ref('students/' + currentId).update(student).then(() => { closeModal(); window.open('receipt.html', '_blank'); });
     }
 
-    function showForm(id) { document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none'); if(id !== 'none') document.getElementById(id).style.display = 'block'; }
+    function showForm(id) { 
+        document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none'); 
+        if(id !== 'none') document.getElementById(id).style.display = 'block'; 
+    }
+    
     function closeModal() { document.getElementById('common-modal').style.display='none'; }
     
     function filterTable() {
@@ -202,7 +246,7 @@
         });
     }
 
-    // --- SCRATCH COUPON LOGIC ---
+    // --- स्क्रैच कूपन लॉजिक ---
     const canvas = document.getElementById('scratch-canvas'); 
     const ctx = canvas.getContext('2d'); 
     let isDrawing = false;
@@ -211,19 +255,15 @@
         const sel = document.querySelector('.st-check:checked'); 
         if(!sel) return alert("विद्यार्थी चुनें!");
         currentId = sel.dataset.id; 
-        
         lastWinAmount = Math.floor(Math.random() * 20) + 1;
         document.getElementById('win-txt').innerText = `₹${lastWinAmount}`;
-        
         document.getElementById('common-modal').style.display='flex'; 
         document.getElementById('scratch-ui').style.display='block'; 
         document.getElementById('qr-ui').style.display='none';
         
-        // Reset Canvas
         ctx.globalCompositeOperation = 'source-over'; 
         ctx.fillStyle = '#C0C0C0'; 
         ctx.fillRect(0, 0, 260, 260);
-        // Add some pattern/text to the scratch layer
         ctx.fillStyle = "#888";
         ctx.font = "20px Arial";
         ctx.fillText("SCRATCH HERE", 50, 135);
@@ -234,7 +274,6 @@
         const rect = canvas.getBoundingClientRect();
         const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-        
         ctx.globalCompositeOperation = 'destination-out'; 
         ctx.lineWidth = 40; 
         ctx.lineCap = 'round'; 
