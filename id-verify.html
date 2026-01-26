@@ -1,62 +1,134 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNT Institute - Student Verification</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <style>
-        :root { --success: #2e7d32; --danger: #d32f2f; --primary: #e65100; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        
-        .verify-container { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid var(--primary); }
-        
-        .status-icon { font-size: 60px; margin-bottom: 10px; }
-        .status-text { font-size: 22px; font-weight: bold; margin-bottom: 20px; }
-        .verified { color: var(--success); }
-        .not-verified { color: var(--danger); }
+  <link rel="icon" type="image/jpeg" href="SNT.jpg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNT - Student Verification</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+    
+    :root { 
+      --snt-dark: #000428; 
+      --snt-gradient: linear-gradient(135deg, #000428, #004e92);
+      --success: #2e7d32;
+    }
 
-        .student-img { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #eee; object-fit: cover; margin-bottom: 15px; }
-        
-        .data-table { width: 100%; text-align: left; border-collapse: collapse; margin-top: 10px; }
-        .data-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
-        .label { color: #666; font-weight: bold; width: 40%; }
-        .value { color: #333; font-weight: 600; }
+    body { font-family: 'Poppins', sans-serif; background: #d1d9e6; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; min-height: 100vh; }
 
-        .footer-logo { margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; }
-        .footer-logo img { height: 40px; }
-        
-        #loading { font-size: 18px; color: #666; }
-    </style>
+    .verify-container {
+      width: 100%;
+      max-width: 350px;
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      margin-top: 20px;
+      display: none; /* Data aane par show hoga */
+    }
+
+    /* Top Status Bar */
+    .status-header {
+      background: var(--success);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      font-size: 14px;
+    }
+
+    /* Institute Header */
+    .inst-header {
+      background: var(--snt-gradient);
+      padding: 20px;
+      text-align: center;
+    }
+    .inst-header img { width: 180px; }
+
+    /* Profile Section */
+    .profile-box {
+      text-align: center;
+      margin-top: -50px;
+    }
+    .student-img {
+      width: 120px;
+      height: 140px;
+      border: 5px solid #fff;
+      border-radius: 15px;
+      object-fit: cover;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      background: white;
+    }
+
+    .name-title { margin-top: 10px; padding: 0 15px; }
+    .name-title h2 { margin: 0; color: var(--snt-dark); font-size: 20px; text-transform: uppercase; }
+    .verify-badge { color: var(--success); font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; }
+
+    /* Info Table */
+    .info-list { padding: 20px; }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; }
+    .value { font-size: 13px; color: #111; font-weight: 700; text-align: right; max-width: 60%; }
+
+    /* Footer */
+    .verify-footer {
+      background: #f8f9fa;
+      padding: 15px;
+      text-align: center;
+      border-top: 1px solid #eee;
+    }
+    .verify-footer p { font-size: 10px; color: #777; margin: 0; }
+
+    /* Loading Spinner */
+    #loader { margin-top: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--snt-dark); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
 
-<div class="verify-container" id="verify-box">
-    <div id="loading">Verifying Student Data... Please wait.</div>
+  <div id="loader"></div>
+
+  <div class="verify-container" id="main-content">
+    <div class="status-header">OFFICIAL VERIFIED STUDENT ✅</div>
     
-    <div id="content" style="display: none;">
-        <div id="status-icon" class="status-icon">✅</div>
-        <div id="status-msg" class="status-text verified">Verified Student</div>
-        
-        <img id="st-img" src="" class="student-img">
-        
-        <table class="data-table">
-            <tr><td class="label">Name:</td><td class="value" id="st-name">-</td></tr>
-            <tr><td class="label">Student ID:</td><td class="value" id="st-id">-</td></tr>
-            <tr><td class="label">Course:</td><td class="value" id="st-course">-</td></tr>
-            <tr><td class="label">Valid Upto:</td><td class="value">Dec 2026</td></tr>
-        </table>
-
-        <div class="footer-logo">
-            <img src="Logo (1).jpg" alt="SNT Logo" onerror="this.style.display='none'">
-            <p style="font-size: 12px; color: #999;">SNT Computer Institute Official Record</p>
-        </div>
+    <div class="inst-header">
+      <img src="Logo (1).jpg" alt="SNT Logo">
     </div>
-</div>
 
-<script>
-    // Firebase Config (Same as your Admin Dashboard)
+    <div class="profile-box">
+      <img id="v-photo" src="" class="student-img">
+      <div class="name-title">
+        <h2 id="v-name">STUDENT NAME</h2>
+        <div class="verify-badge">
+          <span>Verified by SNT System</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-list">
+      <div class="info-row"><span class="label">Roll Number</span><span class="value" id="v-id">-</span></div>
+      <div class="info-row"><span class="label">Course</span><span class="value" id="v-course">-</span></div>
+      <div class="info-row"><span class="label">Father's Name</span><span class="value" id="v-father">-</span></div>
+      <div class="info-row"><span class="label">Date of Birth</span><span class="value" id="v-dob">-</span></div>
+      <div class="info-row"><span class="label">Mobile</span><span class="value" id="v-mobile">-</span></div>
+      <div class="info-row" style="border:none;"><span class="label">Address</span><span class="value" id="v-address">-</span></div>
+    </div>
+
+    <div class="verify-footer">
+      <p>© SNT COMPUTER INSTITUTE, KHALILABAD</p>
+      <p style="margin-top:5px; font-weight:bold; color:var(--snt-dark)">Digital Record ID: <span id="v-record-id"></span></p>
+    </div>
+  </div>
+
+  <script>
     const firebaseConfig = { 
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
         authDomain: "snt-computer-institute.firebaseapp.com", 
@@ -67,46 +139,39 @@
         appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    // URL se Student ID nikalna (?id=SNT-101)
+    // Get Student ID from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const studentID = urlParams.get('id');
+    const studentId = urlParams.get('id');
 
-    if (studentID) {
-        db.ref('students').orderByChild('studentId').equalTo(studentID).once('value', (snapshot) => {
-            document.getElementById('loading').style.display = 'none';
-            
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const student = data[Object.keys(data)[0]];
+    if(studentId) {
+      firebase.database().ref('students').orderByChild('studentId').equalTo(studentId).once('value', snap => {
+        if(snap.exists()){
+          const u = Object.values(snap.val())[0];
+          
+          // Smart Course Logic
+          let studentCourse = u.course || (u.courses ? (Array.isArray(u.courses) ? u.courses[0] : u.courses) : "N/A");
 
-                // UI Update karein
-                document.getElementById('st-name').innerText = student.name;
-                document.getElementById('st-id').innerText = student.studentId;
-                document.getElementById('st-course').innerText = student.courses ? student.courses[0] : (student.course || 'N/A');
-                document.getElementById('st-img').src = student.profilePicture || 'https://via.placeholder.com/120';
-                
-                document.getElementById('content').style.display = 'block';
-            } else {
-                // Agar ID nahi mili
-                showError("Invalid/Not Found");
-            }
-        });
+          document.getElementById('v-name').innerText = u.name;
+          document.getElementById('v-id').innerText = u.studentId;
+          document.getElementById('v-course').innerText = studentCourse;
+          document.getElementById('v-father').innerText = u.fatherName || '-';
+          document.getElementById('v-dob').innerText = u.dob || '-';
+          document.getElementById('v-mobile').innerText = u.mobile || u.phone || '-';
+          document.getElementById('v-address').innerText = u.address || 'Sant Kabir Nagar, UP';
+          document.getElementById('v-photo').src = u.profilePicture || 'https://via.placeholder.com/120x140';
+          document.getElementById('v-record-id').innerText = studentId.replace('-', '') + 'X99';
+
+          // Show Content
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('main-content').style.display = 'block';
+        } else {
+          document.body.innerHTML = "<h2 style='margin-top:100px; color:red;'>Invalid QR Code / Student Not Found!</h2>";
+        }
+      });
     } else {
-        showError("Invalid Access");
+      document.body.innerHTML = "<h2 style='margin-top:100px;'>Please Scan a Valid ID Card QR.</h2>";
     }
-
-    function showError(msg) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
-        document.getElementById('status-icon').innerText = "❌";
-        document.getElementById('status-msg').innerText = msg;
-        document.getElementById('status-msg').className = "status-text not-verified";
-        document.getElementById('st-img').style.display = 'none';
-        document.querySelector('.data-table').style.display = 'none';
-    }
-</script>
-
+  </script>
 </body>
 </html>
