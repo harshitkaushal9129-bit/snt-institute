@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT Institute - Student Verification</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --success: #2e7d32; --danger: #d32f2f; --primary: #e65100; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        .verify-container { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid var(--primary); }
+        
+        .status-icon { font-size: 60px; margin-bottom: 10px; }
+        .status-text { font-size: 22px; font-weight: bold; margin-bottom: 20px; }
+        .verified { color: var(--success); }
+        .not-verified { color: var(--danger); }
+
+        .student-img { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #eee; object-fit: cover; margin-bottom: 15px; }
+        
+        .data-table { width: 100%; text-align: left; border-collapse: collapse; margin-top: 10px; }
+        .data-table td { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
+        .label { color: #666; font-weight: bold; width: 40%; }
+        .value { color: #333; font-weight: 600; }
+
+        .footer-logo { margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; }
+        .footer-logo img { height: 40px; }
+        
+        #loading { font-size: 18px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="verify-container" id="verify-box">
+    <div id="loading">Verifying Student Data... Please wait.</div>
+    
+    <div id="content" style="display: none;">
+        <div id="status-icon" class="status-icon">✅</div>
+        <div id="status-msg" class="status-text verified">Verified Student</div>
+        
+        <img id="st-img" src="" class="student-img">
+        
+        <table class="data-table">
+            <tr><td class="label">Name:</td><td class="value" id="st-name">-</td></tr>
+            <tr><td class="label">Student ID:</td><td class="value" id="st-id">-</td></tr>
+            <tr><td class="label">Course:</td><td class="value" id="st-course">-</td></tr>
+            <tr><td class="label">Valid Upto:</td><td class="value">Dec 2026</td></tr>
+        </table>
+
+        <div class="footer-logo">
+            <img src="Logo (1).jpg" alt="SNT Logo" onerror="this.style.display='none'">
+            <p style="font-size: 12px; color: #999;">SNT Computer Institute Official Record</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Firebase Config (Same as your Admin Dashboard)
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+        authDomain: "snt-computer-institute.firebaseapp.com", 
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+        projectId: "snt-computer-institute", 
+        storageBucket: "snt-computer-institute.firebasestorage.app", 
+        messagingSenderId: "117580784781", 
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // URL se Student ID nikalna (?id=SNT-101)
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentID = urlParams.get('id');
+
+    if (studentID) {
+        db.ref('students').orderByChild('studentId').equalTo(studentID).once('value', (snapshot) => {
+            document.getElementById('loading').style.display = 'none';
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const student = data[Object.keys(data)[0]];
+
+                // UI Update karein
+                document.getElementById('st-name').innerText = student.name;
+                document.getElementById('st-id').innerText = student.studentId;
+                document.getElementById('st-course').innerText = student.courses ? student.courses[0] : (student.course || 'N/A');
+                document.getElementById('st-img').src = student.profilePicture || 'https://via.placeholder.com/120';
+                
+                document.getElementById('content').style.display = 'block';
+            } else {
+                // Agar ID nahi mili
+                showError("Invalid/Not Found");
+            }
+        });
+    } else {
+        showError("Invalid Access");
+    }
+
+    function showError(msg) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        document.getElementById('status-icon').innerText = "❌";
+        document.getElementById('status-msg').innerText = msg;
+        document.getElementById('status-msg').className = "status-text not-verified";
+        document.getElementById('st-img').style.display = 'none';
+        document.querySelector('.data-table').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT - Professional ID Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        :root { --snt-orange: #e65100; --snt-blue: #0d47a1; }
+        body { font-family: 'Roboto', sans-serif; background: #cfd8dc; margin: 0; padding: 20px; }
+
+        /* Search Interface */
+        .no-print { max-width: 500px; margin: 0 auto 30px; background: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { width: 70%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; outline: none; }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: var(--snt-orange); color: white; }
+
+        /* ID Card Container */
+        .id-card-wrapper { display: none; flex-direction: column; align-items: center; gap: 30px; margin-top: 20px; }
+
+        /* Front Side */
+        .id-card-front { width: 340px; height: 520px; background: white; border-radius: 15px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid #bbb; }
+        .header-bg { background: white; height: 90px; display: flex; justify-content: center; align-items: center; border-bottom: 4px solid var(--snt-orange); }
+        .header-bg img { width: 90%; height: 70px; object-fit: contain; }
+        
+        .photo-box { text-align: center; margin-top: 20px; }
+        .student-photo { width: 130px; height: 150px; border: 3px solid var(--snt-orange); border-radius: 10px; object-fit: cover; }
+
+        .name-banner { background: var(--snt-blue); color: white; margin-top: 15px; padding: 8px; text-align: center; font-size: 18px; font-weight: bold; text-transform: uppercase; }
+
+        .details-grid { padding: 15px 25px; font-size: 14px; color: #333; }
+        .row { display: flex; margin-bottom: 8px; border-bottom: 1px inset #eee; padding-bottom: 3px; }
+        .label { width: 40%; font-weight: bold; color: #555; }
+        .value { width: 60%; font-weight: bold; }
+
+        /* QR Code on Front */
+        .qr-area { position: absolute; bottom: 65px; right: 20px; width: 60px; height: 60px; background: white; padding: 5px; border: 1px solid #ddd; }
+
+        .card-footer { position: absolute; bottom: 0; width: 100%; height: 45px; background: var(--snt-orange); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10px; }
+
+        /* Back Side */
+        .id-card-back { width: 340px; height: 520px; background: #f9f9f9; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid #bbb; position: relative; padding: 20px; box-sizing: border-box; }
+        .back-title { color: var(--snt-blue); font-weight: bold; border-bottom: 2px solid var(--snt-orange); padding-bottom: 5px; margin-bottom: 15px; }
+        .terms { font-size: 11px; text-align: left; line-height: 1.6; color: #444; }
+        .sign-area { margin-top: 50px; text-align: right; }
+        .sign-line { border-top: 1px solid #333; display: inline-block; width: 120px; margin-top: 40px; font-size: 12px; font-weight: bold; text-align: center; }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; padding: 0; }
+            .id-card-wrapper { display: flex !important; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+            .id-card-front, .id-card-back { box-shadow: none; border: 1px solid #000; margin: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <img src="Logo (1).jpg" style="height: 50px; margin-bottom: 10px;"><br>
+        <input type="text" id="id-input" placeholder="विद्यार्थी ID दर्ज करें (e.g. SNT-101)">
+        <button class="btn" onclick="searchAndGenerate()">ID कार्ड बनाएँ</button>
+        <br><br>
+        <button class="btn" style="background: #2e7d32; display: none;" id="print-btn" onclick="window.print()">🖨️ प्रिंट करें</button>
+    </div>
+
+    <div class="id-card-wrapper" id="main-content">
+        <div class="id-card-front">
+            <div class="header-bg">
+                <img src="Logo (1).jpg" onerror="this.src='https://via.placeholder.com/300x70?text=SNT+INSTITUTE'">
+            </div>
+            
+            <div class="photo-box">
+                <img id="card-img" src="https://via.placeholder.com/130x150" class="student-photo">
+            </div>
+
+            <div id="card-name" class="name-banner">STUDENT NAME</div>
+
+            <div class="details-grid">
+                <div class="row"><span class="label">Roll No:</span><span class="value" id="card-id">-</span></div>
+                <div class="row"><span class="label">Course:</span><span class="value" id="card-course">-</span></div>
+                <div class="row"><span class="label">Mobile:</span><span class="value" id="card-phone">-</span></div>
+                <div class="row"><span class="label">D.O.B:</span><span class="value">As per Records</span></div>
+            </div>
+
+            <div class="qr-area" id="qrcode"></div>
+
+            <div class="card-footer">
+                <b>SNT COMPUTER INSTITUTE</b>
+                <span>UP East | www.sntinstitute.com</span>
+            </div>
+        </div>
+
+        <div class="id-card-back">
+            <div class="back-title">Instructions / नियम</div>
+            <ul class="terms">
+                <li>This card is non-transferable. / यह कार्ड किसी अन्य को नहीं दिया जा सकता।</li>
+                <li>Students must carry this card daily. / विद्यार्थी को यह कार्ड रोज़ लाना अनिवार्य है।</li>
+                <li>In case of loss, inform the office immediately. / कार्ड खोने पर तुरंत सूचित करें।</li>
+                <li>The card must be returned after course completion. / कोर्स पूरा होने पर कार्ड वापस करना होगा।</li>
+            </ul>
+            
+            <div style="margin-top: 30px; font-size: 11px;">
+                <b>Address:</b> Near Petrol Pump, Main Market,<br>Lucknow, Uttar Pradesh - 226001
+            </div>
+
+            <div class="sign-area">
+                <div class="sign-line">Director's Sign</div>
+            </div>
+
+            <div class="card-footer" style="background: #333;">
+                <span>If found, please return to the above address.</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Config (Keep this same as your admin panel)
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+            authDomain: "snt-computer-institute.firebaseapp.com", 
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+            projectId: "snt-computer-institute", 
+            storageBucket: "snt-computer-institute.firebasestorage.app", 
+            messagingSenderId: "117580784781", 
+            appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function searchAndGenerate() {
+            const val = document.getElementById('id-input').value.trim();
+            if(!val) return alert("ID दर्ज करें!");
+
+            db.ref('students').orderByChild('studentId').equalTo(val).once('value', (snap) => {
+                if (snap.exists()) {
+                    const data = snap.val();
+                    const student = data[Object.keys(data)[0]];
+
+                    // Set Details
+                    document.getElementById('card-name').innerText = student.name;
+                    document.getElementById('card-id').innerText = student.studentId;
+                    document.getElementById('card-course').innerText = student.courses ? student.courses[0] : (student.course || 'DCA');
+                    document.getElementById('card-phone').innerText = student.mobile || student.phone || '-';
+                    document.getElementById('card-img').src = student.profilePicture || 'https://via.placeholder.com/130x150';
+
+                    // Generate QR Code
+                    const qrContainer = document.getElementById('qrcode');
+                    qrContainer.innerHTML = "";
+                    // Verification URL
+                    const verifyURL = `https://your-website.com/id-verify.html?id=${student.studentId}`;
+                    new QRCode(qrContainer, { text: verifyURL, width: 60, height: 60 });
+
+                    // Show Content
+                    document.querySelector('.id-card-wrapper').style.display = 'flex';
+                    document.getElementById('print-btn').style.display = 'inline-block';
+                } else {
+                    alert("विद्यार्थी डेटा नहीं मिला!");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
