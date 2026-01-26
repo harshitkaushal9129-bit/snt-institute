@@ -1,52 +1,61 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-        <link rel="icon" type="image/jpeg" href="SNT.jpg">
-
+    <link rel="icon" type="image/jpeg" href="SNT.jpg">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SNT Cloud Receipt - Digital Verification</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .search-area { background: white; width: 450px; padding: 15px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd; }
-        .search-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        input, select { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
-        .search-btn { background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        :root { --primary: #2563eb; --success: #059669; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         
-        .receipt-card { background: white; width: 450px; padding: 30px; border-top: 10px solid #2563eb; box-shadow: 0 15px 35px rgba(0,0,0,0.15); border-radius: 15px; position: relative; }
-        .header { text-align: center; border-bottom: 2px dashed #ddd; padding-bottom: 15px; margin-bottom: 20px; }
-        .header h2 { margin: 0; color: #2563eb; letter-spacing: 1px; }
+        .search-area { background: white; width: 95%; max-width: 450px; padding: 20px; margin-bottom: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; box-sizing: border-box; }
+        .search-row { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
+        input, select { flex: 1; padding: 14px; border-radius: 10px; border: 1px solid #d1d5db; outline: none; font-size: 15px; transition: border-color 0.3s; }
+        input:focus { border-color: var(--primary); }
+        .search-btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; transition: 0.3s; }
+        .search-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
         
-        .student-box { display: flex; gap: 15px; margin-bottom: 20px; }
+        .receipt-card { background: white; width: 95%; max-width: 450px; padding: 35px; border-top: 12px solid var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.12); border-radius: 20px; position: relative; box-sizing: border-box; }
+        .header { text-align: center; border-bottom: 2px dashed #e2e8f0; padding-bottom: 18px; margin-bottom: 25px; }
+        .header h2 { margin: 0; color: var(--primary); letter-spacing: 1.5px; font-size: 26px; font-weight: 800; }
+        .header p { margin: 5px 0; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        
+        .student-box { display: flex; gap: 20px; margin-bottom: 25px; align-items: center; }
         .details { flex-grow: 1; }
-        .photo-frame { width: 90px; height: 100px; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; }
+        .photo-frame { width: 95px; height: 115px; border: 3px solid #f8fafc; border-radius: 10px; overflow: hidden; background: #f1f5f9; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         #r-photo { width: 100%; height: 100%; object-fit: cover; }
 
-        .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-        .label { color: #666; }
-        .value { font-weight: bold; color: #222; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14.5px; border-bottom: 1px solid #f8fafc; padding-bottom: 5px; }
+        .label { color: #64748b; font-weight: 500; }
+        .value { font-weight: 700; color: #1e293b; text-align: right; }
         
-        .total-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 10px; text-align: center; margin: 15px 0; }
-        .total-box h1 { margin: 0; color: #059669; font-size: 36px; }
+        .total-box { background: #eff6ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; }
+        .total-box p { margin: 0; font-size: 11px; color: #3b82f6; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .total-box h1 { margin: 5px 0 0 0; color: var(--success); font-size: 40px; font-weight: 800; }
         
-        .qr-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-        #qrcode { background: white; padding: 5px; border: 1px solid #eee; }
-        .sign-area { text-align: left; font-size: 12px; color: #444; }
+        .qr-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 25px; }
+        #qrcode { background: white; padding: 8px; border: 1px solid #f1f5f9; border-radius: 8px; }
+        .sign-area { text-align: left; font-size: 12px; color: #475569; }
+        .sign-line { margin-top: 45px; border-top: 1.5px solid #1e293b; width: 140px; }
 
-        .footer-msg { text-align: center; font-size: 10px; color: #999; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
-        .print-btn { background: #2563eb; color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; font-size: 16px; }
+        .footer-msg { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px; line-height: 1.6; }
+        .print-btn { background: #1e293b; color: white; border: none; padding: 16px; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 25px; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .print-btn:hover { background: #0f172a; }
         
-        @media print { .print-btn, .search-area { display: none !important; } body { padding: 0; background: white; } .receipt-card { box-shadow: none; border: 1px solid #eee; width: 100%; } }
+        @media print { .print-btn, .search-area { display: none !important; } body { padding: 0; background: white; } .receipt-card { box-shadow: none; border: 1px solid #eee; width: 100%; max-width: 100%; padding: 20px; } }
     </style>
 </head>
 <body>
 
     <div class="search-area">
         <div class="search-row">
-            <input type="text" id="searchName" placeholder="विद्यार्थी का नाम लिखें...">
+            <input type="text" id="searchID" placeholder="Student ID (जैसे: SNT-XXXXX)">
             <select id="searchMonth">
                 <option value="">सबसे ताज़ा रसीद</option>
                 <option value="Admission Fee">Admission Fee</option>
@@ -56,17 +65,18 @@
                 <option>October</option><option>November</option><option>December</option>
             </select>
         </div>
-        <button class="search-btn" onclick="findReceipt()">क्लाउड से रसीद खोजें और QR बनाएँ 🔍</button>
+        <button class="search-btn" onclick="findReceipt()">क्लाउड से रसीद खोजें 🔍</button>
     </div>
 
     <div class="receipt-card" id="receipt-content">
         <div class="header">
             <h2>SNT COMPUTER INSTITUTE</h2>
-            <p style="margin:5px 0; font-size:13px; color:#555;">E-RECEIPT FOR FEE PAYMENT</p>
+            <p>Official Digital Payment Receipt</p>
         </div>
         
         <div class="student-box">
             <div class="details">
+                <div class="row"><span class="label">Student ID:</span> <span class="value" id="r-id">---</span></div>
                 <div class="row"><span class="label">Date:</span> <span class="value" id="r-date">--/--/----</span></div>
                 <div class="row"><span class="label">Name:</span> <span class="value" id="r-name">---</span></div>
                 <div class="row"><span class="label">Course:</span> <span class="value" id="r-course">---</span></div>
@@ -74,32 +84,31 @@
             <div class="photo-frame"><img id="r-photo" src="https://via.placeholder.com/100"></div>
         </div>
 
-        <div class="row"><span class="label">Description:</span> <span class="value" id="r-desc">---</span></div>
-        <div class="row"><span class="label">Payment Mode:</span> <span class="value" id="r-type">Online/Cash</span></div>
+        <div class="row"><span class="label">Fee Category:</span> <span class="value" id="r-desc">---</span></div>
+        <div class="row"><span class="label">Status:</span> <span class="value" style="color:var(--success)">Paid / Verified</span></div>
         
         <div class="total-box">
-            <p style="margin:0; font-size:12px; color:#64748b;">TOTAL AMOUNT PAID</p>
+            <p>Total Fees Received</p>
             <h1 id="r-amt">₹0</h1>
         </div>
 
         <div class="qr-footer">
             <div class="sign-area">
                 <p>Authorized Signature</p>
-                <div style="margin-top:40px; border-top:1px solid #000; width:130px;"></div>
+                <div class="sign-line"></div>
             </div>
             <div id="qrcode"></div>
         </div>
 
         <div class="footer-msg">
-            <p>यह एक कंप्यूटर जनित रसीद है। इसकी सत्यता की जाँच के लिए QR कोड स्कैन करें।</p>
-            <p>SNT Super Net Technologies | Rudauli, Ayodhya</p>
+            <p>यह एक डिजिटल रूप से हस्ताक्षरित रसीद है। <br>SNT Super Net Technologies | Rudauli, Ayodhya</p>
         </div>
         
-        <button class="print-btn" onclick="window.print()">🖨️ रसीद प्रिंट करें (PDF)</button>
+        <button class="print-btn" onclick="window.print()">🖨️ रसीद डाउनलोड करें (PDF)</button>
     </div>
 
     <script>
-        // Firebase Config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
             authDomain: "snt-computer-institute.firebaseapp.com",
@@ -109,96 +118,90 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // QR Code जनरेटर फंक्शन (क्लोन लिंक के साथ)
-        function generateCloneQR(studentId, receiptIndex) {
+        // QR Code Generator (Verification Link)
+        function generateVerificationQR(studentId, receiptIndex) {
             const qrContainer = document.getElementById("qrcode");
             qrContainer.innerHTML = ""; 
-
-            // आपका GitHub लाइव लिंक यहाँ सेट किया गया है
             const verifyLink = `https://harshitkaushal9129-bit.github.io/snt-institute/v-receipt.html?sid=${studentId}&rid=${receiptIndex}`;
 
             new QRCode(qrContainer, {
                 text: verifyLink,
-                width: 85,
-                height: 85,
-                colorDark: "#000000",
+                width: 90,
+                height: 90,
+                colorDark: "#1e293b",
                 correctLevel: QRCode.CorrectLevel.H
             });
         }
 
+        // Display Data on UI
         function renderData(data, sid, rid) {
+            document.getElementById('r-id').innerText = data.studentId || "---";
             document.getElementById('r-date').innerText = data.date || "N/A";
             document.getElementById('r-name').innerText = data.name;
             document.getElementById('r-course').innerText = data.course;
             document.getElementById('r-desc').innerText = data.description;
-            document.getElementById('r-type').innerText = data.type || "Cash/Online";
             document.getElementById('r-amt').innerText = "₹" + data.amount;
             document.getElementById('r-photo').src = data.photo || 'https://via.placeholder.com/100';
             
-            // QR कोड बनाएँ जिसमें sid और rid (index) हो
-            generateCloneQR(sid, rid);
+            generateVerificationQR(sid, rid);
         }
 
+        // Logic to Find Receipt by Student ID
         function findReceipt() {
-            const sName = document.getElementById('searchName').value.trim().toUpperCase();
+            const sID = document.getElementById('searchID').value.trim().toUpperCase();
             const sMonth = document.getElementById('searchMonth').value;
 
-            if(!sName) return alert("नाम लिखें!");
+            if(!sID) return alert("कृपया Student ID दर्ज करें!");
 
-            db.ref('students').once('value', (snap) => {
+            // Firebase Search using studentId field
+            db.ref('students').orderByChild('studentId').equalTo(sID).once('value', (snap) => {
                 const students = snap.val();
-                if(!students) return alert("डेटाबेस खाली है!");
+                if(!students) return alert("इस ID का कोई रिकॉर्ड नहीं मिला!");
 
-                let studentId = null;
-                let studentData = null;
+                // Get the unique Firebase key
+                const fbKey = Object.keys(students)[0];
+                const studentData = students[fbKey];
 
-                // नाम से छात्र खोजें
-                Object.keys(students).forEach(key => {
-                    if(students[key].name && students[key].name.toUpperCase() === sName) {
-                        studentId = key;
-                        studentData = students[key];
-                    }
-                });
+                // Combine History (Payment + Extra)
+                const pHist = studentData.paymentHistory || [];
+                const eHist = studentData.extraHistory || [];
+                const fullHistory = [...pHist, ...eHist];
 
-                if(studentData) {
-                    const pHist = studentData.paymentHistory || [];
-                    const eHist = studentData.extraHistory || [];
-                    const fullHistory = [...pHist, ...eHist]; // दोनों लिस्ट को मिलाया
+                let record = null;
+                let rIndex = -1;
 
-                    let record = null;
-                    let rIndex = -1;
+                if(sMonth) {
+                    rIndex = fullHistory.findIndex(r => (r.month === sMonth || r.reason === sMonth));
+                    record = fullHistory[rIndex];
+                } else {
+                    rIndex = fullHistory.length - 1;
+                    record = fullHistory[rIndex];
+                }
 
-                    if(sMonth) {
-                        // महीने या कारण के हिसाब से रसीद खोजें
-                        rIndex = fullHistory.findIndex(r => (r.month === sMonth || r.reason === sMonth));
-                        record = fullHistory[rIndex];
-                    } else {
-                        // सबसे आख़िरी रसीद
-                        rIndex = fullHistory.length - 1;
-                        record = fullHistory[rIndex];
-                    }
-
-                    if(record) {
-                        renderData({
-                            name: studentData.name,
-                            photo: studentData.profilePicture,
-                            course: studentData.courses ? studentData.courses[0] : (studentData.course || "N/A"),
-                            description: record.month || record.reason,
-                            amount: record.amount,
-                            date: record.date,
-                            type: record.month ? "Monthly Fee" : "Extra Charges"
-                        }, studentId, rIndex);
-                    } else { alert("इस महीने की रसीद नहीं मिली!"); }
-                } else { alert("विद्यार्थी नहीं मिला!"); }
+                if(record) {
+                    renderData({
+                        studentId: studentData.studentId,
+                        name: studentData.name,
+                        photo: studentData.profilePicture,
+                        course: studentData.courses ? studentData.courses[0] : (studentData.course || "N/A"),
+                        description: record.month || record.reason,
+                        amount: record.amount,
+                        date: record.date
+                    }, fbKey, rIndex);
+                } else { 
+                    alert("चयनित माह/कैटेगरी की रसीद उपलब्ध नहीं है!"); 
+                }
             });
         }
 
-        // Admission Form से आने पर
+        // Auto-load if coming from admission form
         window.onload = function() {
             const lastData = JSON.parse(localStorage.getItem('lastReceipt'));
-            if(lastData) {
-                document.getElementById('searchName').value = lastData.name;
+            if(lastData && lastData.id) {
+                document.getElementById('searchID').value = lastData.id;
                 findReceipt();
+                // Clear storage to avoid repeat auto-load
+                localStorage.removeItem('lastReceipt');
             }
         };
     </script>
