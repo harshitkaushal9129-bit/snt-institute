@@ -4,7 +4,7 @@
   <link rel="icon" type="image/jpeg" href="SNT.jpg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SNT Standard PVC ID Card</title>
+  <title>SNT Professional ID Card</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -27,61 +27,57 @@
     .btn-gen { background: var(--snt-gold); }
     .btn-switch { background: var(--snt-dark); }
 
-    /* --- ID CARD BASE (Standard PVC: 54mm x 86mm) --- */
+    /* --- ID CARD BASE --- */
     .id-card-front { 
-      width: 325px; /* ~8.6cm */
-      height: 515px; /* ~13.6cm - Standard Portrait Lanyard */
+      width: 325px; height: 515px; 
       background: #fff; border-radius: 15px; 
       position: relative; overflow: hidden; 
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid #bbb;
       display: none; transition: 0.3s;
     }
 
-    /* Header */
     .header-box { height: 110px; background: var(--snt-gradient); display: flex; justify-content: center; padding-top: 10px; clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%); }
     .header-box img { width: 160px; height: auto; object-fit: contain; }
 
-    /* Photo */
     .photo-wrap { margin-top: -45px; display: flex; justify-content: center; position: relative; z-index: 5; }
     .student-photo { width: 105px; height: 125px; border: 3px solid #fff; border-radius: 10px; object-fit: cover; box-shadow: 0 5px 12px rgba(0,0,0,0.2); background: white; }
 
-    /* Name & Course */
     .name-card { text-align: center; margin-top: 8px; padding: 0 10px; }
     .name-card h2 { margin: 0; color: var(--snt-dark); font-size: 17px; font-weight: 800; text-transform: uppercase; line-height: 1.1; }
-    .course-tag { 
-      display: inline-block; background: #ffefdb; color: #e65100; 
-      padding: 2px 10px; border-radius: 12px; font-size: 10px; 
-      font-weight: 700; margin-top: 4px; border: 1px solid #ffcc80;
-      max-width: 90%; word-wrap: break-word; 
-    }
+    .course-tag { display: inline-block; background: #ffefdb; color: #e65100; padding: 2px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; margin-top: 4px; border: 1px solid #ffcc80; max-width: 90%; word-wrap: break-word; }
 
-    /* Details Section */
     .info-container { padding: 8px 20px; }
     .info-item { display: flex; margin-bottom: 5px; border-bottom: 1px solid #f2f2f2; padding-bottom: 2px; align-items: flex-start; }
     .info-label { font-size: 9px; color: #777; width: 35%; font-weight: 600; text-transform: uppercase; }
     .info-val { font-size: 11px; color: #111; width: 65%; font-weight: 700; text-align: right; line-height: 1.2; word-wrap: break-word; }
 
-    /* Footer Elements */
+    /* Footer / QR Section - Size Optimized */
     .footer-action { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; position: absolute; bottom: 55px; width: 285px; }
-    .qr-holder { background: white; padding: 2px; border: 1px solid #eee; border-radius: 4px; }
-    .sign-box { text-align: center; font-size: 8px; color: #555; width: 90px; }
+    
+    /* QR Holder with white space for better scanning */
+    .qr-holder { 
+      background: white; 
+      padding: 5px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .sign-box { text-align: center; font-size: 8px; color: #555; width: 100px; }
     .sign-box div { border-bottom: 1px solid #333; height: 25px; margin-bottom: 3px; }
 
     .bottom-identity { position: absolute; bottom: 0; width: 100%; height: 40px; background: var(--snt-dark); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .bottom-identity b { font-size: 10px; letter-spacing: 0.5px; }
 
-    /* --- LANDSCAPE ADJUSTMENTS (Standard Wallet Size) --- */
-    .id-card-front.landscape { 
-        width: 515px !important; 
-        height: 325px !important; 
-    }
+    /* Landscape mode adjustments */
+    .id-card-front.landscape { width: 515px !important; height: 325px !important; }
     .landscape .header-box { height: 60px; clip-path: none; }
     .landscape .photo-wrap { position: absolute; top: 75px; left: 20px; margin: 0; }
-    .landscape .student-photo { width: 100px; height: 120px; }
     .landscape .name-card { position: absolute; top: 70px; left: 140px; text-align: left; padding: 0; width: 350px; }
     .landscape .info-container { position: absolute; top: 120px; left: 140px; width: 350px; padding: 0; }
     .landscape .footer-action { position: absolute; bottom: 50px; right: 20px; left: auto; width: auto; gap: 25px; }
-    .landscape .bottom-identity { height: 35px; }
 
     @media print {
       .no-print { display: none; }
@@ -154,15 +150,7 @@
         if(snap.exists()){
           const u = Object.values(snap.val())[0];
 
-          // Smart Course Check (Supporting multiple database fields)
-          let studentCourse = "N/A";
-          if (u.course) {
-              studentCourse = u.course;
-          } else if (u.courses) {
-              studentCourse = Array.isArray(u.courses) ? u.courses[0] : u.courses;
-          } else if (u.courseName) {
-              studentCourse = u.courseName;
-          }
+          let studentCourse = u.course || (u.courses ? (Array.isArray(u.courses) ? u.courses[0] : u.courses) : "N/A");
 
           document.getElementById('d-name').innerText = u.name || 'N/A';
           document.getElementById('d-id').innerText = u.studentId || '-';
@@ -174,8 +162,17 @@
           document.getElementById('d-photo').src = u.profilePicture || 'https://via.placeholder.com/105x125';
           
           const vLink = `https://harshitkaushal9129-bit.github.io/snt-institute/id-verify.html?id=${u.studentId}`;
+          
+          // QR CODE GENERATION FIXED
           document.getElementById('qrcode').innerHTML = "";
-          new QRCode(document.getElementById('qrcode'), { text: vLink, width: 45, height: 45 });
+          new QRCode(document.getElementById('qrcode'), { 
+            text: vLink, 
+            width: 75, // Increased size
+            height: 75, 
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H // High correction level for better scanning
+          });
 
           document.getElementById('id-card').style.display = 'block';
         } else { alert("Student Data Not Found!"); }
