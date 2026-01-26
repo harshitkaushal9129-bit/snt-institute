@@ -142,89 +142,184 @@
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
-        const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute", storageBucket: "snt-computer-institute.firebasestorage.app", messagingSenderId: "117580784781", appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" };
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const form = document.getElementById('admission-form');
-        const btnNext = document.getElementById('btn-next');
-        const paymentOverlay = document.getElementById('payment-overlay');
-        const UPI_ID = "9580807075@ybl"; 
-        const MERCHANT_NAME = "Sandip kumar";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
-        window.onload = function() {
-            setTimeout(function() {
-                const splash = document.getElementById('splash-screen');
-                const main = document.getElementById('main-app-content');
-                splash.style.opacity = '0';
-                setTimeout(() => { splash.style.display = 'none'; main.style.visibility = 'visible'; }, 800);
-            }, 2500);
-            const daySel = document.getElementById('dob-day');
-            for(let i=1; i<=31; i++) { let opt = document.createElement('option'); opt.value = i; opt.innerHTML = i; daySel.appendChild(opt); }
-            const yearSel = document.getElementById('dob-year');
+    // Firebase Configuration
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+        authDomain: "snt-computer-institute.firebaseapp.com", 
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+        projectId: "snt-computer-institute", 
+        storageBucket: "snt-computer-institute.firebasestorage.app", 
+        messagingSenderId: "117580784781", 
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    
+    // UI Elements
+    const form = document.getElementById('admission-form');
+    const btnNext = document.getElementById('btn-next');
+    const paymentOverlay = document.getElementById('payment-overlay');
+    const UPI_ID = "9580807075@ybl"; 
+    const MERCHANT_NAME = "Sandip kumar";
+
+    // --- 1. Window Load: Dropdowns & Splash ---
+    window.addEventListener('load', () => {
+        // Splash Screen
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            const main = document.getElementById('main-app-content');
+            if(splash) splash.style.opacity = '0';
+            setTimeout(() => { 
+                if(splash) splash.style.display = 'none'; 
+                if(main) main.style.visibility = 'visible'; 
+            }, 800);
+        }, 2500);
+
+        // Fill DOB Day
+        const daySel = document.getElementById('dob-day');
+        if(daySel) {
+            for(let i=1; i<=31; i++) { 
+                let opt = document.createElement('option'); 
+                opt.value = i; opt.innerHTML = i; 
+                daySel.appendChild(opt); 
+            }
+        }
+
+        // Fill DOB Year
+        const yearSel = document.getElementById('dob-year');
+        if(yearSel) {
             const currY = new Date().getFullYear();
-            for(let i=currY; i>=1990; i--) { let opt = document.createElement('option'); opt.value = i; opt.innerHTML = i; yearSel.appendChild(opt); }
-            document.getElementById('current-date').valueAsDate = new Date();
+            for(let i=currY; i>=1990; i--) { 
+                let opt = document.createElement('option'); 
+                opt.value = i; opt.innerHTML = i; 
+                yearSel.appendChild(opt); 
+            }
+        }
+        
+        const dateInput = document.getElementById('current-date');
+        if(dateInput) dateInput.valueAsDate = new Date();
+    });
+
+    // --- 2. Proceed to Payment (QR Generation) ---
+    btnNext.addEventListener('click', () => {
+        const nameVal = document.getElementById('name').value.trim();
+        const phoneVal = document.getElementById('phone').value.trim();
+        
+        if(!nameVal || !phoneVal) { 
+            alert("कृपया अपना नाम और मोबाइल नंबर भरें!"); 
+            return; 
+        }
+
+        const qrContainer = document.getElementById('qr-container');
+        qrContainer.innerHTML = "Generating QR..."; 
+        
+        const upiString = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=100&cu=INR`;
+        
+        // Check if QRCode library is loaded
+        if (typeof QRCode !== "undefined") {
+            qrContainer.innerHTML = ""; 
+            new QRCode(qrContainer, { 
+                text: upiString, 
+                width: 180, 
+                height: 180, 
+                colorDark : "#000000", 
+                colorLight : "#ffffff" 
+            }); 
+            paymentOverlay.style.display = 'block';
+        } else {
+            alert("QR Library लोड नहीं हो पाई। कृपया इंटरनेट चेक करें और पेज रिफ्रेश करें।");
+        }
+    });
+
+    // --- 3. Final Form Submission ---
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerText;
+        
+        submitBtn.innerText = "Processing... Please Wait";
+        submitBtn.disabled = true;
+
+        const formData = new FormData(form);
+        const profilePictureFile = document.getElementById('profile-picture').files[0];
+
+        // Core Saving Function
+        const saveAllData = (imgResult) => {
+            const selectedCourses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(c => c.value);
+            const selectedBatches = Array.from(document.querySelectorAll('input[name="batch"]:checked')).map(b => b.value);
+            
+            const day = document.getElementById('dob-day').value;
+            const month = document.getElementById('dob-month').value;
+            const year = document.getElementById('dob-year').value;
+            const fullDOB = (day && month && year) ? `${day}/${month}/${year}` : "N/A";
+            
+            const studentsRef = ref(database, 'students');
+            const newStudentRef = push(studentsRef);
+            const fbKey = newStudentRef.key;
+            const customId = "SNT-" + fbKey.substring(fbKey.length - 5).toUpperCase();
+
+            const data = {
+                studentId: customId,
+                name: (formData.get('name') || "").toUpperCase(),
+                mobile: formData.get('phone'), 
+                email: formData.get('email') || 'N/A',
+                fatherName: formData.get('fatherName') || 'N/A',
+                address: formData.get('address') || 'N/A',
+                gender: (document.querySelector('input[name="gender"]:checked') || {}).value || 'N/A',
+                dob: fullDOB,
+                courses: selectedCourses, 
+                batches: selectedBatches,
+                lastQualification: formData.get('lastQualification') || 'N/A',
+                passingYear: formData.get('passingYear') || 'N/A',
+                profilePicture: imgResult || "",
+                signature: formData.get('signature') || 'N/A',
+                admissionDate: formData.get('date') || new Date().toISOString().split('T')[0],
+                registrationStatus: "Pending",
+                timestamp: new Date().toISOString()
+            };
+
+            set(newStudentRef, data).then(() => {
+                localStorage.setItem('lastReceipt', JSON.stringify({ 
+                    name: data.name, 
+                    id: customId,
+                    amount: 100, 
+                    date: new Date().toLocaleString() 
+                }));
+                alert("सफल! आपकी Student ID है: " + customId + "\nपेमेंट वेरिफिकेशन के बाद एडमिशन कन्फर्म होगा।");
+                window.location.reload(); 
+            }).catch(err => {
+                console.error(err);
+                alert("Database Error: " + err.message + "\nकृपया Firebase Rules चेक करें।");
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+            });
         };
 
-        btnNext.addEventListener('click', () => {
-            const nameVal = document.getElementById('name').value.trim();
-            const phoneVal = document.getElementById('phone').value.trim();
-            if(!nameVal || !phoneVal) { alert("कृपया अपना नाम और मोबाइल नंबर भरें!"); return; }
-            const qrContainer = document.getElementById('qr-container');
-            qrContainer.innerHTML = ""; 
-            const upiString = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=100&cu=INR`;
-            try { new QRCode(qrContainer, { text: upiString, width: 180, height: 180, colorDark : "#000000", colorLight : "#ffffff", }); } catch (err) { qrContainer.innerHTML = "<p style='color:red'>QR Error</p>"; }
-            paymentOverlay.style.display = 'block';
-        });
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const profilePictureFile = document.getElementById('profile-picture').files[0];
+        // Handle Image Upload logic
+        if (profilePictureFile) {
+            // Check file size (Base64 grows by 33%, Realtime DB limit is small)
+            if (profilePictureFile.size > 1048576) { // 1MB limit
+                alert("फोटो का साइज 1MB से कम रखें!");
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                return;
+            }
             const reader = new FileReader();
-            const processAndSave = (imgResult) => {
-                let selectedCourses = [];
-                document.querySelectorAll('input[name="course"]:checked').forEach(c => selectedCourses.push(c.value));
-                let selectedBatches = [];
-                document.querySelectorAll('input[name="batch"]:checked').forEach(b => selectedBatches.push(b.value));
-                const fullDOB = `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${document.getElementById('dob-year').value}`;
-                
-                const studentsRef = ref(database, 'students');
-                const newStudentRef = push(studentsRef);
-                const fbKey = newStudentRef.key;
-                const customId = "SNT-" + fbKey.substring(fbKey.length - 5).toUpperCase();
+            reader.onload = () => saveAllData(reader.result);
+            reader.onerror = () => saveAllData('');
+            reader.readAsDataURL(profilePictureFile);
+        } else {
+            saveAllData('');
+        }
+    });
+</script>
 
-                const data = {
-                    studentId: customId,
-                    name: formData.get('name').toUpperCase(),
-                    mobile: formData.get('phone'), 
-                    email: formData.get('email'),
-                    fatherName: formData.get('fatherName'),
-                    address: formData.get('address'),
-                    gender: (document.querySelector('input[name="gender"]:checked') || {}).value || 'N/A',
-                    dob: fullDOB,
-                    courses: selectedCourses, 
-                    batches: selectedBatches,
-                    lastQualification: formData.get('lastQualification'),
-                    passingYear: formData.get('passingYear'),
-                    profilePicture: imgResult,
-                    signature: formData.get('signature'),
-                    admissionDate: formData.get('date'),
-                    registrationStatus: "Pending",
-                    paymentHistory: [] 
-                };
-
-                set(newStudentRef, data).then(() => {
-                    localStorage.setItem('lastReceipt', JSON.stringify({ name: data.name, photo: data.profilePicture || 'https://via.placeholder.com/100', course: selectedCourses[0] || "N/A", type: "Admission Registration", amount: 100, date: new Date().toLocaleString() }));
-                    alert("सफल! आपकी Student ID है: " + customId + "\nपेमेंट वेरिफिकेशन के बाद फीस अपडेट होगी।");
-                    window.location.reload(); 
-                }).catch(err => alert("Error: " + err.message));
-            };
-            if (profilePictureFile) { reader.onload = () => processAndSave(reader.result); reader.readAsDataURL(profilePictureFile); } else { processAndSave(''); }
-        });
-    </script>
 </body>
 </html>
