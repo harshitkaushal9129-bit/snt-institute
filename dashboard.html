@@ -18,30 +18,23 @@
     <style>
         :root { --accent: #38bdf8; --bg-dark: #0b0e14; --card-bg: #161b22; }
         body { background: var(--bg-dark); color: #e2e8f0; font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; margin: 0; overflow-x: hidden; }
-        
         #auth-container { position: fixed; inset: 0; background: var(--bg-dark); z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-box { background: var(--card-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 25px; border: 1px solid #30363d; text-align: center; }
         .auth-input { width: 100%; background: #0b0e14; border: 1px solid #30363d; padding: 12px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none; }
         .auth-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--accent); color: #000; font-weight: bold; }
-
         #splash-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
         .loader-bar { width: 120px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 20px; overflow: hidden; }
-        #load-progress { width: 0%; height: 100%; background: var(--accent); transition: 1s; }
-        
+        #load-progress { width: 0%; height: 100%; background: var(--accent); transition: 1.s; }
         #main-app { display: none; }
         .top-app-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(11, 14, 20, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #30363d; }
-        
         .side-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); z-index: 2000; transition: 0.3s; padding: 20px; border-right: 1px solid #30363d; }
         .side-drawer.active { left: 0; }
         .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; }
-        .drawer-item { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; color: #fff; text-decoration: none; margin-bottom: 5px; }
-
+        .drawer-item { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 12px; color: #fff; text-decoration: none; margin-bottom: 5px; }
         .header-section { text-align: center; padding: 30px 20px; background: linear-gradient(180deg, #1e293b 0%, #0b0e14 100%); border-bottom: 2px solid var(--accent); margin-bottom: 30px; }
         .header-section img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 15px; }
-        
         .dash-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 20px; padding: 25px 10px; text-align: center; transition: 0.3s; text-decoration: none; color: #fff; display: flex; flex-direction: column; align-items: center; height: 100%; }
         .dash-card i { font-size: 2.5rem; margin-bottom: 12px; color: var(--accent); }
-        
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(22, 27, 34, 0.95); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #30363d; z-index: 1000; }
         .nav-item { text-align: center; color: #8b949e; text-decoration: none; font-size: 0.7rem; }
         .nav-item.active { color: var(--accent); }
@@ -51,17 +44,17 @@
 
 <div id="splash-screen">
     <img src="SNT.jpg" style="width:100px; border-radius:50%; border:2px solid var(--accent);">
-    <h4 class="mt-3 fw-bold" style="letter-spacing:4px; color:white;">SNT CORE</h4>
+    <h4 class="mt-3 fw-bold" style="color:white; letter-spacing:4px;">SNT CORE</h4>
     <div class="loader-bar"><div id="load-progress"></div></div>
 </div>
 
 <div id="auth-container" style="display:none;">
-    <div class="auth-box" id="login-form">
+    <div class="auth-box">
         <img src="SNT.jpg" width="60" class="rounded-circle mb-3">
         <h3 class="fw-bold mb-4">SNT LOGIN</h3>
         <input type="email" id="email" class="auth-input" placeholder="Admin Email">
         <input type="password" id="pass" class="auth-input" placeholder="Password">
-        <button onclick="loginUser()" class="auth-btn mb-3">ACCESS SYSTEM</button>
+        <button onclick="loginUser()" class="auth-btn">ACCESS SYSTEM</button>
     </div>
 </div>
 
@@ -74,7 +67,6 @@
             <small class="text-muted">v2.6.0</small>
         </div>
         <hr style="border-color:#30363d">
-        <a href="google325f37ecaa958046.html" class="drawer-item"><i class="fa-solid fa-shield-check"></i> Verify Google</a>
         <a href="#" onclick="logoutUser()" class="drawer-item text-danger mt-4"><i class="fa-solid fa-power-off"></i> Logout</a>
     </div>
 
@@ -82,7 +74,7 @@
         <i class="fa-solid fa-bars-staggered fa-lg" onclick="toggleDrawer()" style="cursor:pointer; color:var(--accent);"></i>
         <span class="fw-bold small" style="letter-spacing:2px;">SNT DASHBOARD</span>
         <div class="d-flex gap-3">
-            <i id="installBtn" class="fa-solid fa-cloud-arrow-down fa-lg" style="display:none; color:var(--accent); cursor:pointer;"></i>
+            <i id="installBtn" class="fa-solid fa-download fa-lg" style="display:none; color:var(--accent); cursor:pointer;"></i>
             <i class="fa-solid fa-bell"></i>
         </div>
     </div>
@@ -95,7 +87,7 @@
 
     <div class="container">
         <div class="row g-3">
-            <div class="col-6 col-md-4"><a href="Index.html" class="dash-card"><i class="fa-solid fa-house"></i><h5>Home</h5></a></div>
+            <div class="col-6 col-md-4"><a href="dashboard.html" class="dash-card"><i class="fa-solid fa-house"></i><h5>Home</h5></a></div>
             <div class="col-6 col-md-4"><a href="attendence.html" class="dash-card"><i class="fa-solid fa-fingerprint"></i><h5>Attend</h5></a></div>
             <div class="col-6 col-md-4"><a href="admin.html" class="dash-card"><i class="fa-solid fa-user-shield"></i><h5>Admin</h5></a></div>
             <div class="col-6 col-md-4"><a href="display.html" class="dash-card"><i class="fa-solid fa-chart-line"></i><h5>Stats</h5></a></div>
@@ -104,8 +96,6 @@
             <div class="col-6 col-md-4"><a href="receipt.html" class="dash-card"><i class="fa-solid fa-receipt"></i><h5>Fees</h5></a></div>
             <div class="col-6 col-md-4"><a href="v-receipt.html" class="dash-card"><i class="fa-solid fa-file-invoice-dollar"></i><h5>V-Receipt</h5></a></div>
             <div class="col-6 col-md-4"><a href="verify.html" class="dash-card"><i class="fa-solid fa-check-circle"></i><h5>Verify</h5></a></div>
-            <div class="col-6 col-md-4"><a href="basic.html" class="dash-card"><i class="fa-solid fa-award"></i><h5>Cert</h5></a></div>
-            <div class="col-6 col-md-4"><a href="calendar.html" class="dash-card"><i class="fa-solid fa-calendar"></i><h5>Sched</h5></a></div>
         </div>
     </div>
 
@@ -132,7 +122,6 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Splash and Auth
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('auth-container').style.display = 'none';
@@ -146,7 +135,7 @@
 
     window.addEventListener('load', () => {
         document.getElementById('load-progress').style.width = '100%';
-        setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 1500);
+        setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 1000);
     });
 
     function loginUser() {
@@ -159,18 +148,18 @@
         o.style.display = d.classList.contains('active') ? 'block' : 'none';
     }
 
-    // PWA Install Logic
+    // PWA INSTALL LOGIC
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw-snt.js').then(() => console.log("SW Active"));
+        navigator.serviceWorker.register('sw-snt.js').then(() => console.log("SW Registered"));
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        installBtn.style.display = 'block'; 
+        installBtn.style.display = 'block'; // Ab icon dikhega
     });
 
     installBtn.addEventListener('click', async () => {
@@ -181,6 +170,10 @@
             deferredPrompt = null;
         }
     });
+
+    async function shareApp() {
+        if (navigator.share) { try { await navigator.share({ title: 'SNT Portal', url: window.location.href }); } catch(e){} }
+    }
 </script>
 </body>
 </html>
