@@ -24,6 +24,7 @@
         #auth-container { position: fixed; inset: 0; background: var(--bg-dark); z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-box { background: var(--card-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 25px; border: 1px solid #30363d; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
         .auth-input { width: 100%; background: #0b0e14; border: 1px solid #30363d; padding: 12px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none; }
+        .auth-input:focus { border-color: var(--accent); }
         .auth-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--accent); color: #000; font-weight: bold; }
 
         /* Layout & Nav */
@@ -37,8 +38,9 @@
         .side-drawer.active { left: 0; }
         .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; }
         .drawer-item { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; color: #fff; text-decoration: none; margin-bottom: 5px; }
+        .drawer-item:hover { background: rgba(56, 189, 248, 0.1); color: var(--accent); }
 
-        /* Dashboard Elements (Aapke original style mein) */
+        /* Dashboard Elements */
         .header-section { text-align: center; padding: 30px 20px; background: linear-gradient(180deg, #1e293b 0%, #0b0e14 100%); border-bottom: 2px solid var(--accent); margin-bottom: 30px; }
         .header-section img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 15px; }
         
@@ -86,8 +88,9 @@
             <small class="text-muted">v2.6.0</small>
         </div>
         <hr style="border-color:#30363d">
-        <a href="google325f37ecaa958046.html" class="drawer-item"><i class="fa-solid fa-google"></i> Google Verify</a>
+        <a href="google325f37ecaa958046.html" class="drawer-item"><i class="fa-solid fa-shield-check"></i> Google Verification</a>
         <a href="#" onclick="showAppInfo()" class="drawer-item"><i class="fa-solid fa-circle-info"></i> App Information</a>
+        <a href="#" onclick="shareApp()" class="drawer-item"><i class="fa-solid fa-share-nodes"></i> Share App</a>
         <a href="#" onclick="logoutUser()" class="drawer-item text-danger mt-4"><i class="fa-solid fa-power-off"></i> Logout</a>
     </div>
 
@@ -119,7 +122,6 @@
             
             <div class="col-6 col-md-4"><a href="basic.html" class="dash-card"><i class="fa-solid fa-award"></i><h5>Cert</h5></a></div>
             <div class="col-6 col-md-4"><a href="calendar.html" class="dash-card"><i class="fa-solid fa-calendar"></i><h5>Sched</h5></a></div>
-            <div class="col-6 col-md-4"><a href="google325f37ecaa958046.html" class="dash-card"><i class="fa-brands fa-google"></i><h5>Google</h5></a></div>
         </div>
     </div>
 
@@ -181,6 +183,12 @@
         const d = document.getElementById('drawer'), o = document.getElementById('overlay');
         d.classList.toggle('active');
         o.style.display = d.classList.contains('active') ? 'block' : 'none';
+    }
+
+    function showAppInfo() { alert("SNT Portal v2.6.0\nDeveloper: Harshit Kaushal\nAll Systems Operational."); }
+
+    async function shareApp() {
+        if (navigator.share) { try { await navigator.share({ title: 'SNT Portal', url: window.location.href }); } catch(e){} }
     }
 </script>
 
