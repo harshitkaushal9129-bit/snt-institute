@@ -14,22 +14,25 @@
     <link rel="apple-touch-icon" href="SNT.jpg">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
         body {
-            background: #0b0e14; /* Deep Dark Background */
+            background: #0b0e14;
             color: #e2e8f0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            padding-bottom: 50px;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding-bottom: 60px;
+            overflow-x: hidden;
         }
 
+        /* Animated Background Header */
         .header-section {
             text-align: center;
-            padding: 40px 20px;
+            padding: 50px 20px;
             background: linear-gradient(180deg, #1e293b 0%, #0b0e14 100%);
             border-bottom: 2px solid #38bdf8;
             margin-bottom: 40px;
+            position: relative;
         }
 
         .header-section img {
@@ -37,89 +40,90 @@
             height: 100px;
             border-radius: 50%;
             border: 3px solid #38bdf8;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-            transition: transform 0.3s ease;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+            margin-bottom: 15px;
         }
 
-        .header-section img:hover {
-            transform: rotate(360deg);
+        .status-pulse {
+            height: 12px;
+            width: 12px;
+            background-color: #00ff88;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 10px #00ff88;
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(0, 255, 136, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
         }
 
         .dashboard-container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 0 15px;
         }
 
-        /* Dash-Card Styling */
+        /* Modernized Dash-Card */
         .dash-card {
             background: #161b22;
             border: 1px solid #30363d;
-            border-radius: 16px;
-            padding: 25px;
+            border-radius: 20px;
+            padding: 30px 15px;
             text-align: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
-            color: white;
+            color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             height: 100%;
-            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .dash-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-10px);
             border-color: #38bdf8;
-            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
-            color: #38bdf8 !important;
+            background: #1c2128;
+            box-shadow: 0 15px 30px rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
         }
 
+        /* DuoTone Icon Style */
         .dash-card i {
-            font-size: 2.8rem;
-            margin-bottom: 18px;
+            font-size: 3rem;
+            margin-bottom: 20px;
             background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.3));
+            transition: 0.3s;
         }
 
         .dash-card:hover i {
-            filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.7));
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
         }
 
         .dash-card h5 {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 1.15rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
 
         .dash-card p {
             font-size: 0.85rem;
             color: #8b949e;
-            margin: 0;
-        }
-
-        /* Pulse Animation for Live Status */
-        .status-pulse {
-            height: 10px;
-            width: 10px;
-            background-color: #00ff88;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+            margin-bottom: 0;
         }
 
         footer {
-            padding: 30px 0;
+            margin-top: 50px;
+            color: #8b949e;
+            border-top: 1px solid #30363d;
+            padding-top: 20px;
         }
     </style>
 </head>
@@ -127,18 +131,18 @@
 
 <div class="header-section">
     <img src="SNT.jpg" alt="SNT Logo" onerror="this.src='https://via.placeholder.com/100'">
-    <h1 class="mt-4 fw-bold" style="letter-spacing: 2px;">SNT INSTITUTE</h1>
-    <p class="text-info"><span class="status-pulse"></span> Smart Management Dashboard 2026</p>
+    <h1 class="fw-bold text-white">SNT INSTITUTE</h1>
+    <p class="text-info"><span class="status-pulse"></span> SYSTEM ACTIVE | DASHBOARD 2026</p>
 </div>
 
 <div class="dashboard-container">
-    <div class="row g-4 justify-content-center">
+    <div class="row g-4">
         
         <div class="col-6 col-md-4 col-lg-3">
             <a href="Index.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-house-laptop"></i>
-                <h5>Main Index</h5>
-                <p>Home Portal</p>
+                <i class="fa-solid fa-house-user"></i>
+                <h5>Home</h5>
+                <p>Main Portal</p>
             </a>
         </div>
 
@@ -146,47 +150,47 @@
             <a href="attendence.html" target="_blank" class="dash-card">
                 <i class="fa-solid fa-fingerprint"></i>
                 <h5>Attendance</h5>
-                <p>Daily Logs</p>
+                <p>Daily Tracker</p>
             </a>
         </div>
 
         <div class="col-6 col-md-4 col-lg-3">
             <a href="admin.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-user-gear"></i>
+                <i class="fa-solid fa-user-shield"></i>
                 <h5>Admin</h5>
-                <p>Control Panel</p>
+                <p>Management</p>
             </a>
         </div>
 
         <div class="col-6 col-md-4 col-lg-3">
             <a href="display.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-chart-line"></i>
+                <i class="fa-solid fa-chart-column"></i>
                 <h5>Analytics</h5>
-                <p>View Records</p>
+                <p>View Data</p>
             </a>
         </div>
 
         <div class="col-6 col-md-4 col-lg-3">
             <a href="id-card.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-id-card-clip"></i>
+                <i class="fa-solid fa-id-badge"></i>
                 <h5>ID Card</h5>
-                <p>Designer</p>
+                <p>Generator</p>
             </a>
         </div>
 
         <div class="col-6 col-md-4 col-lg-3">
             <a href="receipt.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <i class="fa-solid fa-receipt"></i>
                 <h5>Receipt</h5>
-                <p>Fee System</p>
+                <p>Billing Tool</p>
             </a>
         </div>
 
         <div class="col-6 col-md-4 col-lg-3">
             <a href="verify.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-user-shield"></i>
+                <i class="fa-solid fa-circle-check"></i>
                 <h5>Verify</h5>
-                <p>Search Student</p>
+                <p>Student Status</p>
             </a>
         </div>
 
@@ -194,7 +198,7 @@
             <a href="basic.html" target="_blank" class="dash-card">
                 <i class="fa-solid fa-award"></i>
                 <h5>Certificate</h5>
-                <p>Basic Course</p>
+                <p>Issued Awards</p>
             </a>
         </div>
 
@@ -202,23 +206,40 @@
             <a href="calendar.html" target="_blank" class="dash-card">
                 <i class="fa-solid fa-calendar-check"></i>
                 <h5>Calendar</h5>
-                <p>Events</p>
+                <p>Schedules</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="v-receipt.html" target="_blank" class="dash-card">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <h5>V-Receipt</h5>
+                <p>Verified Fees</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="id-verify.html" target="_blank" class="dash-card">
+                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                <h5>ID Verify</h5>
+                <p>ID Validation</p>
             </a>
         </div>
 
     </div>
 </div>
 
-<footer class="text-center mt-5">
-    <p class="text-muted small">© 2026 SNT-Institute. All Rights Reserved.</p>
+<footer class="text-center pb-4">
+    <p class="small mb-1">Developed for SNT-Institute Management</p>
+    <p class="fw-bold text-info">© 2026 SNT Systems</p>
 </footer>
 
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw-snt.js')
-        .then(reg => console.log('SNT Dashboard Worker Registered!'))
-        .catch(err => console.log('Registration Failed', err));
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('SNT Service Worker Active!'))
+        .catch(err => console.log('Worker Registration Failed', err));
     });
   }
 </script>
