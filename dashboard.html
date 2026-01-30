@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SNT INSTITUTE - Smart Dashboard</title>
 
+    <link rel="manifest" href="manifest-snt.json">
+    <meta name="theme-color" content="#38bdf8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <link rel="icon" type="image/jpg" href="SNT.jpg">
     <link rel="apple-touch-icon" href="SNT.jpg">
 
@@ -162,13 +167,13 @@
                 <p>Student Search</p>
             </a>
         </div>
-<div class="col-6 col-md-4">
-    <a href="basic.html" target="_blank" class="dash-card">
-        <i class="fa fa-certificate"></i>
-        <h5>Certificate</h5>
-        <p>Basic Course</p>
-    </a>
-</div>
+        <div class="col-6 col-md-4">
+            <a href="basic.html" target="_blank" class="dash-card">
+                <i class="fa fa-certificate"></i>
+                <h5>Certificate</h5>
+                <p>Basic Course</p>
+            </a>
+        </div>
 
         <div class="col-6 col-md-4">
             <a href="calendar.html" target="_blank" class="dash-card">
@@ -184,6 +189,16 @@
 <footer class="text-center mt-5">
     <small class="text-muted">Designed for SNT-Institute &copy; 2026</small>
 </footer>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw-snt.js')
+        .then(reg => console.log('SNT Dashboard Worker Registered!'))
+        .catch(err => console.log('Registration Failed', err));
+    });
+  }
+</script>
 
 </body>
 </html>
