@@ -33,15 +33,20 @@
         }
 
         .header-section img {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 3px solid #38bdf8;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .header-section img:hover {
+            transform: rotate(360deg);
         }
 
         .dashboard-container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 0 15px;
         }
@@ -53,7 +58,7 @@
             border-radius: 16px;
             padding: 25px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             color: white;
             display: flex;
@@ -67,21 +72,26 @@
             transform: translateY(-8px);
             border-color: #38bdf8;
             box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
-            color: #38bdf8;
+            color: #38bdf8 !important;
         }
 
         .dash-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            background: linear-gradient(45deg, #38bdf8, #818cf8);
+            font-size: 2.8rem;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.3));
+        }
+
+        .dash-card:hover i {
+            filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.7));
         }
 
         .dash-card h5 {
             font-weight: 600;
             margin-bottom: 8px;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
         }
 
         .dash-card p {
@@ -90,96 +100,109 @@
             margin: 0;
         }
 
-        /* Badge for live status */
-        .status-dot {
+        /* Pulse Animation for Live Status */
+        .status-pulse {
             height: 10px;
             width: 10px;
-            background-color: #238636;
+            background-color: #00ff88;
             border-radius: 50%;
             display: inline-block;
-            margin-right: 5px;
+            margin-right: 8px;
+            box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+        }
+
+        footer {
+            padding: 30px 0;
         }
     </style>
 </head>
 <body>
 
 <div class="header-section">
-    <img src="SNT.jpg" alt="SNT Logo" onerror="this.src='https://via.placeholder.com/80'">
-    <h2 class="mt-3">SNT INSTITUTE</h2>
-    <p><span class="status-dot"></span> System Online | Centralized Dashboard</p>
+    <img src="SNT.jpg" alt="SNT Logo" onerror="this.src='https://via.placeholder.com/100'">
+    <h1 class="mt-4 fw-bold" style="letter-spacing: 2px;">SNT INSTITUTE</h1>
+    <p class="text-info"><span class="status-pulse"></span> Smart Management Dashboard 2026</p>
 </div>
 
 <div class="dashboard-container">
-    <div class="row g-4">
+    <div class="row g-4 justify-content-center">
         
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="Index.html" target="_blank" class="dash-card">
-                <i class="fa fa-home"></i>
+                <i class="fa-solid fa-house-laptop"></i>
                 <h5>Main Index</h5>
-                <p>Home Page</p>
+                <p>Home Portal</p>
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="attendence.html" target="_blank" class="dash-card">
-                <i class="fa fa-user-check"></i>
+                <i class="fa-solid fa-fingerprint"></i>
                 <h5>Attendance</h5>
-                <p>Check-in/Out</p>
+                <p>Daily Logs</p>
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="admin.html" target="_blank" class="dash-card">
-                <i class="fa fa-user-shield"></i>
-                <h5>Admin Panel</h5>
-                <p>Manage Portal</p>
+                <i class="fa-solid fa-user-gear"></i>
+                <h5>Admin</h5>
+                <p>Control Panel</p>
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="display.html" target="_blank" class="dash-card">
-                <i class="fa fa-desktop"></i>
-                <h5>Display</h5>
+                <i class="fa-solid fa-chart-line"></i>
+                <h5>Analytics</h5>
                 <p>View Records</p>
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="id-card.html" target="_blank" class="dash-card">
-                <i class="fa fa-id-card"></i>
+                <i class="fa-solid fa-id-card-clip"></i>
                 <h5>ID Card</h5>
-                <p>Generate Cards</p>
+                <p>Designer</p>
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="receipt.html" target="_blank" class="dash-card">
-                <i class="fa fa-file-invoice-dollar"></i>
+                <i class="fa-solid fa-file-invoice-dollar"></i>
                 <h5>Receipt</h5>
-                <p>Fee Management</p>
+                <p>Fee System</p>
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="verify.html" target="_blank" class="dash-card">
-                <i class="fa fa-shield-check"></i>
+                <i class="fa-solid fa-user-shield"></i>
                 <h5>Verify</h5>
-                <p>Student Search</p>
+                <p>Search Student</p>
             </a>
         </div>
-        <div class="col-6 col-md-4">
+
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="basic.html" target="_blank" class="dash-card">
-                <i class="fa fa-certificate"></i>
+                <i class="fa-solid fa-award"></i>
                 <h5>Certificate</h5>
                 <p>Basic Course</p>
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-4 col-lg-3">
             <a href="calendar.html" target="_blank" class="dash-card">
-                <i class="fa fa-calendar-alt"></i>
+                <i class="fa-solid fa-calendar-check"></i>
                 <h5>Calendar</h5>
-                <p>Events & Holidays</p>
+                <p>Events</p>
             </a>
         </div>
 
@@ -187,7 +210,7 @@
 </div>
 
 <footer class="text-center mt-5">
-    <small class="text-muted">Designed for SNT-Institute &copy; 2026</small>
+    <p class="text-muted small">© 2026 SNT-Institute. All Rights Reserved.</p>
 </footer>
 
 <script>
