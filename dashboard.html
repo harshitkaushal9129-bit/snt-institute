@@ -2,11 +2,11 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SNT INSTITUTE - Smart Dashboard</title>
 
     <link rel="manifest" href="manifest-snt.json">
-    <meta name="theme-color" content="#38bdf8">
+    <meta name="theme-color" content="#0b0e14">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -17,231 +17,228 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
+        :root {
+            --accent: #38bdf8;
+            --bg-dark: #0b0e14;
+            --card-bg: #161b22;
+        }
+
         body {
-            background: #0b0e14;
+            background: var(--bg-dark);
             color: #e2e8f0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding-bottom: 60px;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            padding-bottom: 80px;
+            margin: 0;
             overflow-x: hidden;
         }
 
-        /* Animated Background Header */
-        .header-section {
-            text-align: center;
-            padding: 50px 20px;
-            background: linear-gradient(180deg, #1e293b 0%, #0b0e14 100%);
-            border-bottom: 2px solid #38bdf8;
-            margin-bottom: 40px;
-            position: relative;
+        /* --- NEW: Splash Screen --- */
+        #splash-screen {
+            position: fixed; inset: 0; background: var(--bg-dark);
+            z-index: 9999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: 0.5s;
+        }
+        .loader-bar {
+            width: 120px; height: 3px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; margin-top: 20px; overflow: hidden;
+        }
+        #load-progress { width: 0%; height: 100%; background: var(--accent); transition: 1s; }
+
+        /* --- NEW: Offline Indicator --- */
+        #offline-indicator {
+            display: none; background: #ef4444; color: white;
+            text-align: center; padding: 5px; font-size: 12px;
+            position: fixed; top: 0; width: 100%; z-index: 9998;
         }
 
+        /* --- NEW: Top App Bar --- */
+        .top-app-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; background: rgba(11, 14, 20, 0.9);
+            backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid #30363d;
+        }
+
+        /* --- NEW: Side Drawer --- */
+        .side-drawer {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: var(--card-bg); z-index: 2000; transition: 0.3s ease-in-out;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5); padding: 20px;
+        }
+        .side-drawer.active { left: 0; }
+        .drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            display: none; z-index: 1500;
+        }
+        .drawer-item {
+            display: flex; align-items: center; gap: 15px; padding: 15px;
+            border-radius: 12px; color: #fff; text-decoration: none; margin-bottom: 5px;
+        }
+        .drawer-item:hover { background: rgba(56, 189, 248, 0.1); color: var(--accent); }
+
+        /* Existing Header Logic */
+        .header-section {
+            text-align: center; padding: 30px 20px;
+            background: linear-gradient(180deg, #1e293b 0%, #0b0e14 100%);
+            border-bottom: 2px solid var(--accent); margin-bottom: 30px;
+        }
         .header-section img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 3px solid #38bdf8;
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+            width: 90px; height: 90px; border-radius: 50%;
+            border: 3px solid var(--accent); box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
             margin-bottom: 15px;
         }
 
         .status-pulse {
-            height: 12px;
-            width: 12px;
-            background-color: #00ff88;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            box-shadow: 0 0 10px #00ff88;
-            animation: pulse-animation 2s infinite;
+            height: 10px; width: 10px; background-color: #00ff88;
+            border-radius: 50%; display: inline-block; margin-right: 8px;
+            box-shadow: 0 0 10px #00ff88; animation: pulse-animation 2s infinite;
         }
-
         @keyframes pulse-animation {
             0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
-            70% { box-shadow: 0 0 0 12px rgba(0, 255, 136, 0); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
             100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
         }
 
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        /* Modernized Dash-Card */
+        /* Existing Dash-Card Logic */
         .dash-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 20px;
-            padding: 30px 15px;
-            text-align: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: var(--card-bg); border: 1px solid #30363d;
+            border-radius: 20px; padding: 25px 10px; text-align: center;
+            transition: all 0.3s; text-decoration: none; color: #fff;
+            display: flex; flex-direction: column; align-items: center; height: 100%;
         }
-
         .dash-card:hover {
-            transform: translateY(-10px);
-            border-color: #38bdf8;
-            background: #1c2128;
-            box-shadow: 0 15px 30px rgba(56, 189, 248, 0.15);
-            color: #38bdf8;
+            transform: translateY(-8px); border-color: var(--accent);
+            background: #1c2128; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.15);
+            color: var(--accent);
         }
-
-        /* DuoTone Icon Style */
         .dash-card i {
-            font-size: 3rem;
-            margin-bottom: 20px;
+            font-size: 2.5rem; margin-bottom: 15px;
             background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: 0.3s;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .dash-card:hover i {
-            transform: scale(1.1);
-            filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+        /* --- NEW: Bottom Navigation --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(15px);
+            display: flex; justify-content: space-around; padding: 12px 0;
+            border-top: 1px solid #30363d; z-index: 1000;
         }
-
-        .dash-card h5 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .dash-card p {
-            font-size: 0.85rem;
-            color: #8b949e;
-            margin-bottom: 0;
-        }
-
-        footer {
-            margin-top: 50px;
-            color: #8b949e;
-            border-top: 1px solid #30363d;
-            padding-top: 20px;
-        }
+        .nav-item { text-align: center; color: #8b949e; text-decoration: none; font-size: 0.7rem; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 1.3rem; display: block; margin-bottom: 2px; }
     </style>
 </head>
 <body>
 
+<div id="splash-screen">
+    <img src="SNT.jpg" style="width:100px; border-radius:50%; border:2px solid var(--accent);">
+    <h4 class="mt-3 fw-bold" style="letter-spacing:4px; color:white;">SNT CORE</h4>
+    <div class="loader-bar"><div id="load-progress"></div></div>
+</div>
+
+<div id="offline-indicator"><i class="fa-solid fa-plane"></i> You are currently offline</div>
+
+<div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
+<div class="side-drawer" id="drawer">
+    <div class="text-center mb-4">
+        <img src="SNT.jpg" width="70" class="rounded-circle border border-info">
+        <h6 class="mt-2 mb-0">SNT Admin Portal</h6>
+        <small class="text-muted">v2.6.0-stable</small>
+    </div>
+    <hr style="border-color:#30363d">
+    <a href="#" class="drawer-item"><i class="fa-solid fa-circle-info"></i> App Information</a>
+    <a href="#" onclick="shareApp()" class="drawer-item"><i class="fa-solid fa-share-nodes"></i> Share Dashboard</a>
+    <a href="https://wa.me/919580807075" class="drawer-item"><i class="fa-solid fa-headset"></i> System Support</a>
+    <a href="#" class="drawer-item text-danger mt-4"><i class="fa-solid fa-power-off"></i> Logout</a>
+</div>
+
+<div class="top-app-bar">
+    <i class="fa-solid fa-bars-staggered fa-lg" onclick="toggleDrawer()" style="cursor:pointer; color:var(--accent);"></i>
+    <span class="fw-bold small" style="letter-spacing:2px;">SNT COMMAND CENTER</span>
+    <i class="fa-solid fa-bell fa-lg"></i>
+</div>
+
 <div class="header-section">
     <img src="SNT.jpg" alt="SNT Logo" onerror="this.src='https://via.placeholder.com/100'">
     <h1 class="fw-bold text-white">SNT INSTITUTE</h1>
-    <p class="text-info"><span class="status-pulse"></span> SYSTEM ACTIVE | DASHBOARD 2026</p>
+    <p class="text-info"><span class="status-pulse"></span> SYSTEM ACTIVE | 2026</p>
 </div>
 
-<div class="dashboard-container">
-    <div class="row g-4">
-        
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="Index.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-house-user"></i>
-                <h5>Home</h5>
-                <p>Main Portal</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="attendence.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-fingerprint"></i>
-                <h5>Attendance</h5>
-                <p>Daily Tracker</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="admin.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-user-shield"></i>
-                <h5>Admin</h5>
-                <p>Management</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="display.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-chart-column"></i>
-                <h5>Analytics</h5>
-                <p>View Data</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="id-card.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-id-badge"></i>
-                <h5>ID Card</h5>
-                <p>Generator</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="receipt.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-receipt"></i>
-                <h5>Receipt</h5>
-                <p>Billing Tool</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="verify.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-circle-check"></i>
-                <h5>Verify</h5>
-                <p>Student Status</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="basic.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-award"></i>
-                <h5>Certificate</h5>
-                <p>Issued Awards</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="calendar.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-calendar-check"></i>
-                <h5>Calendar</h5>
-                <p>Schedules</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="v-receipt.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                <h5>V-Receipt</h5>
-                <p>Verified Fees</p>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="id-verify.html" target="_blank" class="dash-card">
-                <i class="fa-solid fa-magnifying-glass-chart"></i>
-                <h5>ID Verify</h5>
-                <p>ID Validation</p>
-            </a>
-        </div>
-
+<div class="container">
+    <div class="row g-3">
+        <div class="col-6 col-md-4 col-lg-3"><a href="Index.html" class="dash-card"><i class="fa-solid fa-house-user"></i><h5>Home</h5><p>Main Portal</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="attendence.html" class="dash-card"><i class="fa-solid fa-fingerprint"></i><h5>Attendance</h5><p>Daily Tracker</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="admin.html" class="dash-card"><i class="fa-solid fa-user-shield"></i><h5>Admin</h5><p>Management</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="display.html" class="dash-card"><i class="fa-solid fa-chart-column"></i><h5>Analytics</h5><p>View Data</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="id-card.html" class="dash-card"><i class="fa-solid fa-id-badge"></i><h5>ID Card</h5><p>Generator</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="receipt.html" class="dash-card"><i class="fa-solid fa-receipt"></i><h5>Receipt</h5><p>Billing Tool</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="verify.html" class="dash-card"><i class="fa-solid fa-circle-check"></i><h5>Verify</h5><p>Student Status</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="basic.html" class="dash-card"><i class="fa-solid fa-award"></i><h5>Certificate</h5><p>Issued Awards</p></a></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="calendar.html" class="dash-card"><i class="fa-solid fa-calendar-check"></i><h5>Calendar</h5><p>Schedules</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="v-receipt.html" class="dash-card"><i class="fa-solid fa-file-invoice-dollar"></i><h5>V-Receipt</h5><p>Verified Fees</p></a></div>
+        <div class="col-6 col-md-4 col-lg-3"><a href="id-verify.html" class="dash-card"><i class="fa-solid fa-magnifying-glass-chart"></i><h5>ID Verify</h5><p>Validation</p></a></div>
     </div>
 </div>
 
-<footer class="text-center pb-4">
-    <p class="small mb-1">Developed for SNT-Institute Management</p>
+<footer class="text-center pb-5 mt-4">
+    <p class="small mb-1 text-secondary">Developed for SNT-Institute Management</p>
     <p class="fw-bold text-info">© 2026 SNT Systems</p>
 </footer>
 
+<div class="bottom-nav">
+    <a href="Index.html" class="nav-item active"><i class="fa-solid fa-grip"></i>Dash</a>
+    <a href="verify.html" class="nav-item"><i class="fa-solid fa-circle-check"></i>Verify</a>
+    <a href="#" onclick="shareApp()" class="nav-item"><i class="fa-solid fa-share-nodes"></i>Share</a>
+    <a href="admin.html" class="nav-item"><i class="fa-solid fa-gears"></i>Setup</a>
+</div>
+
 <script>
-  if ('serviceWorker' in navigator) {
+    // Splash Screen Handle
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('SNT Service Worker Active!'))
-        .catch(err => console.log('Worker Registration Failed', err));
+        const progress = document.getElementById('load-progress');
+        progress.style.width = '100%';
+        setTimeout(() => {
+            document.getElementById('splash-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.display = 'none';
+            }, 500);
+        }, 1500);
     });
-  }
+
+    // Drawer Logic
+    function toggleDrawer() {
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        drawer.classList.toggle('active');
+        overlay.style.display = drawer.classList.contains('active') ? 'block' : 'none';
+    }
+
+    // Share API Logic
+    async function shareApp() {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'SNT Institute Portal',
+                    text: 'Access SNT Smart Dashboard for management.',
+                    url: window.location.href
+                });
+            } catch (err) { console.log('Share failed'); }
+        } else {
+            alert("Share Link: " + window.location.href);
+        }
+    }
+
+    // Offline Tracker
+    window.addEventListener('online', () => document.getElementById('offline-indicator').style.display = 'none');
+    window.addEventListener('offline', () => document.getElementById('offline-indicator').style.display = 'block');
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
+        });
+    }
 </script>
 
 </body>
