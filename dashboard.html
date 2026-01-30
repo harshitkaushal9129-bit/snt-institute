@@ -54,6 +54,12 @@
     </style>
 </head>
 <body>
+<div class="top-app-bar">
+    <i class="fa-solid fa-bars-staggered fa-lg" onclick="toggleDrawer()"></i>
+    <span class="fw-bold small">SNT DASHBOARD</span>
+    <i id="installBtn" class="fa-solid fa-download" style="display:none; color:var(--accent); cursor:pointer;"></i>
+    <i class="fa-solid fa-bell"></i>
+</div>
 
 <div id="splash-screen">
     <img src="SNT.jpg" style="width:100px; border-radius:50%; border:2px solid var(--accent);">
@@ -207,6 +213,29 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     console.log("SNT App is ready to be installed on Google Chrome");
+});
+
+
+        let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Ab install button dikhao
+    installBtn.style.display = 'block'; 
+});
+
+installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User installed the app');
+        }
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+    }
 });
 
 </script>
