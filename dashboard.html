@@ -3,130 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SNT INSTITUTE - Smart Dashboard</title>
+    <title>SNT INSTITUTE - Secure Portal</title>
 
     <link rel="manifest" href="manifest-snt.json">
     <meta name="theme-color" content="#0b0e14">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <link rel="icon" type="image/jpg" href="SNT.jpg">
-    <link rel="apple-touch-icon" href="SNT.jpg">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        :root {
-            --accent: #38bdf8;
-            --bg-dark: #0b0e14;
-            --card-bg: #161b22;
-        }
+        :root { --accent: #38bdf8; --bg-dark: #0b0e14; --card-bg: #161b22; }
 
-        body {
-            background: var(--bg-dark);
-            color: #e2e8f0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            padding-bottom: 80px;
-            margin: 0;
-            overflow-x: hidden;
-        }
+        body { background: var(--bg-dark); color: #e2e8f0; font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; margin: 0; overflow-x: hidden; }
 
-        /* --- NEW: Splash Screen --- */
-        #splash-screen {
-            position: fixed; inset: 0; background: var(--bg-dark);
-            z-index: 9999; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; transition: 0.5s;
-        }
-        .loader-bar {
-            width: 120px; height: 3px; background: rgba(255,255,255,0.1);
-            border-radius: 10px; margin-top: 20px; overflow: hidden;
-        }
+        /* Auth UI */
+        #auth-container { position: fixed; inset: 0; background: var(--bg-dark); z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-box { background: var(--card-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 25px; border: 1px solid #30363d; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; }
+        .auth-input { width: 100%; background: #0b0e14; border: 1px solid #30363d; padding: 12px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none; }
+        .auth-input:focus { border-color: var(--accent); }
+        .auth-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--accent); color: #000; font-weight: bold; }
+
+        /* Layout & Nav */
+        #splash-screen { position: fixed; inset: 0; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
+        .loader-bar { width: 120px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 20px; overflow: hidden; }
         #load-progress { width: 0%; height: 100%; background: var(--accent); transition: 1s; }
-
-        /* --- NEW: Offline Indicator --- */
-        #offline-indicator {
-            display: none; background: #ef4444; color: white;
-            text-align: center; padding: 5px; font-size: 12px;
-            position: fixed; top: 0; width: 100%; z-index: 9998;
-        }
-
-        /* --- NEW: Top App Bar --- */
-        .top-app-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; background: rgba(11, 14, 20, 0.9);
-            backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000;
-            border-bottom: 1px solid #30363d;
-        }
-
-        /* --- NEW: Side Drawer --- */
-        .side-drawer {
-            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-            background: var(--card-bg); z-index: 2000; transition: 0.3s ease-in-out;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5); padding: 20px;
-        }
+        #main-app { display: none; }
+        .top-app-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(11, 14, 20, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #30363d; }
+        .side-drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); z-index: 2000; transition: 0.3s; padding: 20px; border-right: 1px solid #30363d; }
         .side-drawer.active { left: 0; }
-        .drawer-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-            display: none; z-index: 1500;
-        }
-        .drawer-item {
-            display: flex; align-items: center; gap: 15px; padding: 15px;
-            border-radius: 12px; color: #fff; text-decoration: none; margin-bottom: 5px;
-        }
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; }
+        .drawer-item { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 12px; color: #fff; text-decoration: none; margin-bottom: 5px; }
         .drawer-item:hover { background: rgba(56, 189, 248, 0.1); color: var(--accent); }
 
-        /* Existing Header Logic */
-        .header-section {
-            text-align: center; padding: 30px 20px;
-            background: linear-gradient(180deg, #1e293b 0%, #0b0e14 100%);
-            border-bottom: 2px solid var(--accent); margin-bottom: 30px;
-        }
-        .header-section img {
-            width: 90px; height: 90px; border-radius: 50%;
-            border: 3px solid var(--accent); box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
-            margin-bottom: 15px;
-        }
-
-        .status-pulse {
-            height: 10px; width: 10px; background-color: #00ff88;
-            border-radius: 50%; display: inline-block; margin-right: 8px;
-            box-shadow: 0 0 10px #00ff88; animation: pulse-animation 2s infinite;
-        }
-        @keyframes pulse-animation {
-            0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
-        }
-
-        /* Existing Dash-Card Logic */
-        .dash-card {
-            background: var(--card-bg); border: 1px solid #30363d;
-            border-radius: 20px; padding: 25px 10px; text-align: center;
-            transition: all 0.3s; text-decoration: none; color: #fff;
-            display: flex; flex-direction: column; align-items: center; height: 100%;
-        }
-        .dash-card:hover {
-            transform: translateY(-8px); border-color: var(--accent);
-            background: #1c2128; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.15);
-            color: var(--accent);
-        }
-        .dash-card i {
-            font-size: 2.5rem; margin-bottom: 15px;
-            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        /* --- NEW: Bottom Navigation --- */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%;
-            background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(15px);
-            display: flex; justify-content: space-around; padding: 12px 0;
-            border-top: 1px solid #30363d; z-index: 1000;
-        }
+        /* Dashboard Elements */
+        .header-section { text-align: center; padding: 30px 20px; background: linear-gradient(180deg, #1e293b 0%, #0b0e14 100%); border-bottom: 2px solid var(--accent); margin-bottom: 30px; }
+        .header-section img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--accent); margin-bottom: 15px; }
+        .dash-card { background: var(--card-bg); border: 1px solid #30363d; border-radius: 20px; padding: 25px 10px; text-align: center; transition: 0.3s; text-decoration: none; color: #fff; display: flex; flex-direction: column; align-items: center; height: 100%; }
+        .dash-card:hover { transform: translateY(-5px); border-color: var(--accent); color: var(--accent); }
+        .dash-card i { font-size: 2.5rem; margin-bottom: 12px; color: var(--accent); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(22, 27, 34, 0.95); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #30363d; z-index: 1000; }
         .nav-item { text-align: center; color: #8b949e; text-decoration: none; font-size: 0.7rem; }
         .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 1.3rem; display: block; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -137,154 +58,146 @@
     <div class="loader-bar"><div id="load-progress"></div></div>
 </div>
 
-<div id="offline-indicator"><i class="fa-solid fa-plane"></i> You are currently offline</div>
-
-<div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
-<div class="side-drawer" id="drawer">
-    <div class="text-center mb-4">
-        <img src="SNT.jpg" width="70" class="rounded-circle border border-info">
-        <h6 class="mt-2 mb-0">SNT Admin Portal</h6>
-        <small class="text-muted">v2.6.0-stable</small>
+<div id="auth-container" style="display:none;">
+    <div class="auth-box" id="login-form">
+        <img src="SNT.jpg" width="60" class="rounded-circle mb-3">
+        <h3 class="fw-bold mb-4">SNT LOGIN</h3>
+        <input type="email" id="email" class="auth-input" placeholder="Admin Email">
+        <input type="password" id="pass" class="auth-input" placeholder="Password">
+        <button onclick="loginUser()" class="auth-btn mb-3">ACCESS SYSTEM</button>
+        <p class="small text-secondary">New User? <a href="#" onclick="toggleAuth()" class="text-info">Register</a></p>
     </div>
-    <hr style="border-color:#30363d">
-<a href="#" onclick="showAppInfo()" class="drawer-item"><i class="fa-solid fa-circle-info"></i> App Information</a>
-
-
-
-    
-    <a href="#" onclick="shareApp()" class="drawer-item"><i class="fa-solid fa-share-nodes"></i> Share Dashboard</a>
-    <a href="https://wa.me/9129191898" class="drawer-item"><i class="fa-solid fa-headset"></i> System Support</a>
-    <a href="#" class="drawer-item text-danger mt-4"><i class="fa-solid fa-power-off"></i> Logout</a>
-</div>
-
-<div class="top-app-bar">
-    <i class="fa-solid fa-bars-staggered fa-lg" onclick="toggleDrawer()" style="cursor:pointer; color:var(--accent);"></i>
-    <span class="fw-bold small" style="letter-spacing:2px;">SNT COMMAND CENTER</span>
-    <i class="fa-solid fa-bell fa-lg"></i>
-</div>
-
-<div class="header-section">
-    <img src="SNT.jpg" alt="SNT Logo" onerror="this.src='https://via.placeholder.com/100'">
-    <h1 class="fw-bold text-white">SNT INSTITUTE</h1>
-    <p class="text-info"><span class="status-pulse"></span> SYSTEM ACTIVE | 2026</p>
-</div>
-
-<div class="container">
-    <div class="row g-3">
-        <div class="col-6 col-md-4 col-lg-3"><a href="Index.html" class="dash-card"><i class="fa-solid fa-house-user"></i><h5>Home</h5><p>Main Portal</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="attendence.html" class="dash-card"><i class="fa-solid fa-fingerprint"></i><h5>Attendance</h5><p>Daily Tracker</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="admin.html" class="dash-card"><i class="fa-solid fa-user-shield"></i><h5>Admin</h5><p>Management</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="display.html" class="dash-card"><i class="fa-solid fa-chart-column"></i><h5>Analytics</h5><p>View Data</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="id-card.html" class="dash-card"><i class="fa-solid fa-id-badge"></i><h5>ID Card</h5><p>Generator</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="receipt.html" class="dash-card"><i class="fa-solid fa-receipt"></i><h5>Receipt</h5><p>Billing Tool</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="verify.html" class="dash-card"><i class="fa-solid fa-circle-check"></i><h5>Verify</h5><p>Student Status</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="basic.html" class="dash-card"><i class="fa-solid fa-award"></i><h5>Certificate</h5><p>Issued Awards</p></a></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="calendar.html" class="dash-card"><i class="fa-solid fa-calendar-check"></i><h5>Calendar</h5><p>Schedules</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="v-receipt.html" class="dash-card"><i class="fa-solid fa-file-invoice-dollar"></i><h5>V-Receipt</h5><p>Verified Fees</p></a></div>
-        <div class="col-6 col-md-4 col-lg-3"><a href="id-verify.html" class="dash-card"><i class="fa-solid fa-magnifying-glass-chart"></i><h5>ID Verify</h5><p>Validation</p></a></div>
+    <div class="auth-box" id="register-form" style="display:none;">
+        <h3 class="fw-bold mb-4">REGISTER</h3>
+        <input type="email" id="reg-email" class="auth-input" placeholder="Email">
+        <input type="password" id="reg-pass" class="auth-input" placeholder="Password">
+        <button onclick="registerUser()" class="auth-btn mb-3">CREATE ACCOUNT</button>
+        <p class="small text-secondary">Back to <a href="#" onclick="toggleAuth()" class="text-info">Login</a></p>
     </div>
 </div>
 
-<footer class="text-center pb-5 mt-4">
-    <p class="small mb-1 text-secondary">Developed for SNT-Institute Management</p>
-    <p class="fw-bold text-info">© 2026 SNT Systems</p>
-</footer>
-<div id="info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
-    <div style="background:#161b22; width:85%; max-width:400px; border-radius:25px; border:1px solid #38bdf8; padding:30px; position:relative; text-align:center;">
-        <i class="fa-solid fa-circle-xmark" onclick="closeAppInfo()" style="position:absolute; top:15px; right:15px; color:#8b949e; font-size:1.5rem; cursor:pointer;"></i>
-        
-        <img src="SNT.jpg" style="width:70px; border-radius:50%; border:2px solid #38bdf8; margin-bottom:15px;">
-        <h4 style="color:#38bdf8; font-family:'Orbitron';">SNT CORE-INTEL</h4>
-        <p style="font-size:0.8rem; color:#8b949e;">Version 2.6.0 (Stable Build)</p>
-        
-        <hr style="border-color:#30363d">
-        
-        <div style="text-align:left; font-size:0.9rem;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span><i class="fa-solid fa-code text-info"></i> Developer:</span>
-                <span class="fw-bold">SNT Systems</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span><i class="fa-solid fa-bolt text-warning"></i> Engine:</span>
-                <span class="fw-bold">Neural Dash 2.0</span>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span><i class="fa-solid fa-database text-success"></i> Database:</span>
-                <span class="fw-bold">Firebase Realtime</span>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-                <span><i class="fa-solid fa-calendar-day text-primary"></i> Last Update:</span>
-                <span class="fw-bold">Jan 2026</span>
-            </div>
+<div id="main-app">
+    <div class="drawer-overlay" id="overlay" onclick="toggleDrawer()"></div>
+    <div class="side-drawer" id="drawer">
+        <div class="text-center mb-4">
+            <img src="SNT.jpg" width="70" class="rounded-circle border border-info">
+            <h6 class="mt-2 mb-0" id="user-display">ADMIN</h6>
+            <small class="text-muted">v2.6.0</small>
         </div>
-        
-        <button onclick="closeAppInfo()" style="margin-top:25px; width:100%; padding:10px; border-radius:12px; border:none; background:#38bdf8; color:#000; font-weight:bold;">SYSTEM NOMINAL</button>
+        <hr style="border-color:#30363d">
+        <a href="#" onclick="showAppInfo()" class="drawer-item"><i class="fa-solid fa-circle-info"></i> App Information</a>
+        <a href="#" onclick="shareApp()" class="drawer-item"><i class="fa-solid fa-share-nodes"></i> Share App</a>
+        <a href="#" onclick="logoutUser()" class="drawer-item text-danger mt-4"><i class="fa-solid fa-power-off"></i> Logout</a>
+    </div>
+
+    <div class="top-app-bar">
+        <i class="fa-solid fa-bars-staggered fa-lg" onclick="toggleDrawer()" style="cursor:pointer; color:var(--accent);"></i>
+        <span class="fw-bold small" style="letter-spacing:2px;">SNT DASHBOARD</span>
+        <i class="fa-solid fa-bell"></i>
+    </div>
+
+    <div class="header-section">
+        <img src="SNT.jpg" alt="Logo">
+        <h1 class="fw-bold text-white">SNT INSTITUTE</h1>
+        <p class="text-info">SYSTEM ONLINE | 2026</p>
+    </div>
+
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-6 col-md-4"><a href="Index.html" class="dash-card"><i class="fa-solid fa-house"></i><h5>Home</h5></a></div>
+            <div class="col-6 col-md-4"><a href="attendence.html" class="dash-card"><i class="fa-solid fa-fingerprint"></i><h5>Attend</h5></a></div>
+            <div class="col-6 col-md-4"><a href="admin.html" class="dash-card"><i class="fa-solid fa-user-shield"></i><h5>Admin</h5></a></div>
+            <div class="col-6 col-md-4"><a href="display.html" class="dash-card"><i class="fa-solid fa-chart-line"></i><h5>Stats</h5></a></div>
+            <div class="col-6 col-md-4"><a href="id-card.html" class="dash-card"><i class="fa-solid fa-id-badge"></i><h5>ID Card</h5></a></div>
+            <div class="col-6 col-md-4"><a href="receipt.html" class="dash-card"><i class="fa-solid fa-receipt"></i><h5>Fees</h5></a></div>
+            <div class="col-6 col-md-4"><a href="verify.html" class="dash-card"><i class="fa-solid fa-check-circle"></i><h5>Verify</h5></a></div>
+            <div class="col-6 col-md-4"><a href="basic.html" class="dash-card"><i class="fa-solid fa-award"></i><h5>Cert</h5></a></div>
+            <div class="col-6 col-md-4"><a href="calendar.html" class="dash-card"><i class="fa-solid fa-calendar"></i><h5>Sched</h5></a></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active"><i class="fa-solid fa-grip"></i><br>Dash</a>
+        <a href="verify.html" class="nav-item"><i class="fa-solid fa-search"></i><br>Verify</a>
+        <a href="#" onclick="shareApp()" class="nav-item"><i class="fa-solid fa-share"></i><br>Share</a>
+        <a href="admin.html" class="nav-item"><i class="fa-solid fa-cog"></i><br>Setup</a>
     </div>
 </div>
 
-<div class="bottom-nav">
-    <a href="Index.html" class="nav-item active"><i class="fa-solid fa-grip"></i>Dash</a>
-    <a href="verify.html" class="nav-item"><i class="fa-solid fa-circle-check"></i>Verify</a>
-    <a href="#" onclick="shareApp()" class="nav-item"><i class="fa-solid fa-share-nodes"></i>Share</a>
-    <a href="admin.html" class="nav-item"><i class="fa-solid fa-gears"></i>Setup</a>
+<div id="info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:6000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div style="background:#161b22; width:85%; max-width:400px; border-radius:25px; border:1px solid #38bdf8; padding:30px; text-align:center;">
+        <h4 style="color:#38bdf8;">SNT APP INFO</h4>
+        <p class="small text-muted">A Complete Institute Management System</p>
+        <hr style="border-color:#333">
+        <p>Developer: SNT Systems</p>
+        <p>Database: Firebase RTDB</p>
+        <button onclick="closeAppInfo()" class="auth-btn mt-3">CLOSE</button>
+    </div>
 </div>
 
 <script>
-    // Splash Screen Handle
-    window.addEventListener('load', () => {
-        const progress = document.getElementById('load-progress');
-        progress.style.width = '100%';
-        setTimeout(() => {
-            document.getElementById('splash-screen').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.display = 'none';
-            }, 500);
-        }, 1500);
+    // --- YOUR UPDATED FIREBASE CONFIG ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+      authDomain: "snt-computer-institute.firebaseapp.com",
+      databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com",
+      projectId: "snt-computer-institute",
+      storageBucket: "snt-computer-institute.firebasestorage.app",
+      messagingSenderId: "117580784781",
+      appId: "1:117580784781:web:73ba19d2d008beb3a5eec4",
+      measurementId: "G-6FKGX17D7F"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // --- LOGIC ---
+    function toggleAuth() {
+        document.getElementById('login-form').style.display = document.getElementById('login-form').style.display === 'none' ? 'block' : 'none';
+        document.getElementById('register-form').style.display = document.getElementById('register-form').style.display === 'none' ? 'block' : 'none';
+    }
+
+    function loginUser() {
+        auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('pass').value)
+            .catch(err => alert(err.message));
+    }
+
+    function registerUser() {
+        auth.createUserWithEmailAndPassword(document.getElementById('reg-email').value, document.getElementById('reg-pass').value)
+            .catch(err => alert(err.message));
+    }
+
+    function logoutUser() { auth.signOut().then(() => location.reload()); }
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-display').innerText = user.email.split('@')[0].toUpperCase();
+        } else {
+            document.getElementById('auth-container').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
+        }
     });
 
-    // Drawer Logic
+    window.addEventListener('load', () => {
+        document.getElementById('load-progress').style.width = '100%';
+        setTimeout(() => { document.getElementById('splash-screen').style.display = 'none'; }, 1500);
+    });
+
     function toggleDrawer() {
-        const drawer = document.getElementById('drawer');
-        const overlay = document.getElementById('overlay');
-        drawer.classList.toggle('active');
-        overlay.style.display = drawer.classList.contains('active') ? 'block' : 'none';
+        const d = document.getElementById('drawer');
+        const o = document.getElementById('overlay');
+        d.classList.toggle('active');
+        o.style.display = d.classList.contains('active') ? 'block' : 'none';
     }
 
-    // Share API Logic
+    function showAppInfo() { document.getElementById('info-modal').style.display = 'flex'; toggleDrawer(); }
+    function closeAppInfo() { document.getElementById('info-modal').style.display = 'none'; }
+
     async function shareApp() {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'SNT Institute Portal',
-                    text: 'Access SNT Smart Dashboard for management.',
-                    url: window.location.href
-                });
-            } catch (err) { console.log('Share failed'); }
-        } else {
-            alert("Share Link: " + window.location.href);
-        }
+        if (navigator.share) { await navigator.share({ title: 'SNT Portal', url: window.location.href }); }
     }
-
-    // Offline Tracker
-    window.addEventListener('online', () => document.getElementById('offline-indicator').style.display = 'none');
-    window.addEventListener('offline', () => document.getElementById('offline-indicator').style.display = 'block');
-
-    // Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
-        });
-    }
-
-    function showAppInfo() {
-    document.getElementById('info-modal').style.display = 'flex';
-    toggleDrawer(); // Drawer ko band karne ke liye
-}
-
-function closeAppInfo() {
-    document.getElementById('info-modal').style.display = 'none';
-}
-
 </script>
 
 </body>
