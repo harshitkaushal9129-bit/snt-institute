@@ -190,6 +190,25 @@
     async function shareApp() {
         if (navigator.share) { try { await navigator.share({ title: 'SNT Portal', url: window.location.href }); } catch(e){} }
     }
+
+
+        // Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw-snt.js')
+            .then(reg => console.log('SNT Service Worker Registered!', reg))
+            .catch(err => console.log('Registration Failed:', err));
+    });
+}
+
+// Download/Install Prompt Logic
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log("SNT App is ready to be installed on Google Chrome");
+});
+
 </script>
 
 </body>
