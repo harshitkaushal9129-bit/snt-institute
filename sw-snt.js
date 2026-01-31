@@ -1,4 +1,4 @@
-const CACHE_NAME = 'snt-institute-v3';
+const CACHE_NAME = 'snt-institute-v4'; // Version update kiya
 const assetsToCache = [
   'dashboard.html',
   'Index.html',
@@ -9,33 +9,32 @@ const assetsToCache = [
   'display.html',
   'id-card.html',
   'id-verify.html',
-  'manifest.json',
+  'manifest-snt.json', // Sahi naam
   'receipt.html',
-  'sw.js',
+  'sw-snt.js', // Sahi naam
   'v-receipt.html',
   'Logo.jpg',
-  'Logo (1).jpg',
   'SNT.jpg'
 ];
 
-// Install Service Worker and Cache Files
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('SNT App: Caching all assets');
-      return cache.addAll(assetsToCache);
+      console.log('SNT App: Caching assets');
+      // cache.addAll fail ho jata hai agar koi file miss ho, isliye individual error handling
+      return Promise.allSettled(
+        assetsToCache.map(asset => cache.add(asset).catch(err => console.log(`Failed to cache: ${asset}`, err)))
+      );
     })
   );
 });
 
-// Activate and Clean Old Caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('SNT App: Clearing old cache');
             return caches.delete(cache);
           }
         })
@@ -44,7 +43,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Strategy: Network first, fallback to cache
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request).catch(() => {
