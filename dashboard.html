@@ -15,9 +15,18 @@
         .grid-item { transition: transform 0.2s; }
         .grid-item:active { transform: scale(0.9); }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding: 12px; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
+        #install-banner { display: none; }
     </style>
 </head>
 <body>
+
+    <div id="install-banner" class="fixed top-4 left-4 right-4 z-[100] bg-yellow-400 p-4 rounded-2xl shadow-2xl flex items-center justify-between animate-bounce">
+        <div class="flex items-center gap-3">
+            <img src="SNT.jpg" class="w-10 h-10 rounded-lg">
+            <span class="text-sm font-bold text-gray-900">Install SNT App</span>
+        </div>
+        <button onclick="triggerInstall()" class="bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase">Install</button>
+    </div>
 
     <div id="auth-page" class="app-screen flex flex-col items-center justify-center px-8 bg-[#1a73e8]">
         <div class="mb-10 text-center text-white">
@@ -28,10 +37,10 @@
 
         <div class="glass-card w-full p-8 shadow-2xl">
             <h2 id="form-title" class="text-2xl font-bold text-gray-800 mb-6">Welcome</h2>
-            <input type="email" id="email" placeholder="Email Address" class="w-full p-4 mb-4 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="password" id="password" placeholder="Password" class="w-full p-4 mb-6 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="email" id="email" placeholder="Email Address" class="w-full p-4 mb-4 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-black">
+            <input type="password" id="password" placeholder="Password" class="w-full p-4 mb-6 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-black">
             
-            <button onclick="handleAuth()" id="auth-btn" class="w-full bg-[#1a73e8] text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/40">Login</button>
+            <button onclick="handleAuth()" id="auth-btn" class="w-full bg-[#1a73e8] text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/40 active:scale-95 transition">Login</button>
             
             <p class="mt-6 text-center text-sm text-gray-500">
                 <span id="toggle-msg">New here?</span>
@@ -68,7 +77,6 @@
                     <div class="w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-clock"></i></div>
                     <span class="text-[11px] font-bold mt-2 text-gray-600 uppercase">Attend</span>
                 </a>
-
                 <a href="basic.html" class="grid-item flex flex-col items-center">
                     <div class="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-file-lines"></i></div>
                     <span class="text-[11px] font-bold mt-2 text-gray-600 uppercase">Basic</span>
@@ -81,7 +89,6 @@
                     <div class="w-16 h-16 bg-pink-100 text-pink-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-desktop"></i></div>
                     <span class="text-[11px] font-bold mt-2 text-gray-600 uppercase">Display</span>
                 </a>
-
                 <a href="id-card.html" class="grid-item flex flex-col items-center">
                     <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-address-card"></i></div>
                     <span class="text-[11px] font-bold mt-2 text-gray-600 uppercase">ID Card</span>
@@ -94,7 +101,6 @@
                     <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-receipt"></i></div>
                     <span class="text-[11px] font-bold mt-2 text-gray-600 uppercase">Receipt</span>
                 </a>
-
                 <a href="v-receipt.html" class="grid-item flex flex-col items-center">
                     <div class="w-16 h-16 bg-cyan-100 text-cyan-600 rounded-2xl flex items-center justify-center text-2xl"><i class="fa-solid fa-eye"></i></div>
                     <span class="text-[11px] font-bold mt-2 text-gray-600 uppercase">View</span>
@@ -107,7 +113,7 @@
         </div>
 
         <nav class="bottom-nav">
-            <button class="text-blue-600"><i class="fa-solid fa-grid-2 text-xl"></i></button>
+            <button class="text-blue-600"><i class="fa-solid fa-house text-xl"></i></button>
             <button class="text-gray-400"><i class="fa-solid fa-bell text-xl"></i></button>
             <button class="text-gray-400"><i class="fa-solid fa-user text-xl"></i></button>
         </nav>
@@ -117,7 +123,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-        // Your Config Integrated
         const firebaseConfig = {
             apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
             authDomain: "snt-computer-institute.firebaseapp.com",
@@ -172,27 +177,37 @@
             }
         };
     </script>
-<script>
-    let deferredPrompt;
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-        // Default prompt ko rokein
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Console mein check karne ke liye
-        console.log('SNT App is ready for installation');
-        
-        // Aap chaho toh login button ke niche ek extra 'Install App' button dikha sakte ho
-    });
+    <script>
+        // --- PWA Installation Logic ---
+        let deferredPrompt;
+        const installBanner = document.getElementById('install-banner');
 
-    // PWA registration check
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw-snt.js')
-        .then(() => console.log("Service Worker Registered"))
-        .catch(err => console.log("SW Register Error:", err));
-    }
-</script>
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show the custom install banner
+            installBanner.style.display = 'flex';
+        });
 
+        async function triggerInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('App installed');
+                }
+                deferredPrompt = null;
+                installBanner.style.display = 'none';
+            }
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw-snt.js')
+            .then(() => console.log("SW Registered"))
+            .catch(err => console.log("SW Error:", err));
+        }
+    </script>
 </body>
 </html>
