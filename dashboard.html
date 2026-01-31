@@ -172,10 +172,27 @@
             }
         };
     </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw-snt.js');
-        }
-    </script>
+<script>
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Default prompt ko rokein
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Console mein check karne ke liye
+        console.log('SNT App is ready for installation');
+        
+        // Aap chaho toh login button ke niche ek extra 'Install App' button dikha sakte ho
+    });
+
+    // PWA registration check
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw-snt.js')
+        .then(() => console.log("Service Worker Registered"))
+        .catch(err => console.log("SW Register Error:", err));
+    }
+</script>
+
 </body>
 </html>
