@@ -36,7 +36,7 @@
 
         .verified-stamp {
             position: absolute; top: 380px; right: 30px; border: 4px double #22c55e;
-            color: #22c55e; padding: 10px; font-weight: bold; transform: rotate(-15px);
+            color: #22c55e; padding: 10px; font-weight: bold; transform: rotate(-15deg);
             font-size: 18px; border-radius: 8px; text-transform: uppercase;
         }
         
@@ -61,13 +61,7 @@
             <div class="sidebar">
                 <h3>TOPIC COVERED</h3>
                 <ul id="topic-list">
-                    <li>• MS OFFICE</li>
-                    <li>• PHOTOSHOP & CORELDRAW</li>
-                    <li>• INTERNET & WEB</li>
-                    <li>• HARDWARE</li>
-                    <li>• HTML & CSS</li>
-                    <li>• TYPING</li>
-                </ul>
+                    </ul>
             </div>
             <div class="main-content">
                 <div style="text-align: left; display: flex; align-items: center;">
@@ -82,6 +76,7 @@
                 <div class="student-name" id="disp-name">Loading...</div>
                 
                 <p style="font-size: 20px; margin-top: 10px;">successfully completed <b id="disp-course">...</b></p>
+                <p style="font-size: 18px; font-weight: bold;" id="disp-duration">Duration: ---</p>
                 
                 <div class="verified-stamp">Verified Online</div>
                 
@@ -101,31 +96,55 @@
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+            authDomain: "snt-computer-institute.firebaseapp.com", 
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+            projectId: "snt-computer-institute" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
-        const n1 = params.get('n1');
-        const n2 = params.get('n2');
 
         if (id) {
             document.getElementById('v-id').innerText = id;
+
+            // 1. Fetch Student Identity
             db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
                     const student = Object.values(snapshot.val())[0];
                     document.getElementById('disp-name').innerText = student.name;
                     document.getElementById('student-photo').src = student.profilePicture || 'SNT.jpg';
                     document.getElementById('disp-course').innerText = student.course || (student.courses ? student.courses[0] : "Computer Course");
-                    
-                    // Signatures from URL
-                    document.getElementById('s1-name').innerText = decodeURIComponent(n1 || 'Authorized Sign');
-                    document.getElementById('s2-name').innerText = decodeURIComponent(n2 || 'Director Sign');
                 } else {
-                    alert("Invalid Verification ID");
+                    alert("Record Not Found");
                 }
             });
+
+            // 2. Fetch Saved Certificate Data (Permanent Data)
+            db.ref('certificates/' + id).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    const cert = snapshot.val();
+                    document.getElementById('s1-name').innerText = cert.n1 || '';
+                    document.getElementById('s2-name').innerText = cert.n2 || '';
+                    document.getElementById('disp-duration').innerText = `Duration: ${cert.startDate} to ${cert.endDate} | Grade: ${cert.grade}`;
+
+                    // Load Topics
+                    if (cert.topics) {
+                        const list = document.getElementById('topic-list');
+                        list.innerHTML = "";
+                        cert.topics.split(',').forEach(topic => {
+                            const li = document.createElement('li');
+                            li.innerText = `• ${topic.trim().toUpperCase()}`;
+                            list.appendChild(li);
+                        });
+                    }
+                }
+            });
+        } else {
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>No ID Provided for Verification</h2>";
         }
     </script>
 </body>
