@@ -3,75 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNT Institute - Attendance Manager</title>
+    <title>SNT Attendance Manager</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primary: #e65100; --success: #1b5e20; --danger: #b71c1c; --holiday: #f57c00; --bg: #fff8f1; }
+        :root { --primary: #e65100; --success: #2e7d32; --danger: #d32f2f; --bg: #fff8f1; --default-btn: #f0f0f0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
         .card { max-width: 500px; margin: 10px auto; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; }
         header { background: var(--primary); color: white; padding: 25px; text-align: center; border-bottom: 5px solid #ffb74d; }
-        .date-picker { padding: 20px; display: flex; justify-content: center; gap: 10px; background: #fff3e0; }
-        select, input { padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
         
-        .holiday-banner { 
-            display: none; background: #fff3e0; padding: 40px 20px; text-align: center; 
-            border: 2px dashed var(--holiday); margin: 20px; border-radius: 20px;
-        }
-        .holiday-banner h2 { color: var(--holiday); margin: 0; font-size: 28px; }
-        .holiday-banner p { font-size: 18px; font-weight: bold; color: #555; margin: 10px 0; }
+        /* Date Picker */
+        .date-picker { padding: 20px; display: flex; justify-content: center; gap: 10px; background: #fff3e0; border-bottom: 1px solid #ffe0b2; }
+        select { padding: 8px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; }
 
-        .st-list { padding: 10px 20px; max-height: 400px; overflow-y: auto; }
-        .st-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .btn-group { display: flex; gap: 8px; }
-        .btn { border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; background: #eee; transition: 0.3s; }
+        /* Student Row */
+        .st-list { padding: 10px 20px; max-height: 450px; overflow-y: auto; }
+        .st-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .st-name { font-size: 16px; font-weight: 600; color: #333; }
+
+        /* Attendance Buttons Logic */
+        .btn-group { display: flex; gap: 10px; }
+        .btn { 
+            border: none; padding: 10px 22px; border-radius: 10px; 
+            cursor: pointer; font-weight: 800; font-size: 15px;
+            background: var(--default-btn); color: #666; 
+            transition: all 0.2s ease; outline: none;
+        }
         
-        /* Button States */
-        .p-btn.active { background: var(--success) !important; color: white; transform: scale(1.05); }
-        .a-btn.active { background: var(--danger) !important; color: white; transform: scale(1.05); }
+        /* Click Animation */
+        .btn:active { transform: scale(0.85); }
+
+        /* P - Green Style when Active */
+        .p-btn.active { 
+            background: var(--success) !important; 
+            color: white !important; 
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
+        }
+
+        /* A - Red Style when Active */
+        .a-btn.active { 
+            background: var(--danger) !important; 
+            color: white !important; 
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
+        }
+
+        /* Holiday UI */
+        .holiday-banner { display: none; padding: 30px; text-align: center; background: #fff3e0; border: 2px dashed var(--primary); margin: 15px; border-radius: 15px; }
         
         .footer { padding: 20px; text-align: center; }
-        .save-btn { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .un-holiday { color: var(--primary); text-decoration: underline; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; }
+        .save-btn { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 17px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <header><h2>SNT COMPUTER INSTITUTE</h2><p>Admin Attendance Panel</p></header>
+    <header><h2>SNT COMPUTER INSTITUTE</h2><p>Attendance Management</p></header>
     
     <div class="date-picker">
-        <select id="day" onchange="checkCloudHoliday()"></select>
-        <select id="month" onchange="checkCloudHoliday()">
+        <select id="day" onchange="checkCloudData()"></select>
+        <select id="month" onchange="checkCloudData()">
             <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
             <option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option>
             <option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option>
             <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
         </select>
-        <select id="year" onchange="checkCloudHoliday()"></select>
+        <select id="year" onchange="checkCloudData()"></select>
     </div>
 
     <div id="holiday-banner" class="holiday-banner">
-        <div id="holiday-icon" style="font-size: 50px;">🏖️</div>
-        <h2 id="holiday-title">आज छुट्टी है!</h2>
-        <p id="holiday-name-text"></p>
-        <small id="override-msg" style="color: gray; display: block; margin-top: 10px;"></small>
-        <span class="un-holiday" onclick="forceOpenAttendance()">नहीं, आज क्लास है (Mark Attendance)</span>
+        <h2 id="holiday-text">आज छुट्टी है!</h2>
+        <button onclick="manualOpen()" style="border:none; background:none; color:var(--primary); text-decoration:underline; cursor:pointer;">अटेंडेंस लगायें</button>
     </div>
 
-    <div id="main-content">
+    <div id="attendance-box">
         <div class="st-list" id="st-list"></div>
-        <div style="padding: 10px 20px; background: #fafafa; display: flex; gap: 5px;">
-            <input type="text" id="h-input" placeholder="छुट्टी का नाम लिखें...">
-            <button onclick="setAsHoliday()" style="background:var(--holiday); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">Set Holiday</button>
-        </div>
     </div>
 
-    <div class="footer"><button class="save-btn" onclick="saveToCloud()">डेटा क्लाउड पर सेव करें</button></div>
+    <div class="footer">
+        <button class="save-btn" onclick="saveToFirebase()">Cloud पर सुरक्षित करें ✅</button>
+    </div>
 </div>
 
 <script>
-    // Firebase Setup
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
         authDomain: "snt-computer-institute.firebaseapp.com",
@@ -85,137 +99,105 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const fixedFestivals = {
-      "2026": {
-        "01-01": "New Year's Day", "26-01": "Republic Day", "15-08": "Independence Day", "02-10": "Gandhi Jayanti", "25-12": "Christmas"
-        // ... बाकी त्योहार यहाँ जोड़ सकते हैं
-      }
-    };
+    let currentAttendance = {};
+    let isHoliday = false;
 
-    let dailyRecords = {}, holidayMode = false;
+    // Dates Setup
+    const d = new Date();
     const dayS = document.getElementById('day'), monS = document.getElementById('month'), yerS = document.getElementById('year');
     
-    // Dropdowns भरें
     for(let i=2025; i<=2030; i++) yerS.innerHTML += `<option value="${i}">${i}</option>`;
     for(let i=1; i<=31; i++) dayS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
     
-    // आज की तारीख सेट करें
-    const today = new Date();
-    dayS.value = String(today.getDate()).padStart(2,'0');
-    monS.value = String(today.getMonth()+1).padStart(2,'0');
-    yerS.value = today.getFullYear();
+    dayS.value = String(d.getDate()).padStart(2,'0');
+    monS.value = String(d.getMonth()+1).padStart(2,'0');
+    yerS.value = d.getFullYear();
 
-    function checkCloudHoliday() {
+    function checkCloudData() {
         const dateKey = `${dayS.value}-${monS.value}-${yerS.value}`;
-        const festivalKey = `${dayS.value}-${monS.value}`;
-        const year = yerS.value;
-
-        // 1. त्यौहार चेक करें
-        if(fixedFestivals[year] && fixedFestivals[year][festivalKey]) {
-            showHolidayUI(fixedFestivals[year][festivalKey], "सरकारी अवकाश");
-            return;
-        }
-
-        // 2. रविवार चेक करें
-        const selDate = new Date(year, parseInt(monS.value)-1, parseInt(dayS.value));
-        if(selDate.getDay() === 0) {
-            showHolidayUI("साप्ताहिक अवकाश", "रविवार");
-            return;
-        }
-
-        // 3. Firebase चेक करें
         db.ref('attendance/' + dateKey).once('value', snap => {
-            const data = snap.val();
-            if(data && data.type === 'HOLIDAY') {
-                showHolidayUI(data.name, "Manual Holiday");
+            const val = snap.val();
+            if(val && val.type === 'HOLIDAY') {
+                showHoliday(val.name);
             } else {
-                hideHolidayUI();
-                loadStudents(data);
+                hideHoliday();
+                loadStudents(val ? val.details : null);
             }
         });
     }
 
-    function showHolidayUI(name, type) {
-        holidayMode = true;
-        document.getElementById('holiday-banner').style.display = "block";
-        document.getElementById('main-content').style.display = "none";
-        document.getElementById('holiday-name-text').innerText = name;
-        document.getElementById('override-msg').innerText = `(${type})`;
+    function showHoliday(name) {
+        isHoliday = true;
+        document.getElementById('holiday-banner').style.display = 'block';
+        document.getElementById('attendance-box').style.display = 'none';
+        document.getElementById('holiday-text').innerText = name || "आज छुट्टी है!";
     }
 
-    function hideHolidayUI() {
-        holidayMode = false;
-        document.getElementById('holiday-banner').style.display = "none";
-        document.getElementById('main-content').style.display = "block";
+    function hideHoliday() {
+        isHoliday = false;
+        document.getElementById('holiday-banner').style.display = 'none';
+        document.getElementById('attendance-box').style.display = 'block';
     }
 
-    function forceOpenAttendance() {
-        hideHolidayUI();
+    function manualOpen() {
+        hideHoliday();
         loadStudents();
     }
 
-    function loadStudents(existingData = null) {
+    function loadStudents(savedData = null) {
         db.ref('students').once('value', snap => {
             const list = document.getElementById('st-list');
             list.innerHTML = "";
-            dailyRecords = (existingData && existingData.details) ? existingData.details : {};
-            
-            if(!snap.exists()) {
-                list.innerHTML = "<p style='text-align:center; padding:20px;'>छात्रों की सूची खाली है।</p>";
-                return;
-            }
+            currentAttendance = savedData || {};
 
             snap.forEach(child => {
-                const s = child.val();
-                const studentId = child.key;
-                const status = dailyRecords[studentId] || "";
-                
+                const sid = child.key;
+                const sname = child.val().name;
+                const status = currentAttendance[sid] || "";
+
                 list.innerHTML += `
-                <div class="st-row">
-                    <b>${s.name}</b>
-                    <div class="btn-group">
-                        <button id="p-${studentId}" class="btn ${status==='P'?'p-btn active':''}" onclick="mark('${studentId}','P')">P</button>
-                        <button id="a-${studentId}" class="btn ${status==='A'?'a-btn active':''}" onclick="mark('${studentId}','A')">A</button>
-                    </div>
-                </div>`;
+                    <div class="st-row">
+                        <span class="st-name">${sname}</span>
+                        <div class="btn-group">
+                            <button id="p-${sid}" class="btn p-btn ${status==='P'?'active':''}" onclick="markAttendance('${sid}','P')">P</button>
+                            <button id="a-${sid}" class="btn a-btn ${status==='A'?'active':''}" onclick="markAttendance('${sid}','A')">A</button>
+                        </div>
+                    </div>`;
             });
         });
     }
 
-    function mark(id, status) {
-        // डेटा अपडेट करें
-        dailyRecords[id] = status;
+    // MAIN LOGIC: Button Click Color Switch
+    function markAttendance(studentId, status) {
+        // 1. डेटा अपडेट करें
+        currentAttendance[studentId] = status;
 
-        // UI बटनों को अपडेट करें
-        const pBtn = document.getElementById(`p-${id}`);
-        const aBtn = document.getElementById(`a-${id}`);
+        // 2. उस छात्र के दोनों बटनों से 'active' क्लास हटाएँ (Default कर दें)
+        document.getElementById(`p-${studentId}`).classList.remove('active');
+        document.getElementById(`a-${studentId}`).classList.remove('active');
 
-        pBtn.classList.remove('active');
-        aBtn.classList.remove('active');
-
-        if(status === 'P') pBtn.classList.add('active');
-        if(status === 'A') aBtn.classList.add('active');
+        // 3. जो स्टेटस चुना गया है, सिर्फ उसे 'active' करें (Green या Red होगा)
+        if(status === 'P') {
+            document.getElementById(`p-${studentId}`).classList.add('active');
+        } else {
+            document.getElementById(`a-${studentId}`).classList.add('active');
+        }
     }
 
-    function setAsHoliday() {
-        const hName = document.getElementById('h-input').value;
-        if(!hName) return alert("छुट्टी का नाम लिखें!");
-        showHolidayUI(hName, "Manual Set");
-    }
-
-    function saveToCloud() {
+    function saveToFirebase() {
         const dateKey = `${dayS.value}-${monS.value}-${yerS.value}`;
-        const data = holidayMode ? 
-            { type: 'HOLIDAY', name: document.getElementById('holiday-name-text').innerText } : 
-            { type: 'ATTENDANCE', details: dailyRecords };
-        
+        const data = {
+            type: isHoliday ? 'HOLIDAY' : 'ATTENDANCE',
+            details: currentAttendance,
+            lastUpdated: new Date().toLocaleString()
+        };
+
         db.ref('attendance/' + dateKey).set(data).then(() => {
-            alert("डेटा सुरक्षित किया गया! ✅");
-        }).catch(err => alert("Error: " + err.message));
+            alert("डेटा सुरक्षित कर दिया गया! ✅");
+        }).catch(e => alert("Error: " + e.message));
     }
 
-    // पेज लोड होने पर रन करें
-    window.onload = checkCloudHoliday;
+    window.onload = checkCloudData;
 </script>
 </body>
 </html>
