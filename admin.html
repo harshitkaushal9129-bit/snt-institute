@@ -13,14 +13,8 @@
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         button:disabled { background: #9ca3af; }
-        
-        /* Student Info Display */
-        #studentInfo { 
-            display: none; background: #eef2ff; padding: 15px; border-radius: 10px; 
-            margin-bottom: 15px; border-left: 5px solid #3b5998; align-items: center; gap: 15px;
-        }
+        #studentInfo { display: none; background: #eef2ff; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #3b5998; align-items: center; gap: 15px; }
         #studentInfo img { width: 70px; height: 85px; border: 1px solid #3b5998; border-radius: 4px; object-fit: cover; }
-        .info-text p { margin: 2px 0; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -59,21 +53,21 @@
         </div>
 
         <div class="input-group">
-            <label>Topics Covered (Use comma , to separate)</label>
-            <textarea id="topics" rows="3" placeholder="MS OFFICE, PHOTOSHOP, HARDWARE, HTML"></textarea>
+            <label>Topics Covered (Use comma ,)</label>
+            <textarea id="topics" rows="3" placeholder="MS OFFICE, PHOTOSHOP, HARDWARE"></textarea>
         </div>
 
         <div class="input-group">
-            <label>Examining Authority (Name)</label>
+            <label>Examining Authority</label>
             <input type="text" id="sigName1" placeholder="e.g. Harshit Kaushal">
         </div>
 
         <div class="input-group">
-            <label>Managing Director (Name)</label>
+            <label>Managing Director</label>
             <input type="text" id="sigName2" placeholder="e.g. S.N. Tiwari">
         </div>
 
-        <button onclick="sendToBasic()" id="genBtn" disabled>Generate Certificate</button>
+        <button onclick="saveAndGenerate()" id="genBtn" disabled>Save & Generate Certificate</button>
     </div>
 
     <script>
@@ -88,41 +82,34 @@
 
         function fetchStudent() {
             const id = document.getElementById('stuId').value.trim().toUpperCase();
-            if(!id) return alert("Please enter ID");
-            
             db.ref('students').orderByChild('studentId').equalTo(id).once('value', snapshot => {
                 if (snapshot.exists()) {
                     const student = Object.values(snapshot.val())[0];
-                    
-                    // UI mein details dikhana
                     document.getElementById('studentInfo').style.display = 'flex';
                     document.getElementById('viewName').innerText = student.name;
                     document.getElementById('viewCourse').innerText = student.course || (student.courses ? student.courses[0] : "N/A");
                     document.getElementById('viewPhoto').src = student.profilePicture || 'SNT.jpg';
-                    
                     document.getElementById('genBtn').disabled = false;
-                } else { 
-                    alert("ID Not Found in Database"); 
-                    document.getElementById('studentInfo').style.display = 'none';
-                    document.getElementById('genBtn').disabled = true;
-                }
+                } else { alert("ID Not Found"); }
             });
         }
 
-        function sendToBasic() {
+        function saveAndGenerate() {
             const id = document.getElementById('stuId').value.trim().toUpperCase();
-            const sDate = document.getElementById('startDate').value;
-            const eDate = document.getElementById('endDate').value;
-            const grade = encodeURIComponent(document.getElementById('grade').value);
-            const topics = encodeURIComponent(document.getElementById('topics').value); // New field
-            
-            const n1 = encodeURIComponent(document.getElementById('sigName1').value || "Authorized Signature");
-            const n2 = encodeURIComponent(document.getElementById('sigName2').value || "Director Signature");
-            
-            // Ab topics bhi URL mein jayenge
-            const url = `basic.html?id=${id}&start=${sDate}&end=${eDate}&grade=${grade}&n1=${n1}&n2=${n2}&topics=${topics}`;
-            
-            window.open(url, '_blank');
+            const certData = {
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                grade: document.getElementById('grade').value,
+                topics: document.getElementById('topics').value,
+                n1: document.getElementById('sigName1').value || "Authorized Signature",
+                n2: document.getElementById('sigName2').value || "Director Signature"
+            };
+
+            // Firebase में डेटा को 'certificates/STUDENT_ID' के अंदर परमानेंट सेव करना
+            db.ref('certificates/' + id).set(certData).then(() => {
+                alert("Data Stored Permanently!");
+                window.open(`basic.html?id=${id}`, '_blank');
+            });
         }
     </script>
 </body>
