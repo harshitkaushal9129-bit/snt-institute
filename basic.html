@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>SNT Certificate</title>
+    <title>SNT Certificate View</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -25,14 +25,14 @@
         .sidebar { width: 250px; background: #3b5998 !important; color: white !important; padding: 50px 25px; box-sizing: border-box; }
         .sidebar h3 { font-size: 22px; border-bottom: 2px solid white; padding-bottom: 10px; margin-bottom: 25px; }
         .sidebar ul { list-style: none; padding: 0; }
-        .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; }
+        .sidebar ul li { font-size: 15px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
         
         .main-content { flex: 1; padding: 40px 150px 40px 40px; text-align: center; position: relative; }
         #student-photo { position: absolute; top: 60px; right: 20px; width: 135px; height: 165px; border: 2px solid #000; object-fit: cover; }
         #qrcode-container { position: absolute; top: 380px; right: 25px; background: white; padding: 6px; border: 1px solid #000; text-align: center; }
         
         .title-main { font-size: 70px; color: #3b5998 !important; letter-spacing: 4px; margin: 10px 0; font-weight: bold; }
-        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 30px; text-transform: uppercase; margin: 15px 0; }
+        .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 30px; text-transform: uppercase; margin: 15px 0; min-width: 300px; }
         
         .footer-info { position: absolute; bottom: 50px; width: 92%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
         .sig-box { text-align: center; width: 200px; }
@@ -45,7 +45,7 @@
 <body>
 
     <div class="admin-controls">
-        <input type="text" id="searchId" placeholder="Student ID (SNT-101)">
+        <input type="text" id="searchId" placeholder="Enter Student ID (e.g. SNT-101)">
         <button class="search-btn" onclick="fetchFullData()">Generate</button>
         <button class="print-btn" onclick="window.print()">PRINT</button>
     </div>
@@ -53,26 +53,28 @@
     <div id="certificate-container">
         <div id="certificate">
             <div class="sidebar">
-                <h3>TOPIC COVERED</h3>
+                <h3>TOPICS COVERED</h3>
                 <ul id="topic-list">
-                    <li>• MS OFFICE</li>
-                    <li>• PHOTOSHOP</li>
-                    <li>• INTERNET</li>
-                </ul>
+                    </ul>
             </div>
             <div class="main-content">
                 <div style="text-align: left; display: flex; align-items: center;">
                     <img src="SNT.jpg" style="width: 80px; margin-right: 15px;">
                     <div style="font-weight: bold; font-size: 26px; color: #3b5998;">SNT EDUCATION</div>
                 </div>
-                <img id="student-photo" src="">
+                <img id="student-photo" src="SNT.jpg">
                 <div class="title-main">CERTIFICATE</div>
                 <p style="font-size: 24px; font-style: italic; margin: 5px 0;">This Certificate is awarded to</p>
-                <div class="student-name" id="disp-name">...</div>
-                <p style="font-size: 20px; margin-top: 10px;">for successful completion of <b id="disp-course">Course Name</b></p>
+                <div class="student-name" id="disp-name">Loading...</div>
+                <p style="font-size: 20px; margin-top: 10px;">for successful completion of <b id="disp-course">...</b></p>
                 <p style="font-size: 22px; font-weight: bold; margin-top: 20px;">Conducted from <span id="disp-start"></span> to <span id="disp-end"></span></p>
                 <p style="font-size: 22px; font-weight: bold;">Result: <span id="disp-grade" style="color:#3b5998; font-size:28px;"></span></p>
-                <div id="qrcode-container"><div id="qrcode"></div><p style="font-size: 9px; margin-top: 5px; font-weight: bold;">VERIFY ONLINE</p></div>
+                
+                <div id="qrcode-container">
+                    <div id="qrcode"></div>
+                    <p style="font-size: 9px; margin-top: 5px; font-weight: bold;">VERIFY ONLINE</p>
+                </div>
+
                 <div class="footer-info">
                     <div style="text-align:left; font-size:13px; font-weight:bold;">ISO 9001:2015 Certified<br>Branch: Rudauli</div>
                     <div class="sig-box"><div id="s1-name" class="sig-cursive"></div><div class="sig-line">Examining Authority</div></div>
@@ -83,7 +85,12 @@
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+            authDomain: "snt-computer-institute.firebaseapp.com", 
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+            projectId: "snt-computer-institute" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -91,41 +98,52 @@
             const id = document.getElementById('searchId').value.trim().toUpperCase();
             if (!id) return;
 
-            // 1. Fetch Student Profile
-            const studentSnap = await db.ref('students').orderByChild('studentId').equalTo(id).once('value');
-            if (studentSnap.exists()) {
-                const student = Object.values(studentSnap.val())[0];
-                document.getElementById('disp-name').innerText = student.name;
-                document.getElementById('student-photo').src = student.profilePicture || 'SNT.jpg';
-                document.getElementById('disp-course').innerText = student.course || (student.courses ? student.courses[0] : "Course");
-            }
+            // Clear previous data
+            document.getElementById('topic-list').innerHTML = "";
 
-            // 2. Fetch Saved Certificate Details (Permanently Saved One)
-            const certSnap = await db.ref('certificates/' + id).once('value');
-            if (certSnap.exists()) {
-                const cert = certSnap.val();
-                document.getElementById('disp-start').innerText = cert.startDate || '---';
-                document.getElementById('disp-end').innerText = cert.endDate || '---';
-                document.getElementById('disp-grade').innerText = cert.grade || '---';
-                document.getElementById('s1-name').innerText = cert.n1 || '';
-                document.getElementById('s2-name').innerText = cert.n2 || '';
+            try {
+                // 1. Fetch Certificate Data
+                const certSnap = await db.ref('certificates/' + id).once('value');
+                if (certSnap.exists()) {
+                    const cert = certSnap.val();
+                    document.getElementById('disp-name').innerText = cert.name;
+                    document.getElementById('disp-course').innerText = cert.course;
+                    document.getElementById('disp-start').innerText = cert.startDate || '---';
+                    document.getElementById('disp-end').innerText = cert.endDate || '---';
+                    document.getElementById('disp-grade').innerText = cert.grade || '---';
+                    document.getElementById('s1-name').innerText = cert.n1 || '';
+                    document.getElementById('s2-name').innerText = cert.n2 || '';
 
-                if (cert.topics) {
-                    const list = document.getElementById('topic-list');
-                    list.innerHTML = "";
-                    cert.topics.split(',').forEach(t => {
-                        const li = document.createElement('li');
-                        li.innerText = `• ${t.trim().toUpperCase()}`;
-                        list.appendChild(li);
-                    });
+                    // Topics rendering
+                    if (cert.topics) {
+                        cert.topics.split(',').forEach(t => {
+                            const li = document.createElement('li');
+                            li.innerText = `• ${t.trim()}`;
+                            document.getElementById('topic-list').appendChild(li);
+                        });
+                    }
+                } else {
+                    alert("No Permanent Data Found for this ID!");
                 }
-            }
 
-            // Generate QR
-            document.getElementById("qrcode").innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), { text: `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${id}`, width: 90, height: 90 });
+                // 2. Fetch Photo separately from students node
+                const stuSnap = await db.ref('students').orderByChild('studentId').equalTo(id).once('value');
+                if (stuSnap.exists()) {
+                    const stu = Object.values(stuSnap.val())[0];
+                    document.getElementById('student-photo').src = stu.profilePicture || 'SNT.jpg';
+                }
+
+                // Generate QR
+                document.getElementById("qrcode").innerHTML = "";
+                new QRCode(document.getElementById("qrcode"), { 
+                    text: `https://harshitkaushal9129-bit.github.io/snt-institute/verify.html?id=${id}`, 
+                    width: 80, height: 80 
+                });
+
+            } catch (e) { console.error(e); }
         }
 
+        // Auto-load if ID is in URL
         const urlParams = new URLSearchParams(window.location.search);
         if(urlParams.get('id')) {
             document.getElementById('searchId').value = urlParams.get('id');
