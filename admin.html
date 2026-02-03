@@ -90,26 +90,29 @@
                     document.getElementById('viewCourse').innerText = student.course || (student.courses ? student.courses[0] : "N/A");
                     document.getElementById('viewPhoto').src = student.profilePicture || 'SNT.jpg';
                     document.getElementById('genBtn').disabled = false;
-                } else { alert("ID Not Found"); }
+                } else { alert("Student ID Not Found"); }
             });
         }
 
         function saveAndGenerate() {
             const id = document.getElementById('stuId').value.trim().toUpperCase();
             const certData = {
+                studentId: id,
+                name: document.getElementById('viewName').innerText,
+                course: document.getElementById('viewCourse').innerText,
                 startDate: document.getElementById('startDate').value,
                 endDate: document.getElementById('endDate').value,
                 grade: document.getElementById('grade').value,
                 topics: document.getElementById('topics').value,
                 n1: document.getElementById('sigName1').value || "Authorized Signature",
-                n2: document.getElementById('sigName2').value || "Director Signature"
+                n2: document.getElementById('sigName2').value || "Director Signature",
+                timestamp: new Date().getTime()
             };
 
-            // Firebase में डेटा को 'certificates/STUDENT_ID' के अंदर परमानेंट सेव करना
             db.ref('certificates/' + id).set(certData).then(() => {
-                alert("Data Stored Permanently!");
+                alert("Data Saved Successfully!");
                 window.open(`basic.html?id=${id}`, '_blank');
-            });
+            }).catch(e => alert("Error: " + e.message));
         }
     </script>
 </body>
