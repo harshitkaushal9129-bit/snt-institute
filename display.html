@@ -45,9 +45,14 @@
 </head>
 <body oncontextmenu="return false;">
 
-  <header><h1>SNT Computer Institute</h1><button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="exportFullData()">📥</button></header>
+  <header>
+    <h1>SNT Computer Institute</h1>
+    <button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="location.reload()">🔄</button>
+  </header>
   
-  <div class="search-container"><input type="text" id="search-input" placeholder="नाम या मोबाइल नंबर से खोजें..." onkeyup="filterTable()"></div>
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="नाम, मोबाइल या Gmail से खोजें..." onkeyup="filterTable()">
+  </div>
   
   <div class="outer-wrapper">
     <div class="table-scroll">
@@ -59,13 +64,15 @@
               <th>फोटो</th>
               <th>विद्यार्थी विवरण</th>
               <th>कोर्स</th>
-              <th>मोबाइल</th> <th>हाजिरी</th>
+              <th>मोबाइल / Gmail</th> 
+              <th>हाजिरी</th>
               <th>फीस इतिहास</th>
               <th>इनाम</th>
               <th>प्रिंट</th>
             </tr>
           </thead>
-          <tbody id="table-body"></tbody>
+          <tbody id="table-body">
+            </tbody>
         </table>
     </div>
   </div>
@@ -80,59 +87,70 @@
 
   <div id="payment-form" class="form-box">
     <h3>मासिक फीस जमा करें</h3>
-    <select id="p-month"><option>Admission Fee</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select>
+    <select id="p-month">
+      <option>Admission Fee</option><option>January</option><option>February</option><option>March</option>
+      <option>April</option><option>May</option><option>June</option><option>July</option>
+      <option>August</option><option>September</option><option>October</option><option>November</option><option>December</option>
+    </select>
     <input type="number" id="p-amount" placeholder="राशि ₹">
     <button class="btn btn-green" style="width:100%" onclick="genQRCode('fee')">QR कोड दिखाएँ</button>
   </div>
 
   <div id="extra-charge-form" class="form-box">
-    <h3>अन्य चार्ज</h3><input type="text" id="e-reason" placeholder="कारण"><input type="number" id="e-amount" placeholder="राशि ₹"><button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
+    <h3>अन्य चार्ज</h3>
+    <input type="text" id="e-reason" placeholder="कारण (जैसे- Exam, Card)">
+    <input type="number" id="e-amount" placeholder="राशि ₹">
+    <button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
   </div>
 
   <div id="password-modal">
     <div class="modal-content">
-        <h3 id="pin-msg">🔒 एडमिन पिन दर्ज करें</h3><input type="password" id="pin-input" readonly placeholder="******" style="text-align:center; font-size:20px; border:2px solid #eee; width:80%;">
-        <div class="calc-grid"><button class="calc-btn" onclick="addPin('1')">1</button><button class="calc-btn" onclick="addPin('2')">2</button><button class="calc-btn" onclick="addPin('3')">3</button><button class="calc-btn" onclick="addPin('4')">4</button><button class="calc-btn" onclick="addPin('5')">5</button><button class="calc-btn" onclick="addPin('6')">6</button><button class="calc-btn" onclick="addPin('7')">7</button><button class="calc-btn" onclick="addPin('8')">8</button><button class="calc-btn" onclick="addPin('9')">9</button><button class="calc-btn" style="color:red" onclick="clearPin()">C</button><button class="calc-btn" onclick="addPin('0')">0</button><button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button></div>
+        <h3 id="pin-msg">🔒 पिन दर्ज करें</h3>
+        <input type="password" id="pin-input" readonly placeholder="******" style="text-align:center; font-size:20px; border:2px solid #eee; width:80%;">
+        <div class="calc-grid">
+            <button class="calc-btn" onclick="addPin('1')">1</button><button class="calc-btn" onclick="addPin('2')">2</button><button class="calc-btn" onclick="addPin('3')">3</button>
+            <button class="calc-btn" onclick="addPin('4')">4</button><button class="calc-btn" onclick="addPin('5')">5</button><button class="calc-btn" onclick="addPin('6')">6</button>
+            <button class="calc-btn" onclick="addPin('7')">7</button><button class="calc-btn" onclick="addPin('8')">8</button><button class="calc-btn" onclick="addPin('9')">9</button>
+            <button class="calc-btn" style="color:red" onclick="clearPin()">C</button><button class="calc-btn" onclick="addPin('0')">0</button>
+            <button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button>
+        </div>
         <button onclick="closePinModal()" style="margin-top:15px; border:none; background:none; cursor:pointer; color:gray;">रद्द करें</button>
     </div>
   </div>
 
   <div id="common-modal">
-      <div class="modal-content" id="qr-ui" style="display:none;"><h3 id="qr-title">Sandeep Kumar</h3><div id="qrcode-container" style="display: flex; justify-content: center; margin: 15px 0;"></div><p id="qr-text"></p><button class="btn btn-green" id="confirm-btn">✅ भुगतान सफल</button><button onclick="closeModal()" style="margin-top:10px; border:none; background:none; color:gray; cursor:pointer;">बंद करें</button></div>
-      <div class="modal-content" id="scratch-ui" style="display:none;"><h3>विद्यार्थी का इनाम</h3><div class="scratch-container"><div class="reward-under"><h2 id="win-txt">₹0</h2><p>नकद पुरस्कार</p></div><canvas id="scratch-canvas" width="260" height="260"></canvas></div><button onclick="saveReward()" class="btn btn-orange" style="width:100%">✅ खाते में जोड़ें</button></div>
+      <div class="modal-content" id="qr-ui" style="display:none;">
+          <h3 id="qr-title">Sandeep Kumar</h3>
+          <div id="qrcode-container" style="display: flex; justify-content: center; margin: 15px 0;"></div>
+          <p id="qr-text"></p>
+          <button class="btn btn-green" id="confirm-btn">✅ भुगतान सफल</button>
+          <button onclick="closeModal()" style="margin-top:10px; border:none; background:none; color:gray; cursor:pointer;">बंद करें</button>
+      </div>
+      <div class="modal-content" id="scratch-ui" style="display:none;">
+          <h3>विद्यार्थी का इनाम</h3>
+          <div class="scratch-container">
+              <div class="reward-under"><h2 id="win-txt">₹0</h2><p>नकद पुरस्कार</p></div>
+              <canvas id="scratch-canvas" width="260" height="260"></canvas>
+          </div>
+          <button onclick="saveReward()" class="btn btn-orange" style="width:100%">✅ खाते में जोड़ें</button>
+      </div>
   </div>
 
   <script>
-    // --- सुरक्षा और कीबोर्ड ब्लॉक स्क्रिप्ट ---
-    document.addEventListener('keydown', function(e) {
-        // F1 (112) से F12 (123) ब्लॉक करें
-        if (e.keyCode >= 112 && e.keyCode <= 123) {
-            e.preventDefault();
-            return false;
-        }
-        // Ctrl+Shift+I (73), J (74), C (67) और Ctrl+U (85) ब्लॉक करें
-        if (e.ctrlKey && (e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67) || e.keyCode === 85)) {
-            e.preventDefault();
-            return false;
-        }
+    // --- Security ---
+    document.addEventListener('keydown', (e) => {
+        if (e.keyCode >= 112 && e.keyCode <= 123) e.preventDefault();
+        if (e.ctrlKey && (e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67) || e.keyCode === 85)) e.preventDefault();
     });
 
-    // फुल स्क्रीन मोड फंक्शन
-    function launchFullScreen() {
-        const doc = document.documentElement;
-        try {
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-            else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
-        } catch (err) { console.log("FullScreen Error"); }
-    }
-    document.addEventListener('click', launchFullScreen, { once: true });
-
-    // Developer Tool ब्लॉक करने के लिए Debugger लूप
-    setInterval(function() { debugger; }, 1000);
-
-    // --- Firebase और डैशबोर्ड लॉजिक ---
-    const firebaseConfig = { apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", authDomain: "snt-computer-institute.firebaseapp.com", databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", projectId: "snt-computer-institute", storageBucket: "snt-computer-institute.firebasestorage.app", messagingSenderId: "117580784781", appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" };
+    // --- Firebase Initialization ---
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+        authDomain: "snt-computer-institute.firebaseapp.com", 
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+        projectId: "snt-computer-institute", 
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
@@ -143,6 +161,7 @@
     let lastWinAmount = 0;
     const MASTER_PIN = "912919";
 
+    // --- Load Students ---
     function fetchStudents() {
         db.ref('students').on('value', (snapshot) => {
             const data = snapshot.val();
@@ -156,33 +175,30 @@
                     usersData.push(u);
                     let pHist = (u.paymentHistory || []).map(p => `<span class="fee-badge">${p.month}: ₹${p.amount}</span>`).join('');
                     let eHist = (u.extraHistory || []).map(e => `<span class="fee-badge extra-badge">${e.reason}: ₹${e.amount}</span>`).join('');
-                    let statusColor = u.registrationStatus === "Pending" ? "color:red" : "color:gray";
+                    
                     tbody.innerHTML += `<tr>
                       <td><input type="checkbox" class="st-check" data-id="${key}"></td>
                       <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td> 
-                      <td><img src="${u.profilePicture || 'https://via.placeholder.com/50'}" class="profile-img"></td>
-                      <td style="text-align:left;"><b>${u.name}</b><br><small style="${statusColor}">${u.registrationStatus || 'Paid'}</small></td>
-                      <td><span class="fee-badge extra-badge">${u.courses ? u.courses[0] : (u.course || 'N/A')}</span></td>
-                      <td style="font-weight:500;">${u.mobile || u.phone || '-'}</td> 
-                      <td onclick="location.href='calendar.html?id=${key}&name=${u.name}'"><div class="att-count">Check Status</div></td>
+                      <td><img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img"></td>
+                      <td style="text-align:left;"><b>${u.name}</b><br><small style="color:${u.registrationStatus === 'Pending' ? 'red' : 'green'}">${u.registrationStatus || 'Paid'}</small></td>
+                      <td><span class="fee-badge extra-badge">${u.courses ? u.courses.join(', ') : 'N/A'}</span></td>
+                      <td style="font-size:11px;">${u.mobile || u.phone}<br>${u.email || ''}</td> 
+                      <td><div class="att-count" onclick="location.href='calendar.html?id=${key}&name=${u.name}'">📅 History</div></td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
                       <td style="color:var(--success); font-weight:bold;">₹${u.wonCash || 0}</td>
-                      <td><button class="btn" onclick="window.location.href='basic.html?search=${u.name}'">🖨️</button></td>
+                      <td><button class="btn" onclick="window.location.href='receipt.html?id=${key}'">🖨️</button></td>
                     </tr>`;
                 });
             }
         });
     }
 
+    // --- PIN System ---
     function openPinGate(target) {
-        if(target === 'delete') { 
-          let chks = document.querySelectorAll('.st-check:checked'); 
-          if(chks.length == 0) return alert("विद्यार्थी चुनें!"); 
-        }
+        if(target === 'delete' && document.querySelectorAll('.st-check:checked').length === 0) return alert("विद्यार्थी चुनें!");
         pinTarget = target; enteredPin = ""; 
         document.getElementById('pin-input').value = ""; 
         document.getElementById('password-modal').style.display = 'flex';
-        document.getElementById('pin-msg').innerText = target === 'attendance' ? "🔒 हाजिरी एक्सेस पिन डालें" : "🔒 डिलीट एक्सेस पिन डालें";
     }
 
     function addPin(num) { if(enteredPin.length < 6) { enteredPin += num; document.getElementById('pin-input').value = enteredPin.replace(/./g, '●'); } }
@@ -191,32 +207,40 @@
     
     function verifyPin() {
         if(enteredPin === MASTER_PIN) {
-            if(pinTarget === 'attendance') { location.href = 'attendence.html'; } else if(pinTarget === 'delete') { deleteRows(); }
+            if(pinTarget === 'attendance') location.href = 'attendence.html';
+            else if(pinTarget === 'delete') deleteRows();
             closePinModal();
-        } else { alert("गलत पासवर्ड!"); clearPin(); }
+        } else { alert("गलत पिन!"); clearPin(); }
     }
 
     function deleteRows() {
-        let chks = Array.from(document.querySelectorAll('.st-check:checked'));
         if(!confirm("क्या आप वाकई डेटा डिलीट करना चाहते हैं?")) return;
-        chks.forEach(c => db.ref('students/' + c.dataset.id).remove()); alert("डिलीट सफल!");
+        document.querySelectorAll('.st-check:checked').forEach(c => db.ref('students/' + c.dataset.id).remove());
+        alert("सफलतापूर्वक हटाया गया!");
     }
 
+    // --- Payments & QR ---
     function genQRCode(type) {
         const sel = document.querySelector('.st-check:checked');
         if(!sel) return alert("विद्यार्थी चुनें!");
         currentId = sel.dataset.id;
         let amt = (type === 'fee') ? document.getElementById('p-amount').value : document.getElementById('e-amount').value;
-        let label = (type === 'fee') ? document.getElementById('p-month').value : (document.getElementById('e-reason').value || "Charge");
+        let label = (type === 'fee') ? document.getElementById('p-month').value : document.getElementById('e-reason').value;
         if(!amt) return alert("राशि भरें!");
+
         document.getElementById('common-modal').style.display='flex'; 
         document.getElementById('qr-ui').style.display='block'; 
         document.getElementById('scratch-ui').style.display='none';
         document.getElementById('qrcode-container').innerHTML = "";
-        new QRCode(document.getElementById('qrcode-container'), { text: `upi://pay?pa=9580807075@ybl&pn=Sandeep%20Kumar&am=${amt}&cu=INR`, width:180, height:180 });
+        
+        new QRCode(document.getElementById('qrcode-container'), { 
+            text: `upi://pay?pa=9580807075@ybl&pn=Sandeep%20Kumar&am=${amt}&cu=INR`, 
+            width:180, height:180 
+        });
+        
         document.getElementById('qr-title').innerText = usersData.find(u => u.id === currentId).name;
         document.getElementById('qr-text').innerText = `${label}: ₹${amt}`;
-        document.getElementById('confirm-btn').onclick = function() { confirmPayment(type, amt, label); };
+        document.getElementById('confirm-btn').onclick = () => confirmPayment(type, amt, label);
     }
 
     function confirmPayment(type, amt, label) {
@@ -229,24 +253,27 @@
             if(!student.extraHistory) student.extraHistory = [];
             student.extraHistory.push({reason: label, amount: amt, date: new Date().toLocaleDateString()});
         }
-        db.ref('students/' + currentId).update(student).then(() => { closeModal(); window.open('receipt.html', '_blank'); });
-    }
-
-    function showForm(id) { 
-        document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none'); 
-        if(id !== 'none') document.getElementById(id).style.display = 'block'; 
-    }
-    
-    function closeModal() { document.getElementById('common-modal').style.display='none'; }
-    
-    function filterTable() {
-        let input = document.getElementById('search-input').value.toLowerCase();
-        document.querySelectorAll('#table-body tr').forEach(row => { 
-            row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none'; 
+        db.ref('students/' + currentId).update(student).then(() => {
+            closeModal();
+            alert("Payment Recorded!");
         });
     }
 
-    // --- स्क्रैच कूपन लॉजिक ---
+    function filterTable() {
+        let input = document.getElementById('search-input').value.toLowerCase();
+        document.querySelectorAll('#table-body tr').forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
+        });
+    }
+
+    function showForm(id) {
+        document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+    }
+
+    function closeModal() { document.getElementById('common-modal').style.display='none'; }
+
+    // --- Scratch Coupon ---
     const canvas = document.getElementById('scratch-canvas'); 
     const ctx = canvas.getContext('2d'); 
     let isDrawing = false;
@@ -255,7 +282,7 @@
         const sel = document.querySelector('.st-check:checked'); 
         if(!sel) return alert("विद्यार्थी चुनें!");
         currentId = sel.dataset.id; 
-        lastWinAmount = Math.floor(Math.random() * 20) + 1;
+        lastWinAmount = Math.floor(Math.random() * 15) + 1;
         document.getElementById('win-txt').innerText = `₹${lastWinAmount}`;
         document.getElementById('common-modal').style.display='flex'; 
         document.getElementById('scratch-ui').style.display='block'; 
@@ -265,8 +292,8 @@
         ctx.fillStyle = '#C0C0C0'; 
         ctx.fillRect(0, 0, 260, 260);
         ctx.fillStyle = "#888";
-        ctx.font = "20px Arial";
-        ctx.fillText("SCRATCH HERE", 50, 135);
+        ctx.font = "bold 20px Arial";
+        ctx.fillText("SNT SCRATCH", 60, 135);
     }
 
     function scratch(e) {
@@ -277,27 +304,22 @@
         ctx.globalCompositeOperation = 'destination-out'; 
         ctx.lineWidth = 40; 
         ctx.lineCap = 'round'; 
-        ctx.beginPath(); 
-        ctx.moveTo(x, y); 
-        ctx.lineTo(x, y); 
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y); ctx.stroke();
     }
 
     canvas.addEventListener('mousedown', () => isDrawing = true);
     canvas.addEventListener('touchstart', (e) => { isDrawing = true; e.preventDefault(); });
     window.addEventListener('mouseup', () => isDrawing = false);
-    window.addEventListener('touchend', () => isDrawing = false);
     canvas.addEventListener('mousemove', scratch);
     canvas.addEventListener('touchmove', scratch);
 
     function saveReward() {
         let student = usersData.find(u => u.id === currentId);
-        let currentWon = parseInt(student.wonCash || 0);
-        db.ref('students/' + currentId).update({ wonCash: currentWon + lastWinAmount })
-          .then(() => {
-              alert(`बधाई हो! ₹${lastWinAmount} जोड़ दिए गए।`);
-              closeModal();
-          });
+        let totalWon = (parseInt(student.wonCash) || 0) + lastWinAmount;
+        db.ref('students/' + currentId).update({ wonCash: totalWon }).then(() => {
+            alert(`Winner! ₹${lastWinAmount} added.`);
+            closeModal();
+        });
     }
 
     window.onload = fetchStudents;
