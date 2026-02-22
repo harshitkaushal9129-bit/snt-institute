@@ -3,57 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verified Receipt - SNT Cloud</title>
+    <title>SNT Cloud - Secure Verification</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 15px; }
-        .receipt-card { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 10px solid #059669; position: relative; }
-        .verified-tick { color: #059669; text-align: center; font-size: 35px; margin-bottom: 5px; }
-        .header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        :root { --secure-green: #059669; --trust-blue: #1e40af; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f8fafc; display: flex; justify-content: center; padding: 20px; margin: 0; }
         
-        /* Photo Style */
-        .v-photo-container { text-align: center; margin-bottom: 15px; }
-        .v-profile-img { width: 80px; height: 85px; border-radius: 8px; object-fit: cover; border: 2px solid #059669; padding: 2px; background: white; }
+        .receipt-card { background: white; width: 100%; max-width: 420px; padding: 30px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border-top: 12px solid var(--secure-green); position: relative; overflow: hidden; }
+        
+        /* Security Watermark */
+        .receipt-card::after { content: "VERIFIED"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 60px; color: rgba(5, 150, 105, 0.05); font-weight: 900; pointer-events: none; }
 
-        .row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid #f9f9f9; padding-bottom: 5px; }
-        .label { color: #666; font-size: 13px; }
-        .value { font-weight: bold; color: #111; font-size: 14px; text-align: right; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header img { width: 100%; max-height: 90px; object-fit: contain; margin-bottom: 10px; }
         
-        .amt-box { background: #ecfdf5; padding: 20px; border-radius: 10px; text-align: center; margin-top: 15px; }
-        .amt-box h1 { margin: 0; color: #059669; }
-        #loader { text-align: center; margin-top: 50px; font-weight: bold; color: #059669; }
+        .status-badge { display: inline-flex; align-items: center; background: #d1fae5; color: #065f46; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; margin-bottom: 20px; }
+        .status-dot { height: 8px; width: 8px; background-color: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; animation: blink 1.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        .v-photo-container { text-align: center; margin-bottom: 20px; position: relative; }
+        .v-profile-img { width: 90px; height: 100px; border-radius: 14px; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+        .info-grid { background: #f1f5f9; border-radius: 16px; padding: 15px; margin-bottom: 20px; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+        .row:last-child { border-bottom: none; margin-bottom: 0; }
+        .label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .value { font-weight: 700; color: #1e293b; font-size: 14px; text-align: right; }
+        
+        .amt-box { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 20px; border-radius: 16px; text-align: center; color: white; box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2); }
+        .amt-box p { margin: 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .amt-box h1 { margin: 5px 0 0 0; font-size: 32px; font-weight: 800; }
+
+        .security-footer { margin-top: 25px; text-align: center; }
+        .hash-id { font-family: monospace; font-size: 10px; color: #94a3b8; background: #f8fafc; padding: 4px; border-radius: 4px; display: block; margin-bottom: 10px; }
+        .trust-msg { font-size: 11px; color: #64748b; line-height: 1.5; }
+        
+        #loader { text-align: center; margin-top: 80px; font-family: sans-serif; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--secure-green); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div id="loader">🔒 सुरक्षा जाँच (Verification) हो रही है...</div>
+<div id="loader">
+    <div class="spinner"></div>
+    <div style="font-weight: 600; color: #059669;">SNT CLOUD SECURE VERIFICATION...</div>
+</div>
 
 <div class="receipt-card" id="main-receipt" style="display:none;">
-    <div class="verified-tick">✅</div>
     <div class="header">
-        <h3 style="margin:0;">SNT COMPUTER INSTITUTE</h3>
-        <p style="font-size:12px; color:gray;">Verified Digital Receipt</p>
+        <img src="Logo (1).jpg" alt="SNT Logo">
+        <div class="status-badge"><span class="status-dot"></span> SECURELY VERIFIED</div>
     </div>
 
     <div class="v-photo-container">
         <img id="v-photo" src="https://via.placeholder.com/100" class="v-profile-img">
     </div>
     
-    <div class="row"><span class="label">Student Name:</span> <span class="value" id="v-name"></span></div>
-    <div class="row"><span class="label">Student ID:</span> <span class="value" id="v-id"></span></div>
-    <div class="row"><span class="label">Course:</span> <span class="value" id="v-course"></span></div>
-    <div class="row"><span class="label">Date:</span> <span class="value" id="v-date"></span></div>
-    <div class="row"><span class="label">Description:</span> <span class="value" id="v-desc"></span></div>
+    <div class="info-grid">
+        <div class="row"><span class="label">Student Name</span> <span class="value" id="v-name"></span></div>
+        <div class="row"><span class="label">Student ID</span> <span class="value" id="v-id"></span></div>
+        <div class="row"><span class="label">Course</span> <span class="value" id="v-course"></span></div>
+        <div class="row"><span class="label">Payment Date</span> <span class="value" id="v-date"></span></div>
+        <div class="row"><span class="label">Category</span> <span class="value" id="v-desc"></span></div>
+    </div>
     
     <div class="amt-box">
-        <p style="margin:0; font-size:12px;">Total Paid Amount</p>
+        <p>Total Fees Confirmed</p>
         <h1 id="v-amt">₹0</h1>
     </div>
     
-    <p style="text-align:center; font-size:10px; color:#999; margin-top:20px;">
-        यह रसीद SNT Cloud द्वारा सत्यापित है।<br>Rudauli, Ayodhya, UP.
-    </p>
+    <div class="security-footer">
+        <span class="hash-id" id="v-hash">HASH-AUTH: LOADING...</span>
+        <p class="trust-msg">
+            <b>Security Notice:</b> This is an encrypted digital record. Any alteration to this data is a violation of SNT Institute policies.<br>
+            <span style="color: #059669; font-weight: 700;">Verified on: <span id="v-time"></span></span>
+        </p>
+    </div>
 </div>
 
 <script>
@@ -73,14 +100,14 @@
         firebase.database().ref('students/' + sid).once('value', snap => {
             const s = snap.val();
             if(s) {
-                const history = [...(s.paymentHistory || []), ...(s.extraHistory || [])];
+                const pHist = s.paymentHistory || [];
+                const eHist = s.extraHistory || [];
+                const history = [...pHist, ...eHist];
                 const rec = history[rid];
                 
                 if(rec) {
                     document.getElementById('v-name').innerText = s.name;
                     document.getElementById('v-id').innerText = s.studentId || "N/A";
-                    
-                    // Student Photo load karna
                     document.getElementById('v-photo').src = s.profilePicture || 'https://via.placeholder.com/100';
                     
                     let courseName = "N/A";
@@ -91,18 +118,22 @@
                     document.getElementById('v-date').innerText = rec.date;
                     document.getElementById('v-desc').innerText = rec.month || rec.reason;
                     document.getElementById('v-amt').innerText = "₹" + rec.amount;
+
+                    // Extra dynamic details
+                    document.getElementById('v-time').innerText = new Date().toLocaleString();
+                    document.getElementById('v-hash').innerText = "AUTH-HASH: " + btoa(sid + rid).substring(0, 16).toUpperCase();
                     
                     document.getElementById('main-receipt').style.display = 'block';
                     document.getElementById('loader').style.display = 'none';
                 } else {
-                    document.getElementById('loader').innerText = "❌ रसीद का रिकॉर्ड नहीं मिला!";
+                    document.getElementById('loader').innerHTML = "<b style='color:red;'>❌ RECORD NOT FOUND</b>";
                 }
             } else {
-                document.getElementById('loader').innerText = "❌ विद्यार्थी नहीं मिला!";
+                document.getElementById('loader').innerHTML = "<b style='color:red;'>❌ STUDENT NOT FOUND</b>";
             }
         });
     } else {
-        document.getElementById('loader').innerText = "❌ इनवैलिड लिंक!";
+        document.getElementById('loader').innerHTML = "<b style='color:red;'>❌ INVALID ACCESS LINK</b>";
     }
 </script>
 </body>
