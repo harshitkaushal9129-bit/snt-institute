@@ -3,69 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNT | Official Digital Verification</title>
+    <title>SNT | Digital Verified Admit Card</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --snt-blue: #1e3a8a; --success: #059669; }
-        body { background: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 15px; display: flex; justify-content: center; }
-
-        .verify-card {
-            max-width: 500px; width: 100%; background: #fff; border-radius: 15px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; border-top: 8px solid var(--snt-blue);
-            display: none; /* Data aane par dikhega */
-        }
-
-        .verify-header { background: #f8fafc; padding: 20px; text-align: center; border-bottom: 1px solid #e5e7eb; }
-        .status-badge { 
-            background: var(--success); color: white; padding: 5px 15px; border-radius: 20px; 
-            font-size: 14px; font-weight: bold; display: inline-block; margin-bottom: 10px;
-        }
-
-        .student-photo { width: 100px; height: 120px; border: 3px solid var(--snt-blue); margin: 10px auto; display: block; object-fit: cover; border-radius: 8px; }
-
-        .info-grid { padding: 20px; }
-        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; }
-        .info-label { color: #6b7280; font-size: 13px; font-weight: 600; }
-        .info-value { color: #111827; font-size: 15px; font-weight: 700; text-align: right; }
-
-        .official-seal { text-align: center; padding: 20px; background: #fffcf0; font-size: 12px; color: #854d0e; font-weight: bold; }
+        :root { --snt-blue: #1e3a8a; --success-green: #059669; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 10px; }
         
+        /* Admit Card Style Container */
+        .admit-card { 
+            max-width: 750px; margin: 20px auto; background: #fff; border: 2px solid #000; padding: 25px; 
+            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none;
+        }
+
+        /* Verified Watermark */
+        .admit-card::before {
+            content: "VERIFIED"; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-35deg);
+            font-size: 100px; color: rgba(5, 150, 105, 0.08); z-index: 0; pointer-events: none; font-weight: 900;
+        }
+
+        .header { display: flex; align-items: center; border-bottom: 3px solid var(--snt-blue); padding-bottom: 10px; margin-bottom: 15px; }
+        .logo-img { width: 80px; height: 80px; border-radius: 50%; border: 1px solid #ddd; object-fit: cover; }
+        .header-text { flex-grow: 1; text-align: center; }
+        .header-text h1 { margin: 0; color: var(--snt-blue); font-size: 24px; text-transform: uppercase; }
+        .header-text p { margin: 2px 0; font-size: 11px; font-weight: bold; }
+
+        .verification-badge {
+            background: var(--success-green); color: white; text-align: center; 
+            padding: 5px; font-weight: bold; font-size: 14px; margin-bottom: 15px;
+            border-radius: 4px; border: 1px solid #047857;
+        }
+
+        .section-title { background: #eee; padding: 5px 10px; font-size: 12px; font-weight: bold; border: 1px solid #000; margin-top: 15px; }
+        
+        .details-container { display: flex; gap: 15px; margin-top: 10px; }
+        .details-table { flex: 1; border-collapse: collapse; }
+        .details-table td { border: 1px solid #ccc; padding: 8px; font-size: 13px; }
+        .label { background: #f8fafc; width: 35%; font-weight: bold; }
+        .val { background: #fff; font-weight: 700; text-transform: uppercase; color: #1e3a8a; }
+
+        .photo-box { width: 120px; height: 140px; border: 2px solid #000; overflow: hidden; }
+        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .exam-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .exam-table th, .exam-table td { border: 1px solid #000; padding: 8px; font-size: 12px; text-align: center; }
+        
+        .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .sig-box { width: 160px; text-align: center; font-size: 10px; font-weight: bold; border-top: 2px solid #000; padding-top: 5px; }
+
+        /* Status Icon */
+        .verified-icon { width: 60px; height: 60px; }
+
         /* Loading Spinner */
-        #loader { text-align: center; margin-top: 50px; }
+        #loader { text-align: center; margin-top: 100px; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--snt-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            .admit-card { padding: 15px; }
+            .details-container { flex-direction: column-reverse; align-items: center; }
+            .photo-box { margin-bottom: 10px; }
+            .header-text h1 { font-size: 18px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div class="spinner"></div>
-        <p>Verifying Student Record...</p>
+        <p>Verifying with Database...</p>
     </div>
 
-    <div class="verify-card" id="verifyCard">
-        <div class="verify-header">
-            <div class="status-badge">✓ OFFICIALLY VERIFIED</div>
-            <h2 style="margin:5px 0; color:var(--snt-blue);">SNT INSTITUTE</h2>
-            <p style="margin:0; font-size:12px; color:#666;">Examination Verification Portal</p>
+    <div class="admit-card" id="verifyCard">
+        <div class="header">
+            <img src="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg" class="logo-img">
+            <div class="header-text">
+                <h1>SNT COMPUTER INSTITUTE</h1>
+                <p>Digital Literacy & Vocational Training Center</p>
+                <p>Rudauli, Ayodhya, Uttar Pradesh</p>
+            </div>
+            <svg class="verified-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
 
-        <img id="v-pic" src="" class="student-photo">
+        <div class="verification-badge">✓ ONLINE VERIFIED ADMIT CARD - 2026</div>
 
-        <div class="info-grid">
-            <div class="info-row"><span class="info-label">Student Name</span><span class="info-value" id="v-name">--</span></div>
-            <div class="info-row"><span class="info-label">Father's Name</span><span class="info-value" id="v-fname">--</span></div>
-            <div class="info-row"><span class="info-label">Registration ID</span><span class="info-value" id="v-id" style="color:var(--snt-blue);">--</span></div>
-            <div class="info-row"><span class="info-label">Course</span><span class="info-value" id="v-course">--</span></div>
-            <div class="info-row"><span class="info-label">Exam Status</span><span class="info-value" style="color:var(--success);">AUTHORIZED</span></div>
+        <div class="section-title">CANDIDATE INFORMATION</div>
+        <div class="details-container">
+            <table class="details-table">
+                <tr><td class="label">Name</td><td class="val" id="v-name">--</td></tr>
+                <tr><td class="label">Father's Name</td><td class="val" id="v-fname">--</td></tr>
+                <tr><td class="label">Student ID</td><td class="val" id="v-id">--</td></tr>
+                <tr><td class="label">Course</td><td class="val" id="v-course">--</td></tr>
+                <tr><td class="label">Status</td><td class="val" style="color:var(--success-green);">OFFICIALLY RECORDED</td></tr>
+            </table>
+            <div class="photo-box">
+                <img id="v-pic" src="https://via.placeholder.com/120x140?text=Photo">
+            </div>
         </div>
 
-        <div class="official-seal">
-            Digitally Signed by SNT Computer Institute <br>
-            Rudauli, Ayodhya, UP
+        <div class="section-title">EXAMINATION SCHEDULE (LATEST)</div>
+        <table class="exam-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Timing</th>
+                    <th>Module</th>
+                    <th>Exam Center</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="v-date">--</td>
+                    <td id="v-time">--</td>
+                    <td id="v-module">--</td>
+                    <td>SNT MAIN CAMPUS</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 20px; border: 1px dashed #059669; padding: 10px; font-size: 11px; background: #f0fdf4; color: #166534;">
+            <b>Verification Note:</b> This is a digitally verified document. The student's record has been matched with the SNT Cloud Database. No physical stamp is required for digital verification.
+        </div>
+
+        <div class="footer">
+            <div class="sig-box">System Generated</div>
+            <div class="sig-box">Controller of Examination</div>
         </div>
     </div>
 
@@ -83,32 +150,42 @@
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const sid = urlParams.get('sid');
-
-            if (sid) {
-                verifyRecord(sid);
-            } else {
-                document.getElementById('loader').innerHTML = "<p style='color:red;'>Invalid Link: No Student ID Found.</p>";
-            }
+            if (sid) { verifyRecord(sid); } 
+            else { document.getElementById('loader').innerHTML = "<p style='color:red;'>Error: Link Corrupted!</p>"; }
         };
 
         function verifyRecord(studentId) {
+            // Fetch Student Details
             db.ref('students').orderByChild('studentId').equalTo(studentId).once('value', (snap) => {
                 const data = snap.val();
                 if (data) {
                     const student = Object.values(data)[0];
-                    
                     document.getElementById('v-name').innerText = student.name;
                     document.getElementById('v-fname').innerText = student.fatherName || student.fname || "N/A";
                     document.getElementById('v-id').innerText = student.studentId;
                     document.getElementById('v-course').innerText = (Array.isArray(student.courses)) ? student.courses[0] : (student.course || "N/A");
-                    document.getElementById('v-pic').src = student.profilePicture || student.pic || "https://via.placeholder.com/100x120?text=No+Photo";
+                    document.getElementById('v-pic').src = student.profilePicture || student.pic || "https://via.placeholder.com/120x140?text=No+Photo";
                     
-                    // Show Card, Hide Loader
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('verifyCard').style.display = 'block';
+                    // Fetch Exam Details
+                    fetchExam(studentId);
                 } else {
-                    document.getElementById('loader').innerHTML = "<h3 style='color:red;'>Record Not Found!</h3><p>This is not a verified SNT Student ID.</p>";
+                    document.getElementById('loader').innerHTML = "<h3 style='color:red;'>Record Not Found!</h3>";
                 }
+            });
+        }
+
+        function fetchExam(studentId) {
+            db.ref('theoryRegistrations').orderByChild('studentId').equalTo(studentId).once('value', (snap) => {
+                const data = snap.val();
+                if (data) {
+                    const latest = Object.values(data)[0];
+                    document.getElementById('v-date').innerText = latest.examDate || "TBA";
+                    document.getElementById('v-time').innerText = latest.examTiming || "--:--";
+                    document.getElementById('v-module').innerText = latest.module || "TBA";
+                }
+                // Show Card
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('verifyCard').style.display = 'block';
             });
         }
     </script>
