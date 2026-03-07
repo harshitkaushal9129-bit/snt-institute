@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT CBT Exam | Official Portal</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --snt-blue: #1b365d; --snt-orange: #f39200; --green: #16a34a; --red: #dc2626; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #e5e7eb; user-select: none; }
+        
+        /* Layouts */
+        #login-screen, #profile-wait-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .login-card { background: white; width: 380px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--snt-blue); }
+        
+        #exam-header { background: white; padding: 10px 25px; display: none; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--snt-blue); }
+        .main-layout { display: none; height: calc(100vh - 60px); }
+        .exam-area { flex: 1; padding: 30px; background: white; overflow-y: auto; }
+        .sidebar { width: 280px; background: #f8f9fa; border-left: 1px solid #ddd; padding: 15px; }
+
+        .options-list { list-style: none; padding: 0; }
+        .options-list li { padding: 15px; background: #f1f5f9; margin-bottom: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; }
+        .options-list li.selected { background: var(--snt-blue); color: white; }
+
+        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; }
+        .pal-btn { height: 35px; border: 1px solid #ccc; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; border-radius: 4px; }
+        .pal-btn.ans { background: var(--green) !important; color: white; }
+        .pal-btn.visited { background: var(--red) !important; color: white; }
+        
+        .btn-action { width: 100%; padding: 12px; background: var(--snt-blue); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #summary-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; display:none; align-items:center; justify-content:center; color: white; text-align: center; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div id="login-screen">
+    <img src="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg" width="80" style="border-radius: 50%; margin-bottom: 10px;">
+    <div class="login-card">
+        <h2 style="text-align:center; color:var(--snt-blue);">Student Login</h2>
+        <label>Student ID</label>
+        <input type="text" id="l-roll" style="width:100%; padding:10px; margin: 10px 0;" placeholder="SNT..." oninput="checkIdentity()">
+        <p id="crack-status" style="font-size:12px; font-weight:bold;"></p>
+        <label>Password (DOB)</label>
+        <input type="password" id="l-pass" style="width:100%; padding:10px; margin: 10px 0;" readonly>
+        <button class="btn-action" onclick="startVerification()">LOGIN</button>
+    </div>
+</div>
+
+<div id="profile-wait-screen" style="display:none;">
+    <img id="u-img" src="" width="120" height="120" style="border-radius:50%; border:4px solid var(--snt-blue); object-fit:cover;">
+    <h2 id="u-name"></h2>
+    <p id="u-course"></p>
+    <p>Exam starting in <span id="timer-sec">10</span>s...</p>
+</div>
+
+<header id="exam-header">
+    <b>SNT ONLINE EXAM 2026</b>
+    <div style="color:var(--red); font-weight:bold;">Time Left: <span id="timer-display">90:00</span></div>
+</header>
+
+<div class="main-layout" id="exam-panel">
+    <div class="exam-area">
+        <h3 id="q-num"></h3>
+        <p id="q-text-en" style="font-weight:bold; font-size:1.2rem;"></p>
+        <p id="q-text-hi" style="font-style:italic; color:#555;"></p>
+        <ul class="options-list" id="opt-container"></ul>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="prevQ()" style="padding:10px 20px;">Previous</button>
+            <button onclick="nextQ()" class="btn-action" style="width:150px;">Save & Next</button>
+        </div>
+    </div>
+    <div class="sidebar">
+        <div style="text-align:center;">
+            <img id="side-img" src="" width="80" height="90" style="border:1px solid #ccc; object-fit:cover;">
+            <p id="side-name" style="font-weight:bold;"></p>
+        </div>
+        <div class="palette-grid" id="palette"></div>
+        <button class="btn-action" style="background:var(--red); margin-top:20px;" onclick="showSummary()">SUBMIT</button>
+    </div>
+</div>
+
+<div id="summary-overlay">
+    <div id="summary-content"></div>
+</div>
+
+<script>
+// Firebase Setup
+const firebaseConfig = { 
+    apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+    authDomain: "snt-computer-institute.firebaseapp.com", 
+    databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+    projectId: "snt-computer-institute", 
+    appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let currentStudent = null, allQuestions = {}, examQuestions = [], userAnswers = [], visited = [], currentIndex = 0, timeRemaining = 5400;
+
+// JSON se Questions load karna
+async function loadJSON() {
+    try {
+        const res = await fetch('questions.json');
+        allQuestions = await res.json();
+    } catch(e) { console.error("JSON Error"); }
+}
+loadJSON();
+
+function checkIdentity() {
+    const id = document.getElementById('l-roll').value.trim().toUpperCase();
+    db.ref('students').orderByChild('studentId').equalTo(id).once('value', snap => {
+        const data = snap.val();
+        if(data) {
+            currentStudent = Object.values(data)[0];
+            document.getElementById('crack-status').innerText = "✅ " + currentStudent.name;
+            document.getElementById('crack-status').style.color = "green";
+            document.getElementById('l-pass').value = currentStudent.dob.replace(/[-/]/g, "");
+        } else {
+            document.getElementById('crack-status').innerText = "❌ ID Not Found";
+            document.getElementById('crack-status').style.color = "red";
+            currentStudent = null;
+        }
+    });
+}
+
+function startVerification() {
+    if(!currentStudent) return alert("Invalid Login");
+    
+    // Course matching logic from JSON
+    examQuestions = [];
+    const courses = currentStudent.courses || [];
+    courses.forEach(c => {
+        if(allQuestions[c]) examQuestions = [...examQuestions, ...allQuestions[c]];
+    });
+
+    if(examQuestions.length === 0) {
+        // Agar course match na ho to Default load karein
+        examQuestions = allQuestions["Default"] || [];
+    }
+
+    if(examQuestions.length === 0) return alert("No questions found for your course!");
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('profile-wait-screen').style.display = 'flex';
+    document.getElementById('u-img').src = currentStudent.profilePicture || "";
+    document.getElementById('u-name').innerText = currentStudent.name;
+    document.getElementById('u-course').innerText = courses.join(", ");
+
+    let sec = 10;
+    let t = setInterval(() => {
+        sec--;
+        document.getElementById('timer-sec').innerText = sec;
+        if(sec <= 0) { clearInterval(t); launchExam(); }
+    }, 1000);
+}
+
+function launchExam() {
+    document.getElementById('profile-wait-screen').style.display = 'none';
+    document.getElementById('exam-header').style.display = 'flex';
+    document.getElementById('exam-panel').style.display = 'flex';
+    document.getElementById('side-img').src = currentStudent.profilePicture || "";
+    document.getElementById('side-name').innerText = currentStudent.name;
+
+    userAnswers = new Array(examQuestions.length).fill(null);
+    visited = new Array(examQuestions.length).fill(false);
+    
+    renderPalette();
+    loadQuestion(0);
+    startTimer();
+}
+
+function renderPalette() {
+    const pal = document.getElementById('palette');
+    pal.innerHTML = "";
+    examQuestions.forEach((_, i) => {
+        const b = document.createElement('div');
+        b.className = "pal-btn";
+        b.id = "pal-" + i;
+        b.innerText = i + 1;
+        b.onclick = () => loadQuestion(i);
+        pal.appendChild(b);
+    });
+}
+
+function loadQuestion(idx) {
+    currentIndex = idx;
+    visited[idx] = true;
+    const q = examQuestions[idx];
+    document.getElementById('q-num').innerText = "Question " + (idx + 1);
+    document.getElementById('q-text-en').innerText = q.qe;
+    document.getElementById('q-text-hi').innerText = q.qh;
+    
+    const cont = document.getElementById('opt-container');
+    cont.innerHTML = "";
+    q.ae.forEach((opt, i) => {
+        const li = document.createElement('li');
+        li.innerText = opt;
+        if(userAnswers[idx] === i) li.className = "selected";
+        li.onclick = () => { userAnswers[idx] = i; loadQuestion(idx); };
+        cont.appendChild(li);
+    });
+    updatePalette();
+}
+
+function updatePalette() {
+    examQuestions.forEach((_, i) => {
+        const b = document.getElementById('pal-' + i);
+        b.className = "pal-btn";
+        if(userAnswers[i] !== null) b.classList.add('ans');
+        else if(visited[i]) b.classList.add('visited');
+    });
+}
+
+function nextQ() { if(currentIndex < examQuestions.length-1) loadQuestion(currentIndex+1); }
+function prevQ() { if(currentIndex > 0) loadQuestion(currentIndex-1); }
+
+function startTimer() {
+    setInterval(() => {
+        timeRemaining--;
+        let m = Math.floor(timeRemaining/60), s = timeRemaining%60;
+        document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+        if(timeRemaining <= 0) finalize();
+    }, 1000);
+}
+
+function showSummary() {
+    document.getElementById('summary-overlay').style.display = 'flex';
+    document.getElementById('summary-content').innerHTML = `
+        <h2>Submit Exam?</h2>
+        <p>Attempted: ${userAnswers.filter(x => x!==null).length} / ${examQuestions.length}</p>
+        <button class="btn-action" onclick="finalize()">FINISH</button>
+    `;
+}
+
+function finalize() {
+    confetti();
+    let score = 0;
+    examQuestions.forEach((q, i) => { if(userAnswers[i] === q.c) score++; });
+    
+    // Result official link
+    const officialPortal = "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/";
+    
+    document.getElementById('summary-content').innerHTML = `
+        <h1>Score: ${score} / ${examQuestions.length}</h1>
+        <p>Excellent Work, ${currentStudent.name}!</p>
+        <button class="btn-action" onclick="window.location.href='${officialPortal}'">GO TO OFFICIAL PORTAL</button>
+    `;
+}
+</script>
+</body>
+</html>

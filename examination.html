@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT | Exam Portal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <style>
+        :root { --primary: #e65100; --accent: #1a73e8; --success: #2e7d32; }
+        body { background: #fffbf5; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; }
+        .header { background: var(--primary); color: white; padding: 25px; text-align: center; }
+        .form-content { padding: 25px; }
+        .section { background: #fdfdfd; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
+        .section-title { font-weight: bold; color: var(--primary); font-size: 13px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 2px solid #fff3e0; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-size: 15px; }
+        input[readonly] { background: #f5f5f5; color: #666; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .course-badge { background: #e8f0fe; color: #1a73e8; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid #d0e1fd; display: inline-block; margin-bottom: 10px; }
+        #pay-btn { background: var(--success); color: white; padding: 18px; width: 100%; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 17px; display: none; transition: 0.3s; }
+        #pay-btn:hover { transform: scale(1.02); }
+        #overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .qr-box { background: white; padding: 25px; border-radius: 20px; text-align: center; width: 320px; }
+        @media (max-width: 500px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0">SNT COMPUTER INSTITUTE</h2>
+        <p style="margin:5px 0 0; font-size: 14px; opacity: 0.9;">Official Exam Registration Portal</p>
+    </div>
+
+    <div class="form-content">
+        <div class="section" style="border-top: 4px solid var(--primary);">
+            <div class="section-title">Step 1: Verify Student</div>
+            <input type="text" id="search-box" placeholder="Student ID या मोबाइल नंबर लिखें..." oninput="findStudent()">
+            <p id="search-status" style="margin: 5px 0; font-size: 13px; font-weight: bold;"></p>
+        </div>
+
+        <div id="exam-form" style="display: none;">
+            <div class="grid">
+                <div class="section">
+                    <div class="section-title">Student Profile</div>
+                    <label style="font-size:11px;">Candidate Name</label>
+                    <input type="text" id="disp-name" readonly>
+                    <div id="course-container"></div>
+                </div>
+                <div class="section">
+                    <div class="section-title">Registration Detail</div>
+                    <label style="font-size:11px;">Auto Generated Login ID</label>
+                    <input type="text" id="disp-login" readonly>
+                    <label style="font-size:11px;">Date of Birth</label>
+                    <input type="text" id="disp-dob" readonly>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Step 2: Exam Selection</div>
+                <div class="grid">
+                    <div>
+                        <label style="font-size:12px; font-weight:bold;">Paper/Module</label>
+                        <select id="sel-module"></select>
+                    </div>
+                    <div>
+                        <label style="font-size:12px; font-weight:bold;">Exam Center</label>
+                        <select id="sel-center">
+                            <option>SNT Center (Rudauli)</option>
+                            <option>Lucknow Main (405)</option>
+                            <option>Faizabad Hub (201)</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="pay-btn" onclick="openPayment()">Pay Exam Fee & Register</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="overlay">
+    <div class="qr-box">
+        <h3 style="margin:0; color:var(--primary)">Scan to Pay</h3>
+        <div id="qrcode" style="margin:20px auto; display:flex; justify-content:center;"></div>
+        <div id="amount-text" style="font-size:28px; font-weight:bold; color:var(--success)"></div>
+        <p style="font-size:12px; color:#666;">TXN ID: <span id="txn-id"></span></p>
+        <button onclick="completeRegistration()" style="background:var(--success); color:white; border:none; padding:15px; width:100%; border-radius:10px; font-weight:bold; cursor:pointer">✅ Confirm Payment</button>
+        <button onclick="document.getElementById('overlay').style.display='none'" style="background:none; border:none; color:red; margin-top:15px; cursor:pointer">Cancel</button>
+    </div>
+</div>
+
+<script>
+    // Admin Dashboard wala Firebase Config
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+        authDomain: "snt-computer-institute.firebaseapp.com", 
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+        projectId: "snt-computer-institute", 
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let studentData = null;
+    let finalFee = 0;
+
+    function findStudent() {
+        const input = document.getElementById('search-box').value.trim().toUpperCase();
+        const status = document.getElementById('search-status');
+        
+        if(input.length < 2) {
+            status.innerText = "";
+            document.getElementById('exam-form').style.display = 'none';
+            return;
+        }
+
+        status.innerText = "Searching in SNT Cloud... 🔄";
+        status.style.color = "#e65100";
+
+        db.ref('students').once('value', (snapshot) => {
+            const allData = snapshot.val();
+            let isFound = false;
+
+            if (allData) {
+                for(let key in allData) {
+                    let s = allData[key];
+                    // Exact keys from your Admin Dashboard file
+                    let sid = s.studentId ? s.studentId.toUpperCase() : "";
+                    let mob = s.mobile || s.phone || ""; 
+
+                    if(sid === input || sid === "SNT-" + input || mob.toString() === input) {
+                        studentData = s;
+                        isFound = true;
+                        break;
+                    }
+                }
+            }
+
+            if(isFound) {
+                status.innerText = "Verified! ✅ Student Record Loaded.";
+                status.style.color = "green";
+                renderForm(studentData);
+            } else {
+                status.innerText = "Record Not Found! ❌ Check ID or Mobile.";
+                status.style.color = "red";
+                document.getElementById('exam-form').style.display = 'none';
+            }
+        });
+    }
+
+    function renderForm(data) {
+        document.getElementById('exam-form').style.display = 'block';
+        document.getElementById('disp-name').value = data.name;
+        document.getElementById('disp-dob').value = data.dob || "Office Visit Required";
+        
+        // Dynamic Login ID (SNT + Numeric ID + EX)
+        let cleanId = data.studentId ? data.studentId.replace(/\D/g, "") : "00";
+        document.getElementById('disp-login').value = "SNT" + cleanId + "EX";
+
+        // Handle Courses Key
+        const container = document.getElementById('course-container');
+        container.innerHTML = "";
+        let mainCourse = "CCC"; 
+        
+        if(data.courses && Array.isArray(data.courses)) {
+            mainCourse = data.courses[0];
+            data.courses.forEach(c => {
+                container.innerHTML += `<span class="course-badge">${c}</span> `;
+            });
+        } else {
+            container.innerHTML = `<span class="course-badge">General Course</span>`;
+        }
+
+        // Exam Module & Fee Logic based on Course
+        const moduleSelect = document.getElementById('sel-module');
+        moduleSelect.innerHTML = "";
+        let cName = mainCourse.toUpperCase();
+
+        if(cName.includes("O LEVEL")) {
+            ["M1-R5 (IT Tools)", "M2-R5 (Web Design)", "M3-R5 (Python)", "M4-R5 (IoT)"].forEach(m => {
+                moduleSelect.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+            finalFee = 1100;
+        } else if(cName.includes("CCC")) {
+            moduleSelect.innerHTML = `<option value="CCC Theory">CCC Theory Exam</option>`;
+            finalFee = 600;
+        } else if(cName.includes("ADCA") || cName.includes("DCA") || cName.includes("PGDCA")) {
+            moduleSelect.innerHTML = `<option value="Semester 1">Semester 1 Exam</option><option value="Semester 2">Semester 2 Exam</option>`;
+            finalFee = 500;
+        } else {
+            moduleSelect.innerHTML = `<option value="Final Theory">Final Theory Exam</option>`;
+            finalFee = 400;
+        }
+
+        document.getElementById('pay-btn').style.display = 'block';
+        document.getElementById('pay-btn').innerText = `Pay Exam Fee (₹${finalFee})`;
+    }
+
+    function openPayment() {
+        const txn = "SNTX" + Date.now().toString().slice(-6);
+        document.getElementById('txn-id').innerText = txn;
+        document.getElementById('amount-text').innerText = "₹" + finalFee;
+        
+        // UPI Link (Sandeep Kumar)
+        const upi = `upi://pay?pa=9580807075@ybl&pn=SNT_COMPUTER_INSTITUTE&am=${finalFee}&cu=INR&tn=Exam_${studentData.studentId}`;
+        
+        document.getElementById('qrcode').innerHTML = "";
+        new QRCode(document.getElementById('qrcode'), { text: upi, width: 170, height: 170 });
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function completeRegistration() {
+        const record = {
+            studentId: studentData.studentId,
+            name: studentData.name,
+            loginId: document.getElementById('disp-login').value,
+            course: document.getElementById('course-container').innerText,
+            module: document.getElementById('sel-module').value,
+            center: document.getElementById('sel-center').value,
+            txnId: document.getElementById('txn-id').innerText,
+            amount: finalFee,
+            timestamp: new Date().toLocaleString()
+        };
+
+        db.ref('theoryRegistrations').push(record).then(() => {
+            alert("Registration Confirmed! Please download your receipt.");
+            location.reload();
+        });
+    }
+</script>
+
+</body>
+</html>

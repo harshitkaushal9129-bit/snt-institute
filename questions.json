@@ -1,0 +1,35 @@
+{
+    "Computer Basics & Foundation": [
+        { "qe": "Who is the Father of Computer?", "qh": "कंप्यूटर के जनक कौन हैं?", "ae": ["Charles Babbage", "Alan Turing", "Bill Gates", "Newton"], "c": 0 }
+    ],
+    "CCC & DCA/ADCA": [
+        { "qe": "What is the full form of RAM?", "qh": "RAM का पूर्ण रूप क्या है?", "ae": ["Random Access Memory", "Read Access Memory", "Rapid Area Main", "None"], "c": 0 }
+    ],
+    "O Level (M1-R5)": [
+        { "qe": "Minimum zoom percentage in LibreOffice Calc?", "qh": "LibreOffice Calc में न्यूनतम ज़ूम प्रतिशत क्या है?", "ae": ["5%", "20%", "10%", "15%"], "c": 1 }
+    ],
+    "O Level (M2-R5)": [
+        { "qe": "What does HTML stand for?", "qh": "HTML का पूरा नाम क्या है?", "ae": ["Hyper Text Markup Language", "High Text Machine Language", "Hyper Tabular Mail Line", "None"], "c": 0 }
+    ],
+    "O Level (M3-R5)": [
+        { "qe": "Who developed Python?", "qh": "Python किसने विकसित की?", "ae": ["Guido van Rossum", "Dennis Ritchie", "James Gosling", "Bjarne Stroustrup"], "c": 0 }
+    ],
+    "O Level (M4-R5)": [
+        { "qe": "IoT stands for?", "qh": "IoT का पूर्ण रूप क्या है?", "ae": ["Internet of Things", "Input of Technology", "Internal of Telecommunication", "None"], "c": 0 }
+    ],
+    "Tally ERP 9 / Prime": [
+        { "qe": "Shortcut for Payment Voucher in Tally?", "qh": "टैली में पेमेंट वाउचर के लिए शॉर्टकट कुंजी?", "ae": ["F4", "F5", "F6", "F7"], "c": 1 }
+    ],
+    "Adv. Excel": [
+        { "qe": "Every formula in Excel starts with which symbol?", "qh": "एक्सेल में हर फार्मूला किस चिन्ह से शुरू होता है?", "ae": ["+", "-", "=", "@"], "c": 2 }
+    ],
+    "C++ Language": [
+        { "qe": "Who developed C++ Language?", "qh": "C++ भाषा किसने विकसित की?", "ae": ["Bjarne Stroustrup", "Dennis Ritchie", "James Gosling", "Guido"], "c": 0 }
+    ],
+    "Java Language": [
+        { "qe": "Java is which type of language?", "qh": "Java किस प्रकार की भाषा है?", "ae": ["Low Level", "Object Oriented", "Procedural", "None"], "c": 1 }
+    ],
+    "Hardware & Net.": [
+        { "qe": "Full form of IP?", "qh": "IP का पूर्ण रूप क्या है?", "ae": ["Internal Protocol", "Internet Protocol", "Input Port", "Interface Program"], "c": 1 }
+    ]
+}

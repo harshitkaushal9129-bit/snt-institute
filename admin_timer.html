@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNT Admin: Universal Bulk Scheduler</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --blue: #1e3a8a; --green: #27ae60; --indigo: #6366f1; --bg: #f1f5f9; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: var(--blue); margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: flex; justify-content: space-between; }
+        
+        .top-bar { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 15px; background: #f8fafc; padding: 20px; border-radius: 10px; 
+            align-items: end; margin-bottom: 20px; border: 1px solid #e2e8f0;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; }
+        input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; }
+
+        .table-responsive { overflow-x: auto; margin-top: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th, td { border-bottom: 1px solid #e2e8f0; padding: 12px; text-align: center; }
+        th { background: #f8fafc; color: var(--blue); font-size: 13px; font-weight: 600; }
+        
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-apply { background: var(--indigo); color: white; height: 40px; }
+        .btn-save { background: var(--green); width: 100%; margin-top: 25px; font-size: 16px; padding: 15px; color: white; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3); }
+        
+        .highlight { background-color: #f0fdf4 !important; }
+        .mod-badge { background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+        .status-badge { font-size: 10px; padding: 2px 5px; border-radius: 10px; background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>
+        <span>Theory Exam Bulk Scheduler</span>
+        <button class="btn" onclick="fetchPendingStudents()" style="background:#eee; font-size:12px;">🔄 Refresh List</button>
+    </h2>
+
+    <div class="top-bar">
+        <div class="input-group">
+            <label>1. Filter Course/Module</label>
+            <select id="module-filter" onchange="fetchPendingStudents()">
+                <option value="">-- All Registered --</option>
+                <option value="M1-R5">M1-R5: IT Tools</option>
+                <option value="M2-R5">M2-R5: Web Designing</option>
+                <option value="M3-R5">M3-R5: Python</option>
+                <option value="M4-R5">M4-R5: IoT</option>
+                <option value="CCC">CCC Exam</option>
+                <option value="Sem 1">DCA/ADCA Sem 1</option>
+                <option value="Sem 2">DCA/ADCA Sem 2</option>
+                <option value="Basics">Computer Basics</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>2. Set Exam Date</label>
+            <input type="date" id="g-date">
+        </div>
+
+        <div class="input-group">
+            <label>3. Reporting & Gate</label>
+            <div style="display:flex; gap:5px;">
+                <input type="time" id="g-report" value="09:00">
+                <input type="time" id="g-gate" value="10:00">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>4. Exam Timing</label>
+            <input type="text" id="g-duration" value="10:30 AM - 01:00 PM">
+        </div>
+
+        <button class="btn btn-apply" onclick="applyBulkSettings()">Apply to All</button>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Module/Paper</th>
+                    <th>Exam Date</th>
+                    <th>Reporting</th>
+                    <th>Gate Closing</th>
+                    <th>Timing</th>
+                </tr>
+            </thead>
+            <tbody id="student-list">
+                <tr><td colspan="7" style="padding:40px; color:#64748b;">Loading registered students...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <button class="btn btn-save" onclick="saveToFirebase()">🚀 SAVE & PUBLISH ALL SCHEDULES</button>
+</div>
+
+<script>
+    // Firebase Setup
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+        authDomain: "snt-computer-institute.firebaseapp.com", 
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+        projectId: "snt-computer-institute", 
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 1. Fetch Students who registered for Exam
+    function fetchPendingStudents() {
+        const mod = document.getElementById('module-filter').value;
+        const tbody = document.getElementById('student-list');
+        tbody.innerHTML = "<tr><td colspan='7'>Fetching data from cloud...</td></tr>";
+
+        db.ref('theoryRegistrations').once('value', (snapshot) => {
+            const data = snapshot.val();
+            tbody.innerHTML = "";
+            
+            if (!data) {
+                tbody.innerHTML = "<tr><td colspan='7'>No registrations found.</td></tr>";
+                return;
+            }
+
+            for (let key in data) {
+                let s = data[key];
+                // Filter logic
+                if (!mod || s.module.includes(mod)) {
+                    tbody.innerHTML += `
+                    <tr class="s-row" data-key="${key}">
+                        <td class="r-id"><b>${s.studentId}</b></td>
+                        <td>${s.name}</td>
+                        <td><span class="mod-badge">${s.module}</span></td>
+                        <td><input type="date" class="r-date" value="${s.examDate || ''}"></td>
+                        <td><input type="time" class="r-report" value="${s.reportingTime || '09:00'}"></td>
+                        <td><input type="time" class="r-gate" value="${s.gateClosing || '10:00'}"></td>
+                        <td><input type="text" class="r-time" value="${s.examTiming || '10:30 AM - 01:00 PM'}"></td>
+                    </tr>`;
+                }
+            }
+        });
+    }
+
+    // 2. Apply top settings to all rows in table
+    function applyBulkSettings() {
+        const rows = document.querySelectorAll('.s-row');
+        const date = document.getElementById('g-date').value;
+        const report = document.getElementById('g-report').value;
+        const gate = document.getElementById('g-gate').value;
+        const time = document.getElementById('g-duration').value;
+
+        if (!date) return alert("Please select an Exam Date first!");
+
+        rows.forEach(row => {
+            row.querySelector('.r-date').value = date;
+            row.querySelector('.r-report').value = report;
+            row.querySelector('.r-gate').value = gate;
+            row.querySelector('.r-time').value = time;
+            row.classList.add('highlight');
+        });
+    }
+
+    // 3. Save all updated rows back to Firebase
+    function saveToFirebase() {
+        const rows = document.querySelectorAll('.s-row');
+        if (rows.length === 0) return alert("No data to save!");
+
+        let updates = {};
+        rows.forEach(row => {
+            const key = row.getAttribute('data-key');
+            updates[`theoryRegistrations/${key}/examDate`] = row.querySelector('.r-date').value;
+            updates[`theoryRegistrations/${key}/reportingTime`] = row.querySelector('.r-report').value;
+            updates[`theoryRegistrations/${key}/gateClosing`] = row.querySelector('.r-gate').value;
+            updates[`theoryRegistrations/${key}/examTiming`] = row.querySelector('.r-time').value;
+            updates[`theoryRegistrations/${key}/status`] = "Scheduled";
+        });
+
+        db.ref().update(updates).then(() => {
+            alert("All schedules have been published online! ✅");
+            fetchPendingStudents();
+        }).catch(e => alert("Error: " + e.message));
+    }
+
+    // Load initial data
+    window.onload = fetchPendingStudents;
+</script>
+</body>
+</html>
