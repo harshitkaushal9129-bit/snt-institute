@@ -104,10 +104,14 @@ let currentStudent = null, allQuestions = {}, examQuestions = [], userAnswers = 
 // JSON se Questions load karna
 async function loadJSON() {
     try {
-        const res = await fetch('questions.json');
-        allQuestions = await res.json();
-    } catch(e) { console.error("JSON Error"); }
+        // Aapke github link ke saath file ka path
+        const res = await fetch('https://harshitkaushal9129-bit.github.io/snt-institute/questions.json');
+        all_questions = await res.json(); 
+    } catch(e) { 
+        console.error("JSON Error: File load nahi ho saki"); 
+    }
 }
+
 loadJSON();
 
 function checkIdentity() {
