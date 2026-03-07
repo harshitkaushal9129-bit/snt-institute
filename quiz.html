@@ -13,7 +13,6 @@
         :root { --snt-blue: #1b365d; --snt-orange: #f39200; --green: #16a34a; --red: #dc2626; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #e5e7eb; user-select: none; }
         
-        /* Layouts */
         #login-screen, #profile-wait-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-card { background: white; width: 380px; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--snt-blue); }
         
@@ -23,15 +22,17 @@
         .sidebar { width: 280px; background: #f8f9fa; border-left: 1px solid #ddd; padding: 15px; }
 
         .options-list { list-style: none; padding: 0; }
-        .options-list li { padding: 15px; background: #f1f5f9; margin-bottom: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; }
-        .options-list li.selected { background: var(--snt-blue); color: white; }
+        .options-list li { padding: 15px; background: #f1f5f9; margin-bottom: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; transition: 0.3s; }
+        .options-list li:hover { background: #e2e8f0; }
+        .options-list li.selected { background: var(--snt-blue); color: white; border-color: var(--snt-blue); }
 
         .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; }
         .pal-btn { height: 35px; border: 1px solid #ccc; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; border-radius: 4px; }
-        .pal-btn.ans { background: var(--green) !important; color: white; }
-        .pal-btn.visited { background: var(--red) !important; color: white; }
+        .pal-btn.ans { background: var(--green) !important; color: white; border-color: var(--green); }
+        .pal-btn.visited { background: var(--red) !important; color: white; border-color: var(--red); }
         
-        .btn-action { width: 100%; padding: 12px; background: var(--snt-blue); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-action { width: 100%; padding: 12px; background: var(--snt-blue); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-action:hover { opacity: 0.9; }
         #summary-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; display:none; align-items:center; justify-content:center; color: white; text-align: center; }
     </style>
 </head>
@@ -42,10 +43,10 @@
     <div class="login-card">
         <h2 style="text-align:center; color:var(--snt-blue);">Student Login</h2>
         <label>Student ID</label>
-        <input type="text" id="l-roll" style="width:100%; padding:10px; margin: 10px 0;" placeholder="SNT..." oninput="checkIdentity()">
+        <input type="text" id="l-roll" style="width:100%; padding:10px; box-sizing:border-box; margin: 10px 0;" placeholder="SNT..." oninput="checkIdentity()">
         <p id="crack-status" style="font-size:12px; font-weight:bold;"></p>
         <label>Password (DOB)</label>
-        <input type="password" id="l-pass" style="width:100%; padding:10px; margin: 10px 0;" readonly>
+        <input type="password" id="l-pass" style="width:100%; padding:10px; box-sizing:border-box; margin: 10px 0;" readonly>
         <button class="btn-action" onclick="startVerification()">LOGIN</button>
     </div>
 </div>
@@ -69,7 +70,7 @@
         <p id="q-text-hi" style="font-style:italic; color:#555;"></p>
         <ul class="options-list" id="opt-container"></ul>
         <div style="display:flex; gap:10px; margin-top:20px;">
-            <button onclick="prevQ()" style="padding:10px 20px;">Previous</button>
+            <button onclick="prevQ()" style="padding:10px 20px; cursor:pointer;">Previous</button>
             <button onclick="nextQ()" class="btn-action" style="width:150px;">Save & Next</button>
         </div>
     </div>
@@ -88,7 +89,7 @@
 </div>
 
 <script>
-// Firebase Setup
+// Firebase Config
 const firebaseConfig = { 
     apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
     authDomain: "snt-computer-institute.firebaseapp.com", 
@@ -101,21 +102,22 @@ const db = firebase.database();
 
 let currentStudent = null, allQuestions = {}, examQuestions = [], userAnswers = [], visited = [], currentIndex = 0, timeRemaining = 5400;
 
-// JSON se Questions load karna
+// JSON loading fix (allQuestions name sync)
 async function loadJSON() {
     try {
-        // Aapke github link ke saath file ka path
         const res = await fetch('https://harshitkaushal9129-bit.github.io/snt-institute/questions.json');
-        all_questions = await res.json(); 
+        const data = await res.json();
+        allQuestions = data; 
+        console.log("Database Sync: Success");
     } catch(e) { 
-        console.error("JSON Error: File load nahi ho saki"); 
+        console.error("JSON Error: Questions fetch failed", e); 
     }
 }
-
 loadJSON();
 
 function checkIdentity() {
     const id = document.getElementById('l-roll').value.trim().toUpperCase();
+    if(id.length < 3) return;
     db.ref('students').orderByChild('studentId').equalTo(id).once('value', snap => {
         const data = snap.val();
         if(data) {
@@ -131,22 +133,29 @@ function checkIdentity() {
     });
 }
 
-function startVerification() {
-    if(!currentStudent) return alert("Invalid Login");
+async function startVerification() {
+    if(!currentStudent) return alert("Please enter valid Student ID first.");
     
-    // Course matching logic from JSON
+    // Ensure data is loaded before proceeding
+    if(Object.keys(allQuestions).length === 0) await loadJSON();
+
     examQuestions = [];
     const courses = currentStudent.courses || [];
+    
     courses.forEach(c => {
-        if(allQuestions[c]) examQuestions = [...examQuestions, ...allQuestions[c]];
+        if(allQuestions[c]) {
+            examQuestions = [...examQuestions, ...allQuestions[c]];
+        }
     });
 
+    // Fallback logic
     if(examQuestions.length === 0) {
-        // Agar course match na ho to Default load karein
         examQuestions = allQuestions["Default"] || [];
     }
 
-    if(examQuestions.length === 0) return alert("No questions found for your course!");
+    if(examQuestions.length === 0) {
+        return alert("Error: No questions found for " + courses.join(", ") + ". Please contact Administrator.");
+    }
 
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('profile-wait-screen').style.display = 'flex';
@@ -204,7 +213,10 @@ function loadQuestion(idx) {
         const li = document.createElement('li');
         li.innerText = opt;
         if(userAnswers[idx] === i) li.className = "selected";
-        li.onclick = () => { userAnswers[idx] = i; loadQuestion(idx); };
+        li.onclick = () => { 
+            userAnswers[idx] = i; 
+            loadQuestion(idx); 
+        };
         cont.appendChild(li);
     });
     updatePalette();
@@ -213,6 +225,7 @@ function loadQuestion(idx) {
 function updatePalette() {
     examQuestions.forEach((_, i) => {
         const b = document.getElementById('pal-' + i);
+        if(!b) return;
         b.className = "pal-btn";
         if(userAnswers[i] !== null) b.classList.add('ans');
         else if(visited[i]) b.classList.add('visited');
@@ -223,20 +236,27 @@ function nextQ() { if(currentIndex < examQuestions.length-1) loadQuestion(curren
 function prevQ() { if(currentIndex > 0) loadQuestion(currentIndex-1); }
 
 function startTimer() {
-    setInterval(() => {
+    const timer = setInterval(() => {
         timeRemaining--;
         let m = Math.floor(timeRemaining/60), s = timeRemaining%60;
         document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0'+s : s}`;
-        if(timeRemaining <= 0) finalize();
+        if(timeRemaining <= 0) {
+            clearInterval(timer);
+            finalize();
+        }
     }, 1000);
 }
 
 function showSummary() {
     document.getElementById('summary-overlay').style.display = 'flex';
     document.getElementById('summary-content').innerHTML = `
-        <h2>Submit Exam?</h2>
+        <h2>Submit Final Exam?</h2>
+        <p>Student: ${currentStudent.name}</p>
         <p>Attempted: ${userAnswers.filter(x => x!==null).length} / ${examQuestions.length}</p>
-        <button class="btn-action" onclick="finalize()">FINISH</button>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn-action" style="width:120px; background:#666;" onclick="document.getElementById('summary-overlay').style.display='none'">CANCEL</button>
+            <button class="btn-action" style="width:120px;" onclick="finalize()">FINISH</button>
+        </div>
     `;
 }
 
@@ -245,13 +265,13 @@ function finalize() {
     let score = 0;
     examQuestions.forEach((q, i) => { if(userAnswers[i] === q.c) score++; });
     
-    // Result official link
     const officialPortal = "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/";
     
     document.getElementById('summary-content').innerHTML = `
-        <h1>Score: ${score} / ${examQuestions.length}</h1>
-        <p>Excellent Work, ${currentStudent.name}!</p>
-        <button class="btn-action" onclick="window.location.href='${officialPortal}'">GO TO OFFICIAL PORTAL</button>
+        <h1>Exam Completed!</h1>
+        <h2 style="color:var(--snt-orange);">Score: ${score} / ${examQuestions.length}</h2>
+        <p>Well done, ${currentStudent.name}!</p>
+        <button class="btn-action" style="width:250px;" onclick="window.location.href='${officialPortal}'">VIEW RESULT ON PORTAL</button>
     `;
 }
 </script>
