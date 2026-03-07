@@ -1,5 +1,5 @@
 {
- "Computer Basics & Foundation": [
+ "Computer Foundation": [
     { "qe": "Who is the Father of Computer?", "qh": "कंप्यूटर के जनक कौन हैं?", "ae": ["Charles Babbage", "Alan Turing", "Bill Gates", "Newton"], "c": 0 },
     { "qe": "Which is the brain of the computer?", "qh": "कंप्यूटर का मस्तिष्क किसे कहा जाता है?", "ae": ["RAM", "CPU", "Monitor", "Keyboard"], "c": 1 },
     { "qe": "Physical parts of computer are called?", "qh": "कंप्यूटर के भौतिक भागों को क्या कहते हैं?", "ae": ["Software", "Hardware", "OS", "Data"], "c": 1 },
@@ -27,7 +27,7 @@
     { "qe": "Smallest unit of image on screen is?", "qh": "स्क्रीन पर इमेज की सबसे छोटी इकाई क्या है?", "ae": ["Dot", "Pixel", "Point", "Bit"], "c": 1 }
 ],
 
-  "CCC & DCA/ADCA": [
+  "CCC": [
     { "qe": "What is the full form of RAM?", "qh": "RAM का पूर्ण रूप क्या है?", "ae": ["Random Access Memory", "Read Access Memory", "Rapid Area Main", "None"], "c": 0 },
     { "qe": "What is the full form of WWW?", "qh": "WWW का पूर्ण रूप क्या है?", "ae": ["World Wide Web", "World Whole Web", "Wide World Web", "Web World Wide"], "c": 0 },
     { "qe": "Which is the shortcut key for 'Undo'?", "qh": "'Undo' के लिए शॉर्टकट कुंजी क्या है?", "ae": ["Ctrl + Y", "Ctrl + X", "Ctrl + Z", "Ctrl + C"], "c": 2 },
