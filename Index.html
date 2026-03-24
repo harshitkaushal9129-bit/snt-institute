@@ -78,13 +78,36 @@
     transform: scale(1.2);
     color: #facc15 !important; /* होवर पर पीला रंग */
 }
+        /* Progress Bar Styles */
+.progress-container { 
+    width: 100%; 
+    height: 6px; 
+    background: #e2e8f0; 
+    position: sticky; 
+    top: 0; 
+    z-index: 10001; 
+}
+.progress-bar { 
+    height: 100%; 
+    width: 0%; 
+    background: linear-gradient(90deg, #10b981, #2563eb); 
+    transition: width 0.4s ease; 
+}
+
     </style>
 </head>
 <body oncontextmenu="return false;"> <div id="splash-screen">
         <div class="splash-content"><img src="SNT.jpg" alt="Logo"><h1 style="color: var(--primary); font-size: 28px; margin-top: 20px;">SNT Computer Institute</h1></div>
     </div>
+
+
     <div class="container" id="main-app-content">
         <header><img src="Logo.jpg" alt="Institute Logo"><h2>Admission Form</h2><p>Rudauli Ayodhya | Success Starts Here</p></header>
+
+        <div class="progress-container">
+    <div class="progress-bar" id="form-progress"></div>
+</div>
+
         <form id="admission-form">
             <div class="form-group"><label>Admission Required For:</label><input type="text" name="required" placeholder="e.g. Skill Development / Job"></div>
             <div class="section-title">Step 1: Select Your Course(s)</div>
@@ -394,6 +417,29 @@
             saveAllData('');
         }
     });
+
+    const progressBar = document.getElementById('form-progress');
+const admissionForm = document.getElementById('admission-form');
+
+function updateProgress() {
+    // Ye check karega kitne inputs bhare gaye hain
+    const inputs = admissionForm.querySelectorAll('input[required], input[type="text"], select');
+    let filled = 0;
+    
+    inputs.forEach(input => { 
+        if(input.value.trim() !== "" && input.value !== "Month") {
+            filled++;
+        }
+    });
+
+    // 12 fields ke hisaab se percentage calculate ho rahi hai
+    let percent = (filled / 12) * 100;
+    progressBar.style.width = Math.min(percent, 100) + "%";
+}
+
+// Form mein kuch bhi type karne par bar update hoga
+admissionForm.addEventListener('input', updateProgress);
+
 </script>
 
 </body>
