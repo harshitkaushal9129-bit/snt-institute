@@ -79,20 +79,46 @@
     color: #facc15 !important; /* होवर पर पीला रंग */
 }
         /* Progress Bar Styles */
-.progress-container { 
-    width: 100%; 
-    height: 6px; 
-    background: #e2e8f0; 
-    position: sticky; 
-    top: 0; 
-    z-index: 10001; 
+/* Purana Progress Bar hata dein aur ye add karein */
+.profile-progress-wrapper {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 30px auto;
 }
-.progress-bar { 
-    height: 100%; 
-    width: 0%; 
-    background: linear-gradient(90deg, #10b981, #2563eb); 
-    transition: width 0.4s ease; 
+
+.progress-ring {
+    transform: rotate(-90deg);
 }
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.4s ease;
+    stroke-linecap: round;
+}
+
+.profile-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+    border: 4px solid #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 
     </style>
 </head>
@@ -104,8 +130,14 @@
     <div class="container" id="main-app-content">
         <header><img src="Logo.jpg" alt="Institute Logo"><h2>Admission Form</h2><p>Rudauli Ayodhya | Success Starts Here</p></header>
 
-        <div class="progress-container">
-    <div class="progress-bar" id="form-progress"></div>
+        <div class="profile-progress-wrapper">
+    <svg class="progress-ring" width="130" height="130">
+        <circle stroke="#e2e8f0" stroke-width="6" fill="transparent" r="58" cx="65" cy="65"/>
+        <circle id="circular-progress" class="progress-ring__circle" stroke="#2563eb" stroke-width="6" stroke-dasharray="364.42" stroke-dashoffset="364.42" fill="transparent" r="58" cx="65" cy="65"/>
+    </svg>
+    <div class="profile-container">
+        <img id="display-profile" src="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg" alt="Profile Preview">
+    </div>
 </div>
 
         <form id="admission-form">
@@ -418,28 +450,48 @@
         }
     });
 
-    const progressBar = document.getElementById('form-progress');
+    // --- New Circular Progress & Photo Preview Logic ---
+const circle = document.getElementById('circular-progress');
+const circumference = 58 * 2 * Math.PI; // Circle ka ghera
+const profileImg = document.getElementById('display-profile');
+const photoInput = document.getElementById('profile-picture');
 const admissionForm = document.getElementById('admission-form');
 
-function updateProgress() {
-    // Ye check karega kitne inputs bhare gaye hain
+// Initial setup (Circle ko khali rakhne ke liye)
+circle.style.strokeDasharray = `${circumference} ${circumference}`;
+circle.style.strokeDashoffset = circumference;
+
+function updateCircularProgress() {
     const inputs = admissionForm.querySelectorAll('input[required], input[type="text"], select');
     let filled = 0;
     
     inputs.forEach(input => { 
-        if(input.value.trim() !== "" && input.value !== "Month") {
+        if(input.value.trim() !== "" && input.value !== "Month" && input.value !== "") {
             filled++;
         }
     });
 
-    // 12 fields ke hisaab se percentage calculate ho rahi hai
+    // 12 fields ke hisaab se logic
     let percent = (filled / 12) * 100;
-    progressBar.style.width = Math.min(percent, 100) + "%";
+    const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
 }
 
-// Form mein kuch bhi type karne par bar update hoga
-admissionForm.addEventListener('input', updateProgress);
+// Student photo change hone par preview dikhana
+photoInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => profileImg.src = e.target.result;
+        reader.readAsDataURL(file);
+    } else {
+        // Agar photo hata di toh wapas logo aa jaye
+        profileImg.src = "https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg";
+    }
+});
 
+// Event listener for progress
+admissionForm.addEventListener('input', updateCircularProgress);
 </script>
 
 </body>
