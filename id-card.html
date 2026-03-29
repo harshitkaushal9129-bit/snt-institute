@@ -1,156 +1,222 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <link rel="icon" type="image/jpeg" href="SNT.jpg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SNT Professional ID Card - Pro Edition</title>
+  <title>SNT Glassmorphism ID Card - Pro Edition</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
     
-    :root { 
-      --snt-primary: #002d5b; 
-      --snt-secondary: #0056b3;
-      --snt-accent: #ff6d00; 
-      --text-dark: #1a1a1a;
-      --glass-bg: rgba(255, 255, 255, 0.85);
+    :root {
+      --snt-primary: #002d5b;
+      --snt-accent: #ff6d00;
+      --glass-border: rgba(255, 255, 255, 0.5);
     }
 
-    body { font-family: 'Outfit', sans-serif; background: #eef2f7; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; color: var(--text-dark); }
-
-    /* Control Panel */
-    .no-print { background: #fff; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 400px; text-align: center; border: 1px solid #e1e8f0; }
-    .no-print input { width: 85%; padding: 12px; border: 2px solid #edf2f7; border-radius: 10px; margin-bottom: 15px; font-size: 16px; outline: none; transition: 0.3s; }
-    .no-print input:focus { border-color: var(--snt-secondary); box-shadow: 0 0 0 4px rgba(0,86,179,0.1); }
-    .btn-panel { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-    .no-print button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; font-size: 14px; }
-    .btn-gen { background: var(--snt-accent); box-shadow: 0 4px 12px rgba(255, 109, 0, 0.2); }
-    .btn-gen:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 109, 0, 0.3); }
-    .btn-switch { background: var(--snt-primary); }
-    .btn-print { background: #10b981; }
-
-    /* --- PRO ID CARD LAYOUT --- */
-    .id-card-front { 
-      width: 330px; height: 530px; 
-      background: #fff; border-radius: 24px; 
-      position: relative; overflow: hidden; 
-      box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #ddd;
-      display: none; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #cfd9df;
+      background-image: radial-gradient(circle at 20% 30%, #ffffff 0%, #cfd9df 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      margin: 0;
+      min-height: 100vh;
     }
 
-    /* Modern Background Elements */
-    .id-card-front::before { content: ""; position: absolute; top: -100px; right: -50px; width: 250px; height: 250px; background: rgba(0,86,179,0.05); border-radius: 50%; z-index: 0; }
-    
-    .header-design { height: 160px; background: var(--snt-primary); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 15px; z-index: 1; overflow: hidden; }
-    .header-design::after { content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.4), transparent); }
-    .header-design img { width: 170px; height: auto; z-index: 2; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+    /* Input Panel */
+    .no-print {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 25px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid #fff;
+    }
+    .no-print h2 { margin-top: 0; color: var(--snt-primary); font-size: 20px; }
+    .no-print input { width: 85%; padding: 12px; border: 1.5px solid #ddd; border-radius: 12px; margin-bottom: 15px; outline: none; font-family: inherit; }
+    .btn-gen { background: var(--snt-primary); color: white; padding: 12px 30px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+    .btn-gen:hover { transform: scale(1.05); background: #003d7a; }
 
-    /* Profile Photo - Elevated Look */
-    .photo-area { margin-top: -75px; display: flex; justify-content: center; position: relative; z-index: 10; }
-    .student-photo { width: 120px; height: 140px; border: 5px solid #fff; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.15); background: #f8fafc; }
+    /* --- GLASS ID CARD --- */
+    #id-card { 
+      width: 350px; height: 550px; 
+      background: rgba(255, 255, 255, 0.45); 
+      border-radius: 35px; 
+      position: relative; 
+      overflow: hidden; 
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+      display: none; /* Initially Hidden */
+      animation: fadeIn 0.5s ease-out;
+    }
 
-    /* Badge Label */
-    .verified-badge { position: absolute; bottom: -10px; background: #10b981; color: white; font-size: 9px; padding: 4px 12px; border-radius: 20px; font-weight: 800; text-transform: uppercase; border: 2px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .name-section { text-align: center; margin-top: 20px; padding: 0 15px; }
-    .name-section h2 { margin: 0; color: var(--snt-primary); font-size: 20px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
-    .course-badge { display: inline-block; background: linear-gradient(90deg, #ff6d00, #ff9e00); color: #fff; padding: 4px 16px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-top: 6px; box-shadow: 0 4px 10px rgba(255, 109, 0, 0.2); }
-
-    /* Professional Data Rows */
-    .details-box { padding: 20px 25px; margin-top: 10px; }
-    .data-row { display: flex; justify-content: space-between; margin-bottom: 12px; position: relative; }
-    .data-row::after { content: ""; position: absolute; bottom: -4px; left: 0; width: 100%; height: 1px; background: #f1f5f9; }
-    .label { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .value { font-size: 12px; color: var(--snt-primary); font-weight: 700; }
-
-    /* QR & Sign Section */
-    .footer-flex { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 25px; position: absolute; bottom: 65px; width: 280px; }
-    
-    .qr-container { 
-      background: #fff; 
-      padding: 6px; 
+    /* Tech Header Section */
+    .header-section {
+      height: 150px;
+      background: linear-gradient(135deg, #001f3f, #004e92);
+      clip-path: polygon(0 0, 100% 0, 100% 75%, 0 100%);
+      display: flex;
+      justify-content: center;
+      padding-top: 20px;
+      position: relative;
+    }
+    .header-section::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url('https://www.transparenttextures.com/patterns/circuit-board.png');
+      opacity: 0.15;
+    }
+    .logo-container {
+      background: white;
+      padding: 8px 18px;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      border: 1px solid #e2e8f0;
+      height: fit-content;
+      z-index: 2;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .logo-container img { width: 140px; }
+
+    /* Profile Photo */
+    .photo-wrap {
+      margin-top: -65px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      z-index: 5;
+    }
+    .student-photo {
+      width: 120px; height: 140px;
+      border: 5px solid rgba(255,255,255,1);
+      border-radius: 20px;
+      object-fit: cover;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      background: #f0f0f0;
+    }
+
+    .name-area { text-align: center; margin-top: 15px; padding: 0 10px; }
+    .name-area h2 { margin: 0; font-size: 22px; font-weight: 800; color: #001f3f; text-transform: uppercase; letter-spacing: -0.5px; }
+    .course-pill {
+      background: linear-gradient(90deg, #ff6d00, #ff9e00);
+      color: white;
+      padding: 5px 22px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-block;
+      margin-top: 6px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(255, 109, 0, 0.2);
+    }
+
+    /* Details styling */
+    .details-list { padding: 25px 35px; }
+    .detail-row { display: flex; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 4px; }
+    .label { font-size: 10px; font-weight: 700; color: #666; width: 35%; text-transform: uppercase; }
+    .value { font-size: 12px; font-weight: 700; color: #111; width: 65%; text-align: right; word-wrap: break-word; }
+
+    /* Footer Section */
+    .footer-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 35px;
+      margin-top: 0px;
+    }
+    #qrcode { 
+        background: white; 
+        padding: 5px; 
+        border-radius: 10px; 
+        border: 1px solid #eee;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
     
-    .signature-area { text-align: center; width: 110px; }
-    .signature-line { border-bottom: 1.5px solid var(--snt-primary); height: 35px; margin-bottom: 5px; position: relative; }
-    .signature-line::before { content: "SNT Authorized"; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 8px; color: rgba(0,0,0,0.1); font-style: italic; white-space: nowrap; }
-    .signature-area b { font-size: 9px; color: #64748b; text-transform: uppercase; }
+    .verify-stamp { text-align: center; width: 110px; }
+    .verify-stamp img { width: 75px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+    .sign-line { border-top: 1.5px solid #001f3f; width: 100%; padding-top: 4px; font-size: 9px; font-weight: 800; color: #333; }
 
-    /* Bottom Dark Bar */
-    .bottom-bar { position: absolute; bottom: 0; width: 100%; height: 50px; background: var(--snt-primary); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 0 0 20px 20px; }
-    .bottom-bar b { font-size: 11px; letter-spacing: 1.5px; }
-    .bottom-bar span { font-size: 8px; opacity: 0.7; font-weight: 300; margin-top: 2px; }
+    .bottom-strip {
+      position: absolute;
+      bottom: 0; width: 100%; height: 55px;
+      background: #001529;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .bottom-strip b { font-size: 12px; letter-spacing: 1.5px; }
+    .bottom-strip span { font-size: 8px; opacity: 0.6; margin-top: 2px; }
 
-    /* Animation on Generate */
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .id-card-front { animation: slideUp 0.6s ease-out; }
-
-    @media print {
-      .no-print { display: none; }
+    @media print { 
+      .no-print { display: none; } 
       body { background: white; padding: 0; }
-      .id-card-front { display: block !important; box-shadow: none; border: 1px solid #eee; -webkit-print-color-adjust: exact; }
+      #id-card { display: block !important; box-shadow: none; border: 1px solid #ccc; -webkit-print-color-adjust: exact; } 
     }
   </style>
 </head>
 <body>
 
   <div class="no-print">
-    <h2 style="margin: 0 0 15px 0; color: var(--snt-primary)">ID Generator <small style="font-size: 12px; vertical-align: middle; color: #94a3b8;">Pro v2.0</small></h2>
-    <input type="text" id="id-input" placeholder="Roll No (e.g. SNT-QBNJQ)">
-    <div class="btn-panel">
-        <button class="btn-gen" onclick="generateCard()">Generate Card</button>
-        <button class="btn-switch" onclick="toggleOrientation()">Landscape Mode</button>
-        <button class="btn-print" onclick="window.print()">Save PDF</button>
-    </div>
+    <h2>SNT ID Card System</h2>
+    <input type="text" id="id-input" placeholder="Roll Number (e.g. SNT-QBNJQ)">
+    <br>
+    <button class="btn-gen" onclick="generateCard()">Generate Card</button>
+    <button class="btn-gen" style="background:#28a745; margin-left:10px;" onclick="window.print()">Save PDF</button>
   </div>
 
-  <div id="id-card" class="id-card-front">
-    <div class="header-design">
-        <img src="Logo (1).jpg">
-    </div>
-    
-    <div class="photo-area">
-        <img id="d-photo" src="https://via.placeholder.com/120x140" class="student-photo">
-        <div class="verified-badge">Verified Student</div>
+  <div id="id-card">
+    <div class="header-section">
+      <div class="logo-container"><img src="Logo (1).jpg"></div>
     </div>
 
-    <div class="name-section">
-      <h2 id="d-name">Harshit Kumar</h2>
-      <div id="d-course" class="course-badge">'O' Level</div>
+    <div class="photo-wrap">
+      <img id="d-photo" src="" class="student-photo">
     </div>
 
-    <div class="details-box">
-      <div class="data-row"><span class="label">Registration No</span><span id="d-id" class="value">SNT-QBNJQ</span></div>
-      <div class="data-row"><span class="label">Father Name</span><span id="d-father" class="value">Dr. Manoj Kumar</span></div>
-      <div class="data-row"><span class="label">Date of Birth</span><span id="d-dob" class="value">13/09/2006</span></div>
-      <div class="data-row"><span class="label">Contact No</span><span id="d-mobile" class="value">+91 9129191898</span></div>
-      <div class="data-row" style="border:none;"><span class="label">Address</span><span id="d-address" class="value" style="font-size: 10px; max-width: 60%; text-align: right;">Gatauli, Milkipur</span></div>
+    <div class="name-area">
+      <h2 id="d-name">STUDENT NAME</h2>
+      <div id="d-course" class="course-pill">COURSE</div>
     </div>
 
-    <div class="footer-flex">
-        <div class="qr-container">
-            <div id="qrcode"></div>
-        </div>
-        <div class="signature-area">
-            <div class="signature-line"></div>
-            <b>Director Sign</b>
-        </div>
+    <div class="details-list">
+      <div class="detail-row"><span class="label">Roll No</span><span id="d-id" class="value">-</span></div>
+      <div class="detail-row"><span class="label">Father</span><span id="d-father" class="value">-</span></div>
+      <div class="detail-row"><span class="label">D.O.B</span><span id="d-dob" class="value">-</span></div>
+      <div class="detail-row"><span class="label">Contact</span><span id="d-mobile" class="value">-</span></div>
+      <div class="detail-row" style="border:none;"><span class="label">Address</span><span id="d-address" class="value">-</span></div>
     </div>
 
-    <div class="bottom-bar">
+    <div class="footer-area">
+      <div id="qrcode"></div>
+      <div class="verify-stamp">
+        <img src="https://cdn-icons-png.flaticon.com/512/7595/7595571.png" alt="Verified"> 
+        <div class="sign-line">Director Sign</div>
+      </div>
+    </div>
+
+    <div class="bottom-strip">
       <b>SNT COMPUTER INSTITUTE</b>
       <span>Quality Education • Digital Verification • Excellence</span>
     </div>
   </div>
 
   <script>
-    // Firebase Setup (Aapka Original Logic)
+    // Firebase Setup
     const firebaseConfig = { 
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
         authDomain: "snt-computer-institute.firebaseapp.com", 
@@ -162,43 +228,40 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    function toggleOrientation() {
-        alert("Landscape layout is being optimized for Pro design. Currently best viewed in Portrait.");
-    }
-
     function generateCard() {
       const sid = document.getElementById('id-input').value.trim();
-      if(!sid) return alert("Please enter Roll No");
+      if(!sid) return alert("Roll number enter karein!");
 
       firebase.database().ref('students').orderByChild('studentId').equalTo(sid).once('value', snap => {
         if(snap.exists()){
           const u = Object.values(snap.val())[0];
-
-          let studentCourse = u.course || (u.courses ? (Array.isArray(u.courses) ? u.courses[0] : u.courses) : "N/A");
-
+          
+          // Data Fill
           document.getElementById('d-name').innerText = u.name || 'N/A';
           document.getElementById('d-id').innerText = u.studentId || '-';
-          document.getElementById('d-course').innerText = studentCourse; 
+          document.getElementById('d-course').innerText = u.course || u.courses || 'N/A';
           document.getElementById('d-father').innerText = u.fatherName || '-';
           document.getElementById('d-dob').innerText = u.dob || '-';
           document.getElementById('d-mobile').innerText = u.mobile || u.phone || '-';
-          document.getElementById('d-address').innerText = u.address || 'Ayodhya, UP';
+          document.getElementById('d-address').innerText = u.address || 'Rudauli, Ayodhya';
           document.getElementById('d-photo').src = u.profilePicture || 'https://via.placeholder.com/120x140';
-          
-          const vLink = `https://harshitkaushal9129-bit.github.io/snt-institute/id-verify.html?id=${u.studentId}`;
-          
+
+          // QR Code Update
           document.getElementById('qrcode').innerHTML = "";
           new QRCode(document.getElementById('qrcode'), { 
-            text: vLink, 
-            width: 70, 
-            height: 70, 
-            colorDark : "#002d5b",
+            text: `https://harshitkaushal9129-bit.github.io/snt-institute/id-verify.html?id=${u.studentId}`, 
+            width: 75, 
+            height: 75,
+            colorDark : "#001529",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
           });
 
+          // Show Card with Animation
           document.getElementById('id-card').style.display = 'block';
-        } else { alert("Student Data Not Found!"); }
+        } else { 
+          alert("Student Data Not Found! Roll Number check karein."); 
+        }
       });
     }
   </script>
