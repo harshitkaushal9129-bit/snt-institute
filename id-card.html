@@ -23,7 +23,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px 20px;
+      padding: 20px;
       margin: 0;
       min-height: 100vh;
     }
@@ -31,22 +31,25 @@
     /* Input Panel */
     .no-print {
       background: rgba(255, 255, 255, 0.8);
-      padding: 25px;
+      padding: 20px;
       border-radius: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.05);
       width: 100%;
-      max-width: 400px;
+      max-width: 450px;
       text-align: center;
       backdrop-filter: blur(10px);
       border: 1px solid #fff;
     }
-    .no-print h2 { margin-top: 0; color: var(--snt-primary); font-size: 20px; }
-    .no-print input { width: 85%; padding: 12px; border: 1.5px solid #ddd; border-radius: 12px; margin-bottom: 15px; outline: none; font-family: inherit; }
-    .btn-gen { background: var(--snt-primary); color: white; padding: 12px 30px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-    .btn-gen:hover { transform: scale(1.05); background: #003d7a; }
+    .no-print input[type="text"] { width: 85%; padding: 12px; border: 1.5px solid #ddd; border-radius: 12px; margin-bottom: 15px; outline: none; }
+    .sig-input-wrap { font-size: 12px; margin-bottom: 15px; color: #555; }
+    .btn-group { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .btn { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; color: white; transition: 0.3s; }
+    .btn-gen { background: var(--snt-primary); }
+    .btn-switch { background: #555; }
+    .btn-print { background: #28a745; }
 
-    /* --- GLASS ID CARD --- */
+    /* --- ID CARD BASE --- */
     #id-card { 
       width: 350px; height: 550px; 
       background: rgba(255, 255, 255, 0.45); 
@@ -54,129 +57,76 @@
       position: relative; 
       overflow: hidden; 
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--glass-border);
       box-shadow: 0 25px 50px rgba(0,0,0,0.12);
-      display: none; /* Initially Hidden */
-      animation: fadeIn 0.5s ease-out;
+      display: none; 
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    #id-card.landscape { width: 550px; height: 350px; }
 
-    /* Tech Header Section */
+    /* Header */
     .header-section {
-      height: 150px;
+      height: 140px;
       background: linear-gradient(135deg, #001f3f, #004e92);
       clip-path: polygon(0 0, 100% 0, 100% 75%, 0 100%);
-      display: flex;
-      justify-content: center;
-      padding-top: 20px;
-      position: relative;
+      display: flex; justify-content: center; padding-top: 15px; position: relative;
     }
-    .header-section::after {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-image: url('https://www.transparenttextures.com/patterns/circuit-board.png');
-      opacity: 0.15;
-    }
-    .logo-container {
-      background: white;
-      padding: 8px 18px;
-      border-radius: 12px;
-      height: fit-content;
-      z-index: 2;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    .logo-container img { width: 140px; }
+    .landscape .header-section { height: 75px; clip-path: none; }
+    .logo-container { background: white; padding: 5px 15px; border-radius: 10px; z-index: 2; height: fit-content; }
+    .logo-container img { width: 130px; }
 
     /* Profile Photo */
-    .photo-wrap {
-      margin-top: -65px;
-      display: flex;
-      justify-content: center;
-      position: relative;
-      z-index: 5;
-    }
-    .student-photo {
-      width: 120px; height: 140px;
-      border: 5px solid rgba(255,255,255,1);
-      border-radius: 20px;
-      object-fit: cover;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      background: #f0f0f0;
-    }
+    .photo-wrap { margin-top: -65px; display: flex; justify-content: center; position: relative; z-index: 5; }
+    .landscape .photo-wrap { position: absolute; left: 25px; top: 100px; margin: 0; }
+    .student-photo { width: 115px; height: 135px; border: 5px solid #fff; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: #f0f0f0; }
 
-    .name-area { text-align: center; margin-top: 15px; padding: 0 10px; }
-    .name-area h2 { margin: 0; font-size: 22px; font-weight: 800; color: #001f3f; text-transform: uppercase; letter-spacing: -0.5px; }
-    .course-pill {
-      background: linear-gradient(90deg, #ff6d00, #ff9e00);
-      color: white;
-      padding: 5px 22px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      display: inline-block;
-      margin-top: 6px;
-      text-transform: uppercase;
-      box-shadow: 0 4px 12px rgba(255, 109, 0, 0.2);
-    }
+    .name-area { text-align: center; margin-top: 15px; }
+    .landscape .name-area { margin-left: 160px; text-align: left; margin-top: 25px; }
+    .name-area h2 { margin: 0; font-size: 20px; font-weight: 800; color: #001f3f; text-transform: uppercase; }
+    .course-pill { background: var(--snt-accent); color: white; padding: 3px 18px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; margin-top: 5px; }
 
-    /* Details styling */
-    .details-list { padding: 25px 35px; }
-    .detail-row { display: flex; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 4px; }
-    .label { font-size: 10px; font-weight: 700; color: #666; width: 35%; text-transform: uppercase; }
-    .value { font-size: 12px; font-weight: 700; color: #111; width: 65%; text-align: right; word-wrap: break-word; }
+    /* Details */
+    .details-list { padding: 20px 30px; }
+    .landscape .details-list { margin-left: 145px; padding: 10px 20px; width: 350px; }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .label { font-size: 9px; font-weight: 700; color: #666; text-transform: uppercase; }
+    .value { font-size: 11px; font-weight: 700; color: #111; }
 
-    /* Footer Section */
-    .footer-area {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      padding: 0 35px;
-      margin-top: 0px;
-    }
-    #qrcode { 
-        background: white; 
-        padding: 5px; 
-        border-radius: 10px; 
-        border: 1px solid #eee;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
+    /* Footer & Signature */
+    .footer-area { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 35px; margin-top: 5px; }
+    .landscape .footer-area { position: absolute; bottom: 65px; right: 25px; width: 340px; padding: 0; }
     
-    .verify-stamp { text-align: center; width: 110px; }
-    .verify-stamp img { width: 75px; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-    .sign-line { border-top: 1.5px solid #001f3f; width: 100%; padding-top: 4px; font-size: 9px; font-weight: 800; color: #333; }
+    #qrcode { background: white; padding: 5px; border-radius: 10px; border: 1px solid #eee; }
+    .sign-box { text-align: center; width: 110px; position: relative; }
+    #d-sign { width: 80px; height: 40px; object-fit: contain; margin-bottom: -10px; display: none; }
+    .sign-line { border-top: 1.5px solid #001f3f; margin-top: 10px; font-size: 9px; font-weight: 800; color: #333; }
 
     .bottom-strip {
-      position: absolute;
-      bottom: 0; width: 100%; height: 55px;
-      background: #001529;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
+      position: absolute; bottom: 0; width: 100%; height: 50px;
+      background: #001529; color: white; display: flex; justify-content: center; align-items: center;
     }
-    .bottom-strip b { font-size: 12px; letter-spacing: 1.5px; }
-    .bottom-strip span { font-size: 8px; opacity: 0.6; margin-top: 2px; }
+    .bottom-strip b { font-size: 11px; letter-spacing: 1px; }
 
-    @media print { 
-      .no-print { display: none; } 
-      body { background: white; padding: 0; }
-      #id-card { display: block !important; box-shadow: none; border: 1px solid #ccc; -webkit-print-color-adjust: exact; } 
-    }
+    @media print { .no-print { display: none; } #id-card { display: block !important; box-shadow: none; } }
   </style>
 </head>
 <body>
 
   <div class="no-print">
-    <h2>SNT ID Card System</h2>
-    <input type="text" id="id-input" placeholder="Roll Number (e.g. SNT-QBNJQ)">
-    <br>
-    <button class="btn-gen" onclick="generateCard()">Generate Card</button>
-    <button class="btn-gen" style="background:#28a745; margin-left:10px;" onclick="window.print()">Save PDF</button>
+    <h2>SNT ID Generator Pro</h2>
+    <input type="text" id="id-input" placeholder="Enter Roll Number">
+    
+    <div class="sig-input-wrap">
+      Upload Signature (PNG/JPG): <br>
+      <input type="file" id="sig-upload" accept="image/*" onchange="loadSignature(event)">
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-gen" onclick="generateCard()">Generate</button>
+        <button class="btn btn-switch" onclick="toggleOrientation()">Switch View 🔄</button>
+        <button class="btn btn-print" onclick="window.print()">Save PDF</button>
+    </div>
   </div>
 
   <div id="id-card">
@@ -198,25 +148,20 @@
       <div class="detail-row"><span class="label">Father</span><span id="d-father" class="value">-</span></div>
       <div class="detail-row"><span class="label">D.O.B</span><span id="d-dob" class="value">-</span></div>
       <div class="detail-row"><span class="label">Contact</span><span id="d-mobile" class="value">-</span></div>
-      <div class="detail-row" style="border:none;"><span class="label">Address</span><span id="d-address" class="value">-</span></div>
     </div>
 
     <div class="footer-area">
       <div id="qrcode"></div>
-      <div class="verify-stamp">
-        <img src="https://cdn-icons-png.flaticon.com/512/7595/7595571.png" alt="Verified"> 
+      <div class="sign-box">
+        <img id="d-sign" src="" alt="Signature">
         <div class="sign-line">Director Sign</div>
       </div>
     </div>
 
-    <div class="bottom-strip">
-      <b>SNT COMPUTER INSTITUTE</b>
-      <span>Quality Education • Digital Verification • Excellence</span>
-    </div>
+    <div class="bottom-strip"><b>SNT COMPUTER INSTITUTE</b></div>
   </div>
 
   <script>
-    // Firebase Setup
     const firebaseConfig = { 
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
         authDomain: "snt-computer-institute.firebaseapp.com", 
@@ -228,40 +173,44 @@
     };
     firebase.initializeApp(firebaseConfig);
 
+    // Load signature from file input
+    function loadSignature(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const output = document.getElementById('d-sign');
+            output.src = reader.result;
+            output.style.display = 'inline-block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function toggleOrientation() {
+        document.getElementById('id-card').classList.toggle('landscape');
+    }
+
     function generateCard() {
       const sid = document.getElementById('id-input').value.trim();
-      if(!sid) return alert("Roll number enter karein!");
+      if(!sid) return alert("Roll number daalein!");
 
       firebase.database().ref('students').orderByChild('studentId').equalTo(sid).once('value', snap => {
         if(snap.exists()){
           const u = Object.values(snap.val())[0];
-          
-          // Data Fill
-          document.getElementById('d-name').innerText = u.name || 'N/A';
-          document.getElementById('d-id').innerText = u.studentId || '-';
-          document.getElementById('d-course').innerText = u.course || u.courses || 'N/A';
-          document.getElementById('d-father').innerText = u.fatherName || '-';
-          document.getElementById('d-dob').innerText = u.dob || '-';
-          document.getElementById('d-mobile').innerText = u.mobile || u.phone || '-';
-          document.getElementById('d-address').innerText = u.address || 'Rudauli, Ayodhya';
-          document.getElementById('d-photo').src = u.profilePicture || 'https://via.placeholder.com/120x140';
+          document.getElementById('d-name').innerText = u.name;
+          document.getElementById('d-id').innerText = u.studentId;
+          document.getElementById('d-course').innerText = u.course || u.courses;
+          document.getElementById('d-father').innerText = u.fatherName;
+          document.getElementById('d-dob').innerText = u.dob;
+          document.getElementById('d-mobile').innerText = u.mobile;
+          document.getElementById('d-photo').src = u.profilePicture;
 
-          // QR Code Update
           document.getElementById('qrcode').innerHTML = "";
           new QRCode(document.getElementById('qrcode'), { 
             text: `https://harshitkaushal9129-bit.github.io/snt-institute/id-verify.html?id=${u.studentId}`, 
-            width: 75, 
-            height: 75,
-            colorDark : "#001529",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
+            width: 70, height: 70, colorDark: "#001529"
           });
 
-          // Show Card with Animation
           document.getElementById('id-card').style.display = 'block';
-        } else { 
-          alert("Student Data Not Found! Roll Number check karein."); 
-        }
+        } else { alert("Data nahi mila!"); }
       });
     }
   </script>
