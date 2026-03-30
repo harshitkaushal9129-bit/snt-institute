@@ -183,7 +183,6 @@ async function startVerification() {
     courses.forEach(c => { if(allQuestions[c]) collected = [...collected, ...allQuestions[c]]; });
     if(collected.length === 0) collected = allQuestions["Default"] || [];
     
-    // Shuffling then slicing based on user limit
     examQuestions = shuffleArray([...collected]).slice(0, questionLimit);
 
     document.getElementById('limit-selection-screen').style.display = 'none';
@@ -305,7 +304,20 @@ function finalize() {
         `;
     });
     reportHTML += `</div>`;
-    
+
+    // Save result to Firebase for History page
+    const resultData = {
+        studentId: currentStudent.studentId,
+        studentName: currentStudent.name,
+        score: score,
+        totalQuestions: examQuestions.length,
+        date: new Date().toLocaleString('en-IN'),
+        courseName: currentStudent.courses ? currentStudent.courses.join(", ") : "General MCQ"
+    };
+
+    db.ref('exam_results').push(resultData);
+    localStorage.setItem('snt_student_id', currentStudent.studentId);
+
     document.getElementById('summary-content').innerHTML = `
         <h1 style="margin-top:40px;">Completed!</h1>
         <h2 style="color:var(--snt-orange);">Score: ${score} / ${examQuestions.length}</h2>
