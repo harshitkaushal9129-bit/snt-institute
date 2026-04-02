@@ -6,24 +6,18 @@
     <title>SNT Computer Institute - Complete Admission Form</title>
     
     <link rel="icon" type="image/jpeg" href="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg">
-    
     <link rel="apple-touch-icon" href="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg">
-    
     <link rel="manifest" href="manifest.json">
     
     <meta name="msapplication-TileImage" content="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg">
     <meta name="msapplication-TileColor" content="#2563eb">
     <meta name="application-name" content="SNT Institute">
-    
     <meta name="theme-color" content="#2563eb">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
-
-
-
         :root { --primary: #2563eb; --primary-dark: #1e40af; --bg: #f0f4f8; --text: #1e293b; --card: #ffffff; }
-        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; user-select: none; } /* user-select: none adds basic copy protection */
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; user-select: none; }
         #splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 10000; transition: opacity 0.8s ease; }
         .splash-content { text-align: center; animation: pulse 2s infinite; }
         .splash-content img { width: 150px; border-radius: 50%; }
@@ -48,97 +42,37 @@
         .btn-next { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 20px; font-size: 20px; font-weight: bold; border-radius: 14px; cursor: pointer; width: 100%; margin-top: 30px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
         #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; backdrop-filter: blur(10px); }
         #payment-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; text-align: center; border-radius: 30px; width: 400px; }
-        #qr-container img { margin: 0 auto; }
         @media (max-width: 850px) { .row { grid-template-columns: 1fr; } .grid-container { grid-template-columns: repeat(2, 1fr); } header img { width: 280px; } }
-.custom-footer {
-    background-color: #8B1A1A;
-    color: #ffffff;
-    padding: 40px 20px;
-    text-align: center;
-    font-family: 'Inter', sans-serif;
-    margin-top: 50px;
-    border-top: 5px solid #2563eb;
-}
-
-.social-links {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 20px; /* आइकन्स के बीच गैप */
-}
-
-.social-links a {
-    color: #ffffff !important; /* कलर को फ़ोर्स करना */
-    font-size: 28px;
-    text-decoration: none;
-    transition: transform 0.3s ease;
-}
-
-.social-links a:hover {
-    transform: scale(1.2);
-    color: #facc15 !important; /* होवर पर पीला रंग */
-}
-        /* Progress Bar Styles */
-/* Purana Progress Bar hata dein aur ye add karein */
-.profile-progress-wrapper {
-    position: relative;
-    width: 130px;
-    height: 130px;
-    margin: 0 auto 30px auto;
-}
-
-.progress-ring {
-    transform: rotate(-90deg);
-}
-
-.progress-ring__circle {
-    transition: stroke-dashoffset 0.4s ease;
-    stroke-linecap: round;
-}
-
-.profile-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: #fff;
-    border: 4px solid #fff;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.profile-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-
+        
+        .custom-footer { background-color: #8B1A1A; color: #ffffff; padding: 40px 20px; text-align: center; font-family: 'Inter', sans-serif; margin-top: 50px; border-top: 5px solid #2563eb; }
+        .social-links { margin-bottom: 20px; display: flex; justify-content: center; gap: 20px; }
+        .social-links a { color: #ffffff !important; font-size: 28px; text-decoration: none; transition: transform 0.3s ease; }
+        .social-links a:hover { transform: scale(1.2); color: #facc15 !important; }
+        
+        .profile-progress-wrapper { position: relative; width: 130px; height: 130px; margin: 0 auto 30px auto; }
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-ring__circle { transition: stroke-dashoffset 0.4s ease; stroke-linecap: round; }
+        .profile-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border-radius: 50%; overflow: hidden; background: #fff; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; }
+        .profile-container img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
-<body oncontextmenu="return false;"> <div id="splash-screen">
+<body oncontextmenu="return false;"> 
+    <div id="splash-screen">
         <div class="splash-content"><img src="SNT.jpg" alt="Logo"><h1 style="color: var(--primary); font-size: 28px; margin-top: 20px;">SNT Computer Institute</h1></div>
     </div>
-
 
     <div class="container" id="main-app-content">
         <header><img src="Logo.jpg" alt="Institute Logo"><h2>Admission Form</h2><p>Rudauli Ayodhya | Success Starts Here</p></header>
 
         <div class="profile-progress-wrapper">
-    <svg class="progress-ring" width="130" height="130">
-        <circle stroke="#e2e8f0" stroke-width="6" fill="transparent" r="58" cx="65" cy="65"/>
-        <circle id="circular-progress" class="progress-ring__circle" stroke="#2563eb" stroke-width="6" stroke-dasharray="364.42" stroke-dashoffset="364.42" fill="transparent" r="58" cx="65" cy="65"/>
-    </svg>
-    <div class="profile-container">
-        <img id="display-profile" src="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg" alt="Profile Preview">
-    </div>
-</div>
+            <svg class="progress-ring" width="130" height="130">
+                <circle stroke="#e2e8f0" stroke-width="6" fill="transparent" r="58" cx="65" cy="65"/>
+                <circle id="circular-progress" class="progress-ring__circle" stroke="#2563eb" stroke-width="6" stroke-dasharray="364.42" stroke-dashoffset="364.42" fill="transparent" r="58" cx="65" cy="65"/>
+            </svg>
+            <div class="profile-container">
+                <img id="display-profile" src="https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg" alt="Profile Preview">
+            </div>
+        </div>
 
         <form id="admission-form">
             <div class="form-group"><label>Admission Required For:</label><input type="text" name="required" placeholder="e.g. Skill Development / Job"></div>
@@ -157,6 +91,7 @@
                 <label class="checkbox-item"><input type="checkbox" name="course" value="Adv Excel"> Adv. Excel</label>
                 <label class="checkbox-item"><input type="checkbox" name="course" value="Hardware"> Hardware & Net.</label>
             </div>
+            
             <div class="section-title">Step 2: Personal Details</div>
             <div class="row">
                 <div class="form-group"><label>Full Name</label><input type="text" id="name" name="name" required placeholder="Student Name"></div>
@@ -173,6 +108,7 @@
                 <div class="form-group"><label>Email Address</label><input type="email" name="email" placeholder="example@email.com"></div>
             </div>
             <div class="form-group"><label>Full Address</label><input type="text" name="address" placeholder="Village/City, Post, District"></div>
+            
             <div class="section-title">Step 3: Education & Batch</div>
             <div class="row">
                 <div class="form-group"><label>Last Qualification</label><input type="text" name="lastQualification" placeholder="e.g. 10th, 12th, B.A."></div>
@@ -190,6 +126,7 @@
                     <label class="checkbox-item"><input type="checkbox" name="batch" value="Sat-Sun"> Sat-Sun</label>
                 </div>
             </div>
+            
             <div class="section-title">Step 4: Verification & Photo</div>
             <div class="row">
                 <div class="form-group"><label>Upload Profile Picture</label><input type="file" id="profile-picture" name="profilePicture" accept="image/*"></div>
@@ -200,6 +137,7 @@
                 <div class="form-group"><label>Current Date</label><input type="date" id="current-date" name="date"></div>
             </div>
             <button type="button" id="btn-next" class="btn-next">PROCEED TO ADMISSION FEE (₹100)</button>
+            
             <div id="payment-overlay">
                 <div id="payment-box">
                     <h2 style="font-size: 45px; margin: 0;">₹100</h2>
@@ -213,286 +151,174 @@
     </div>
 
     <footer class="custom-footer">
-    <div class="social-links">
-        <a href="https://wa.me/919129191898" target="_blank">
-            <i class="fa-brands fa-whatsapp"></i>
-        </a>
-        <a href="mailto:harshitkaushal9129@gmail.com">
-            <i class="fa-solid fa-envelope"></i>
-        </a>
-        <a href="https://www.instagram.com/snt_computer_institute?igsh=MTgwMGc3bjh5OGV0eg==" target="_blank">
-            <i class="fa-brands fa-instagram"></i>
-        </a>
-        <a href="https://youtube.com/@programmingby-kaushalji" target="_blank">
-            <i class="fa-brands fa-youtube"></i>
-        </a>
-    </div>
-
-    <div class="footer-text">
-        Website Design By Kaushal Ji
-    </div>
-
-    <div class="footer-contact">
-        Mobile: <a href="tel:+919129191898" style="color: #facc15; text-decoration: none;">9129191898</a>
-    </div>
-    
-    <div style="margin-top: 15px;">
-        <a href="https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/" 
-           style="color: #ffffff; background: #2563eb; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 14px; font-weight: bold;">
-           Official Portal
-        </a>
-    </div>
-</footer>
-
-
-    <script>
-            
-    // Service Worker Register karna
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('SNT Service Worker Registered!'))
-                .catch(err => console.log('Service Worker Error:', err));
-        });
-    }
-    
-    // Baaki ka purana code niche...
-
-        document.onkeydown = function(e) {
-            if(event.keyCode == 123) { return false; }
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; }
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { return false; }
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; }
-            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; }
-        };
-        // Disable Developer Tools loop
-        setInterval(function() {
-            debugger;
-        }, 100);
-    </script>
+        <div class="social-links">
+            <a href="https://wa.me/919129191898" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="mailto:harshitkaushal9129@gmail.com"><i class="fa-solid fa-envelope"></i></a>
+            <a href="https://www.instagram.com/snt_computer_institute?igsh=MTgwMGc3bjh5OGV0eg==" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://youtube.com/@programmingby-kaushalji" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+        <div class="footer-text">Website Design By Kaushal Ji</div>
+        <div class="footer-contact">Mobile: <a href="tel:+919129191898" style="color: #facc15; text-decoration: none;">9129191898</a></div>
+        <div style="margin-top: 15px;">
+            <a href="https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/" style="color: #ffffff; background: #2563eb; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 14px; font-weight: bold;">Official Portal</a>
+        </div>
+    </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
-    // Firebase Configuration
-    const firebaseConfig = { 
-        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
-        authDomain: "snt-computer-institute.firebaseapp.com", 
-        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
-        projectId: "snt-computer-institute", 
-        storageBucket: "snt-computer-institute.firebasestorage.app", 
-        messagingSenderId: "117580784781", 
-        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    
-    // UI Elements
-    const form = document.getElementById('admission-form');
-    const btnNext = document.getElementById('btn-next');
-    const paymentOverlay = document.getElementById('payment-overlay');
-    const UPI_ID = "9580807075@ybl"; 
-    const MERCHANT_NAME = "Sandip kumar";
-
-    // --- 1. Window Load: Dropdowns & Splash ---
-    window.addEventListener('load', () => {
-        // Splash Screen
-        setTimeout(() => {
-            const splash = document.getElementById('splash-screen');
-            const main = document.getElementById('main-app-content');
-            if(splash) splash.style.opacity = '0';
-            setTimeout(() => { 
-                if(splash) splash.style.display = 'none'; 
-                if(main) main.style.visibility = 'visible'; 
-            }, 800);
-        }, 2500);
-
-        // Fill DOB Day
-        const daySel = document.getElementById('dob-day');
-        if(daySel) {
-            for(let i=1; i<=31; i++) { 
-                let opt = document.createElement('option'); 
-                opt.value = i; opt.innerHTML = i; 
-                daySel.appendChild(opt); 
-            }
-        }
-
-        // Fill DOB Year
-        const yearSel = document.getElementById('dob-year');
-        if(yearSel) {
-            const currY = new Date().getFullYear();
-            for(let i=currY; i>=1990; i--) { 
-                let opt = document.createElement('option'); 
-                opt.value = i; opt.innerHTML = i; 
-                yearSel.appendChild(opt); 
-            }
-        }
-        
-        const dateInput = document.getElementById('current-date');
-        if(dateInput) dateInput.valueAsDate = new Date();
-    });
-
-    // --- 2. Proceed to Payment (QR Generation) ---
-    btnNext.addEventListener('click', () => {
-        const nameVal = document.getElementById('name').value.trim();
-        const phoneVal = document.getElementById('phone').value.trim();
-        
-        if(!nameVal || !phoneVal) { 
-            alert("कृपया अपना नाम और मोबाइल नंबर भरें!"); 
-            return; 
-        }
-
-        const qrContainer = document.getElementById('qr-container');
-        qrContainer.innerHTML = "Generating QR..."; 
-        
-        const upiString = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=100&cu=INR`;
-        
-        // Check if QRCode library is loaded
-        if (typeof QRCode !== "undefined") {
-            qrContainer.innerHTML = ""; 
-            new QRCode(qrContainer, { 
-                text: upiString, 
-                width: 180, 
-                height: 180, 
-                colorDark : "#000000", 
-                colorLight : "#ffffff" 
-            }); 
-            paymentOverlay.style.display = 'block';
-        } else {
-            alert("QR Library लोड नहीं हो पाई। कृपया इंटरनेट चेक करें और पेज रिफ्रेश करें।");
-        }
-    });
-
-    // --- 3. Final Form Submission ---
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerText;
-        
-        submitBtn.innerText = "Processing... Please Wait";
-        submitBtn.disabled = true;
-
-        const formData = new FormData(form);
-        const profilePictureFile = document.getElementById('profile-picture').files[0];
-
-        // Core Saving Function
-        const saveAllData = (imgResult) => {
-            const selectedCourses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(c => c.value);
-            const selectedBatches = Array.from(document.querySelectorAll('input[name="batch"]:checked')).map(b => b.value);
-            
-            const day = document.getElementById('dob-day').value;
-            const month = document.getElementById('dob-month').value;
-            const year = document.getElementById('dob-year').value;
-            const fullDOB = (day && month && year) ? `${day}/${month}/${year}` : "N/A";
-            
-            const studentsRef = ref(database, 'students');
-            const newStudentRef = push(studentsRef);
-            const fbKey = newStudentRef.key;
-            const customId = "SNT-" + fbKey.substring(fbKey.length - 5).toUpperCase();
-
-            const data = {
-                studentId: customId,
-                name: (formData.get('name') || "").toUpperCase(),
-                mobile: formData.get('phone'), 
-                email: formData.get('email') || 'N/A',
-                fatherName: formData.get('fatherName') || 'N/A',
-                address: formData.get('address') || 'N/A',
-                gender: (document.querySelector('input[name="gender"]:checked') || {}).value || 'N/A',
-                dob: fullDOB,
-                courses: selectedCourses, 
-                batches: selectedBatches,
-                lastQualification: formData.get('lastQualification') || 'N/A',
-                passingYear: formData.get('passingYear') || 'N/A',
-                profilePicture: imgResult || "",
-                signature: formData.get('signature') || 'N/A',
-                admissionDate: formData.get('date') || new Date().toISOString().split('T')[0],
-                registrationStatus: "Pending",
-                timestamp: new Date().toISOString()
-            };
-
-            set(newStudentRef, data).then(() => {
-                localStorage.setItem('lastReceipt', JSON.stringify({ 
-                    name: data.name, 
-                    id: customId,
-                    amount: 100, 
-                    date: new Date().toLocaleString() 
-                }));
-                alert("सफल! आपकी Student ID है: " + customId + "\nपेमेंट वेरिफिकेशन के बाद एडमिशन कन्फर्म होगा।");
-                window.location.reload(); 
-            }).catch(err => {
-                console.error(err);
-                alert("Database Error: " + err.message + "\nकृपया Firebase Rules चेक करें।");
-                submitBtn.disabled = false;
-                submitBtn.innerText = originalText;
-            });
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+            authDomain: "snt-computer-institute.firebaseapp.com", 
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+            projectId: "snt-computer-institute", 
+            storageBucket: "snt-computer-institute.firebasestorage.app", 
+            messagingSenderId: "117580784781", 
+            appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
         };
 
-        // Handle Image Upload logic
-        if (profilePictureFile) {
-            // Check file size (Base64 grows by 33%, Realtime DB limit is small)
-            if (profilePictureFile.size > 1048576) { // 1MB limit
-                alert("फोटो का साइज 1MB से कम रखें!");
-                submitBtn.disabled = false;
-                submitBtn.innerText = originalText;
-                return;
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        const form = document.getElementById('admission-form');
+        const btnNext = document.getElementById('btn-next');
+        const paymentOverlay = document.getElementById('payment-overlay');
+        const UPI_ID = "9580807075@ybl"; 
+        const MERCHANT_NAME = "Sandip kumar";
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                const main = document.getElementById('main-app-content');
+                if(splash) splash.style.opacity = '0';
+                setTimeout(() => { if(splash) splash.style.display = 'none'; if(main) main.style.visibility = 'visible'; }, 800);
+            }, 2500);
+
+            const daySel = document.getElementById('dob-day');
+            for(let i=1; i<=31; i++) { let opt = document.createElement('option'); opt.value = i; opt.innerHTML = i; daySel.appendChild(opt); }
+
+            const yearSel = document.getElementById('dob-year');
+            const currY = new Date().getFullYear();
+            for(let i=currY; i>=1990; i--) { let opt = document.createElement('option'); opt.value = i; opt.innerHTML = i; yearSel.appendChild(opt); }
+            
+            const dateInput = document.getElementById('current-date');
+            if(dateInput) dateInput.valueAsDate = new Date();
+        });
+
+        btnNext.addEventListener('click', () => {
+            const nameVal = document.getElementById('name').value.trim();
+            const phoneVal = document.getElementById('phone').value.trim();
+            if(!nameVal || !phoneVal) { alert("कृपया अपना नाम और मोबाइल नंबर भरें!"); return; }
+
+            const qrContainer = document.getElementById('qr-container');
+            qrContainer.innerHTML = ""; 
+            const upiString = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=100&cu=INR`;
+            
+            if (typeof QRCode !== "undefined") {
+                new QRCode(qrContainer, { text: upiString, width: 180, height: 180, colorDark : "#000000", colorLight : "#ffffff" }); 
+                paymentOverlay.style.display = 'block';
+            } else { alert("QR Library Load error!"); }
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.innerText = "Processing...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(form);
+            const profilePictureFile = document.getElementById('profile-picture').files[0];
+
+            const saveAllData = (imgResult) => {
+                const selectedCourses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(c => c.value);
+                const selectedBatches = Array.from(document.querySelectorAll('input[name="batch"]:checked')).map(b => b.value);
+                const fullDOB = `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${document.getElementById('dob-year').value}`;
+                
+                const studentsRef = ref(database, 'students');
+                const newStudentRef = push(studentsRef);
+                const fbKey = newStudentRef.key;
+                const customId = "SNT-" + fbKey.substring(fbKey.length - 5).toUpperCase();
+
+                const data = {
+                    studentId: customId,
+                    name: (formData.get('name') || "").toUpperCase(),
+                    mobile: formData.get('phone'), 
+                    email: formData.get('email') || 'N/A',
+                    fatherName: formData.get('fatherName') || 'N/A',
+                    address: formData.get('address') || 'N/A',
+                    gender: (document.querySelector('input[name="gender"]:checked') || {}).value || 'N/A',
+                    dob: fullDOB,
+                    courses: selectedCourses, 
+                    batches: selectedBatches,
+                    lastQualification: formData.get('lastQualification') || 'N/A',
+                    passingYear: formData.get('passingYear') || 'N/A',
+                    profilePicture: imgResult || "",
+                    signature: formData.get('signature') || 'N/A',
+                    admissionDate: formData.get('date') || new Date().toISOString().split('T')[0],
+                    registrationStatus: "Pending",
+                    timestamp: new Date().toISOString()
+                };
+
+                set(newStudentRef, data).then(() => {
+                    // WhatsApp Message Construction
+                    const msg = encodeURIComponent(
+                        `*SNT COMPUTER INSTITUTE - ADMISSION FORM*\n\n` +
+                        `*Student ID:* ${customId}\n` +
+                        `*Name:* ${data.name}\n` +
+                        `*Course:* ${data.courses.join(', ')}\n` +
+                        `*Phone:* ${data.mobile}\n` +
+                        `*Father:* ${data.fatherName}\n` +
+                        `*Batch:* ${data.batches.join(', ')}\n` +
+                        `*Address:* ${data.address}\n\n` +
+                        `_Registration Fee Paid._`
+                    );
+
+                    alert("सफल! आपकी ID है: " + customId + "\nविवरण WhatsApp पर भेजने के लिए OK दबाएं।");
+
+                    // 1. Admin Notification
+                    window.open(`https://wa.me/919129191898?text=${msg}`, '_blank');
+
+                    // 2. Student Notification
+                    setTimeout(() => {
+                        window.location.href = `https://wa.me/91${data.mobile}?text=${msg}`;
+                    }, 1500);
+
+                }).catch(err => { alert("Error: " + err.message); submitBtn.disabled = false; });
+            };
+
+            if (profilePictureFile && profilePictureFile.size < 1048576) {
+                const reader = new FileReader();
+                reader.onload = () => saveAllData(reader.result);
+                reader.readAsDataURL(profilePictureFile);
+            } else { saveAllData(''); }
+        });
+
+        // Progress & Preview
+        const circle = document.getElementById('circular-progress');
+        const circumference = 58 * 2 * Math.PI;
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.strokeDashoffset = circumference;
+
+        function updateProgress() {
+            const inputs = form.querySelectorAll('input[required], input[type="text"], select');
+            let filled = 0;
+            inputs.forEach(i => { if(i.value.trim() !== "" && i.value !== "Month") filled++; });
+            let percent = (filled / 12) * 100;
+            circle.style.strokeDashoffset = circumference - (Math.min(percent, 100) / 100) * circumference;
+        }
+
+        document.getElementById('profile-picture').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => document.getElementById('display-profile').src = e.target.result;
+                reader.readAsDataURL(file);
             }
-            const reader = new FileReader();
-            reader.onload = () => saveAllData(reader.result);
-            reader.onerror = () => saveAllData('');
-            reader.readAsDataURL(profilePictureFile);
-        } else {
-            saveAllData('');
-        }
-    });
+        });
 
-    // --- New Circular Progress & Photo Preview Logic ---
-const circle = document.getElementById('circular-progress');
-const circumference = 58 * 2 * Math.PI; // Circle ka ghera
-const profileImg = document.getElementById('display-profile');
-const photoInput = document.getElementById('profile-picture');
-const admissionForm = document.getElementById('admission-form');
-
-// Initial setup (Circle ko khali rakhne ke liye)
-circle.style.strokeDasharray = `${circumference} ${circumference}`;
-circle.style.strokeDashoffset = circumference;
-
-function updateCircularProgress() {
-    const inputs = admissionForm.querySelectorAll('input[required], input[type="text"], select');
-    let filled = 0;
-    
-    inputs.forEach(input => { 
-        if(input.value.trim() !== "" && input.value !== "Month" && input.value !== "") {
-            filled++;
-        }
-    });
-
-    // 12 fields ke hisaab se logic
-    let percent = (filled / 12) * 100;
-    const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
-    circle.style.strokeDashoffset = offset;
-}
-
-// Student photo change hone par preview dikhana
-photoInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => profileImg.src = e.target.result;
-        reader.readAsDataURL(file);
-    } else {
-        // Agar photo hata di toh wapas logo aa jaye
-        profileImg.src = "https://harshitkaushal9129-bit.github.io/snt-institute/SNT.jpg";
-    }
-});
-
-// Event listener for progress
-admissionForm.addEventListener('input', updateCircularProgress);
-</script>
-
+        form.addEventListener('input', updateProgress);
+    </script>
 </body>
 </html>
