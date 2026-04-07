@@ -277,13 +277,12 @@
 
                     alert("सफल! आपकी ID है: " + customId + "\nविवरण WhatsApp पर भेजने के लिए OK दबाएं।");
 
-                    // 1. Admin Notification
-                    window.open(`https://wa.me/919129191898?text=${msg}`, '_blank');
+                    
+window.open(`whatsapp://send?phone=919129191898&text=${msg}`, '_blank');
+setTimeout(() => {
+    window.location.href = `whatsapp://send?phone=91${data.mobile}&text=${msg}`;
+}, 1500);
 
-                    // 2. Student Notification
-                    setTimeout(() => {
-                        window.location.href = `https://wa.me/91${data.mobile}?text=${msg}`;
-                    }, 1500);
 
                 }).catch(err => { alert("Error: " + err.message); submitBtn.disabled = false; });
             };
