@@ -13,42 +13,43 @@
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; user-select: none; }
     header { background: var(--primary); color: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(230, 81, 0, 0.2); }
     header h1 { font-size: 20px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-   .search-container { margin: 15px 0; }
+ .search-container { margin: 15px 0; }
     #search-input { width: 100%; padding: 14px 20px; border: 2px solid #ddd; border-radius: 30px; outline: none; font-size: 16px; transition: 0.3s; box-sizing: border-box; }
     #search-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(230,81,0,0.1); }
-   .outer-wrapper { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
-   .table-scroll { overflow-x: auto; }
+ .outer-wrapper { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
+ .table-scroll { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 1100px; }
     th { background: #f8f9fa; color: #666; padding: 15px; font-size: 13px; text-align: center; border-bottom: 2px solid #eee; }
     td { padding: 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; text-align: center; vertical-align: middle; }
-   .profile-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); padding: 2px; }
-   .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
-   .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-   .btn-green { background: var(--success); color: white; }
-   .btn-blue { background: var(--secondary); color: white; }
-   .btn-orange { background: var(--primary); color: white; }
-   .btn-yellow { background: #fbbc05; color: black; }
-   .btn-red { background: var(--danger); color: white; grid-column: span 2; }
-   .form-box { display: none; background: white; padding: 20px; border-radius: 15px; border: 2px solid var(--primary); margin-top: 10px; }
+ .profile-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); padding: 2px; }
+ .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+ .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+ .btn-green { background: var(--success); color: white; }
+ .btn-blue { background: var(--secondary); color: white; }
+ .btn-orange { background: var(--primary); color: white; }
+ .btn-yellow { background: #fbbc05; color: black; }
+ .btn-red { background: var(--danger); color: white; grid-column: span 2; }
+ .form-box { display: none; background: white; padding: 20px; border-radius: 15px; border: 2px solid var(--primary); margin-top: 10px; }
     input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-   .fee-badge { padding: 4px 8px; border-radius: 6px; display: inline-block; margin: 2px; font-size: 11px; font-weight: bold; background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
-   .extra-badge { background: #e8f0fe; color: #1a73e8; border: 1px solid #d0e1fd; }
+ .fee-badge { padding: 4px 8px; border-radius: 6px; display: inline-block; margin: 2px; font-size: 11px; font-weight: bold; background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+ .extra-badge { background: #e8f0fe; color: #1a73e8; border: 1px solid #d0e1fd; }
     #common-modal, #password-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
-   .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 320px; position: relative; }
-   .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-   .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
-   .scratch-container { position: relative; width: 260px; height: 260px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
+ .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 320px; position: relative; }
+ .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+ .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+ .scratch-container { position: relative; width: 260px; height: 260px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
     #scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 2; }
-   .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; }
-   .att-count { background: #333; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; }
-   .form-group { text-align: left; margin: 12px 0; }
-   .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #475569; }
+ .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; }
+ .att-count { background: #333; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+ .form-group { text-align: left; margin: 12px 0; }
+ .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #475569; }
+ .loading { text-align: center; padding: 40px; color: #999; }
   </style>
 </head>
 <body oncontextmenu="return false;">
 
   <header>
-    <h1>SNT Computer Institute</h1>
+    <h1>SNT Computer Institute - Admin</h1>
     <button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="location.reload()">🔄</button>
   </header>
 
@@ -74,7 +75,8 @@
             </tr>
           </thead>
           <tbody id="table-body">
-            </tbody>
+            <tr><td colspan="10" class="loading">Loading students...</td></tr>
+          </tbody>
         </table>
     </div>
   </div>
@@ -94,13 +96,11 @@
     </select>
     <input type="number" id="p-amount" placeholder="राशि ₹" value="500">
 
-    <!-- UTR Field Added -->
     <div class="form-group">
       <label>Transaction UTR / Ref No. <span style="color:red;">*</span></label>
       <input type="text" id="p-utr" placeholder="12-digit UPI Ref/UTR No." maxlength="12">
     </div>
 
-    <!-- Screenshot Field Added -->
     <div class="form-group">
       <label>Upload Payment Screenshot <span style="color:red;">*</span></label>
       <input type="file" id="p-screenshot" accept="image/*">
@@ -161,13 +161,7 @@
   </div>
 
   <script>
-    // --- Security ---
-    document.addEventListener('keydown', (e) => {
-        if (e.keyCode >= 112 && e.keyCode <= 123) e.preventDefault();
-        if (e.ctrlKey && (e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67) || e.keyCode === 85)) e.preventDefault();
-    });
-
-    // --- Firebase Initialization ---
+    // --- Firebase Initialization - AUTH HATA DIYA ---
     const firebaseConfig = {
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
         authDomain: "snt-computer-institute.firebaseapp.com",
@@ -188,14 +182,19 @@
     const MONTHLY_FEE = 500;
     const MAX_MONTHS = 12;
 
-    // --- Load Students ---
+    // --- DIRECT LOAD - NO AUTH ---
     function fetchStudents() {
+        console.log("Fetching students from Firebase...");
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '<tr><td colspan="10" class="loading">Loading students...</td></tr>';
+
         db.ref('students').on('value', (snapshot) => {
             const data = snapshot.val();
-            const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             usersData = [];
+
             if (data) {
+                console.log("✅ Students found:", Object.keys(data).length);
                 Object.keys(data).forEach((key) => {
                     let u = data[key];
                     u.id = key;
@@ -207,16 +206,22 @@
                       <td><input type="checkbox" class="st-check" data-id="${key}"></td>
                       <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td>
                       <td><img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img"></td>
-                      <td style="text-align:left;"><b>${u.name}</b><br><small style="color:${u.registrationStatus === 'Pending'? 'red' : 'green'}">${u.registrationStatus || 'Paid'}</small></td>
-                      <td><span class="fee-badge extra-badge">${u.courses? u.courses.join(', ') : 'N/A'}</span></td>
-                      <td style="font-size:11px;">${u.mobile || u.phone}<br>${u.email || ''}</td>
-                      <td><div class="att-count" onclick="location.href='calendar.html?id=${key}&name=${u.name}'">📅 History</div></td>
+                      <td style="text-align:left;"><b>${u.name || 'No Name'}</b><br><small style="color:${u.registrationStatus === 'Pending'? 'red' : 'green'}">${u.registrationStatus || 'Paid'}</small></td>
+                      <td><span class="fee-badge extra-badge">${u.courses? (Array.isArray(u.courses)? u.courses.join(', ') : u.courses) : 'N/A'}</span></td>
+                      <td style="font-size:11px;">${u.mobile || u.phone || 'N/A'}<br>${u.email || ''}</td>
+                      <td><div class="att-count" onclick="location.href='calendar.html?id=${key}&name=${encodeURIComponent(u.name || '')}'">📅 History</div></td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
                       <td style="color:var(--success); font-weight:bold;">₹${u.wonCash || 0}</td>
                       <td><button class="btn" onclick="window.location.href='receipt.html?id=${key}'">🖨️</button></td>
                     </tr>`;
                 });
+            } else {
+                console.log("❌ No students found in database");
+                tbody.innerHTML = '<tr><td colspan="10" style="padding:40px; opacity:0.5;">No students found in database</td></tr>';
             }
+        }, (error) => {
+            console.error("❌ Firebase error:", error);
+            tbody.innerHTML = `<tr><td colspan="10" style="padding:40px; color:red;">Error: ${error.message}</td></tr>`;
         });
     }
 
@@ -246,13 +251,27 @@
         alert("सफलतापूर्वक हटाया गया!");
     }
 
-    // --- NEW: Generate Valid Months based on Admission Date ---
+    // --- Generate Valid Months ---
     function populateValidMonths(student) {
         const monthSelect = document.getElementById('p-month');
         monthSelect.innerHTML = '';
 
-        const regDate = student.admissionDate? new Date(student.admissionDate) : student.registrationDate? new Date(student.registrationDate) : new Date();
-        const currentDate = new Date();
+        let regDateStr = student.admissionDate || student.registrationDate || student.date || student.timestamp;
+        let regDate;
+
+        if (regDateStr) {
+            regDate = new Date(regDateStr);
+            if (isNaN(regDate.getTime())) {
+                console.log("Invalid date, using current date");
+                regDate = new Date();
+            }
+        } else {
+            console.log("No admission date, using current date");
+            regDate = new Date();
+        }
+
+        console.log("Student:", student.name, "Admission Date:", regDate);
+
         let checkDate = new Date(regDate.getFullYear(), regDate.getMonth(), 1);
         let monthCount = 0;
         const existingMonths = (student.paymentHistory || []).map(p => p.month);
@@ -261,7 +280,10 @@
         const admissionOption = document.createElement('option');
         admissionOption.value = 'Admission Fee';
         admissionOption.innerText = 'Admission Fee';
-        if (student.registrationStatus === 'Paid') admissionOption.disabled = true;
+        if (student.registrationStatus === 'Paid') {
+            admissionOption.disabled = true;
+            admissionOption.innerText += ' (Paid)';
+        }
         monthSelect.appendChild(admissionOption);
 
         const separator = document.createElement('option');
@@ -269,7 +291,7 @@
         separator.innerText = '───────';
         monthSelect.appendChild(separator);
 
-        while (checkDate <= currentDate && monthCount < MAX_MONTHS) {
+        while (monthCount < MAX_MONTHS) {
             const mName = MONTHS[checkDate.getMonth()];
             const year = checkDate.getFullYear();
             const monthYear = `${mName} ${year}`;
@@ -278,7 +300,6 @@
             option.value = mName;
             option.innerText = monthYear;
 
-            // Disable if already paid
             if (existingMonths.includes(mName)) {
                 option.disabled = true;
                 option.innerText += ' (Paid)';
@@ -288,6 +309,8 @@
             checkDate.setMonth(checkDate.getMonth() + 1);
             monthCount++;
         }
+
+        console.log("Generated", monthCount, "months");
     }
 
     // --- Payments & QR ---
@@ -370,7 +393,6 @@
             db.ref('students/' + currentId).update(student).then(() => {
                 closeModal();
                 alert("Payment Recorded!");
-                // Clear form
                 document.getElementById('p-utr').value = '';
                 document.getElementById('p-screenshot').value = '';
                 document.getElementById('e-utr').value = '';
@@ -395,7 +417,6 @@
         document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none');
         document.getElementById(id).style.display = 'block';
 
-        // If payment form, populate valid months
         if (id === 'payment-form') {
             const sel = document.querySelector('.st-check:checked');
             if (sel) {
@@ -459,7 +480,11 @@
         });
     }
 
-    window.onload = fetchStudents;
+    // --- AUTO LOAD ON PAGE LOAD ---
+    window.onload = function() {
+        console.log("Page loaded, fetching students...");
+        fetchStudents();
+    };
   </script>
 </body>
 </html>
