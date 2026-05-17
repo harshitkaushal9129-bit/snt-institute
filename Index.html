@@ -40,8 +40,8 @@
         .radio-group input { margin-right: 8px; margin-left: 15px; cursor: pointer; }
         .radio-group input:first-child { margin-left: 0; }
         .btn-next { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 20px; font-size: 20px; font-weight: bold; border-radius: 14px; cursor: pointer; width: 100%; margin-top: 30px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
-        #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; backdrop-filter: blur(10px); }
-        #payment-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; text-align: center; border-radius: 30px; width: 400px; }
+        #payment-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; backdrop-filter: blur(10px); overflow-y: auto; }
+        #payment-box { position: relative; margin: 30px auto; background: white; padding: 40px; text-align: center; border-radius: 30px; width: 420px; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         @media (max-width: 850px) { .row { grid-template-columns: 1fr; } .grid-container { grid-template-columns: repeat(2, 1fr); } header img { width: 280px; } }
         
         .custom-footer { background-color: #8B1A1A; color: #ffffff; padding: 40px 20px; text-align: center; font-family: 'Inter', sans-serif; margin-top: 50px; border-top: 5px solid #2563eb; }
@@ -138,12 +138,27 @@
             </div>
             <button type="button" id="btn-next" class="btn-next">PROCEED TO ADMISSION FEE (₹100)</button>
             
+            <!-- Modified Payment Overlay with UTR & Screenshot -->
             <div id="payment-overlay">
                 <div id="payment-box">
-                    <h2 style="font-size: 45px; margin: 0;">₹100</h2>
-                    <p style="color: #64748b; margin-bottom: 20px;">Admission Registration Fee</p>
-                    <div id="qr-container" style="background:#f1f5f9; padding:20px; border-radius:15px; margin-bottom: 20px; display: flex; justify-content: center;"><p id="qr-loading">Generating QR...</p></div>
-                    <button type="submit" style="width:100%; padding:16px; background:#10b981; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">I HAVE PAID - FINAL SUBMIT</button>
+                    <h2 style="font-size: 40px; margin: 0; color: #10b981;">₹100</h2>
+                    <p style="color: #64748b; margin-bottom: 15px;">Admission Registration Fee</p>
+                    
+                    <div id="qr-container" style="background:#f1f5f9; padding:15px; border-radius:15px; margin-bottom: 15px; display: flex; justify-content: center;"><p id="qr-loading">Generating QR...</p></div>
+                    
+                    <!-- UTR Field -->
+                    <div class="form-group" style="text-align: left;">
+                        <label style="margin-bottom: 5px;">Transaction UTR / Ref No. <span style="color:red;">*</span></label>
+                        <input type="text" id="utr-number" placeholder="12-digit UPI Ref/UTR No." required>
+                    </div>
+
+                    <!-- Payment Screenshot Field -->
+                    <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                        <label style="margin-bottom: 5px;">Upload Payment Screenshot <span style="color:red;">*</span></label>
+                        <input type="file" id="payment-screenshot" accept="image/*" required>
+                    </div>
+
+                    <button type="submit" id="final-submit-btn" style="width:100%; padding:16px; background:#10b981; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px;">I HAVE PAID - FINAL SUBMIT</button>
                     <p onclick="document.getElementById('payment-overlay').style.display='none'" style="margin-top:20px; color:#ef4444; cursor:pointer; font-weight:600;">Go Back & Edit</p>
                 </div>
             </div>
@@ -224,14 +239,31 @@
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            const utrVal = document.getElementById('utr-number').value.trim();
+            const screenshotFile = document.getElementById('payment-screenshot').files[0];
+
+            if(!utrVal) { alert("कृपया Transaction UTR संख्या दर्ज करें!"); return; }
+            if(!screenshotFile) { alert("कृपया पेमेंट का स्क्रीनशॉट अपलोड करें!"); return; }
+
+            const submitBtn = document.getElementById('final-submit-btn');
             submitBtn.innerText = "Processing...";
             submitBtn.disabled = true;
 
             const formData = new FormData(form);
             const profilePictureFile = document.getElementById('profile-picture').files[0];
 
-            const saveAllData = (imgResult) => {
+            // Image conversions using FileReader
+            const readAsBase64 = (file) => {
+                return new Promise((resolve) => {
+                    if (!file || file.size > 1048576) resolve(""); // Size Check (Max 1MB for Realtime DB limit)
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            Promise.all([readAsBase64(profilePictureFile), readAsBase64(screenshotFile)]).then(([profileImg, screenshotImg]) => {
                 const selectedCourses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(c => c.value);
                 const selectedBatches = Array.from(document.querySelectorAll('input[name="batch"]:checked')).map(b => b.value);
                 const fullDOB = `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${document.getElementById('dob-year').value}`;
@@ -254,44 +286,37 @@
                     batches: selectedBatches,
                     lastQualification: formData.get('lastQualification') || 'N/A',
                     passingYear: formData.get('passingYear') || 'N/A',
-                    profilePicture: imgResult || "",
+                    profilePicture: profileImg || "",
                     signature: formData.get('signature') || 'N/A',
                     admissionDate: formData.get('date') || new Date().toISOString().split('T')[0],
+                    utrNumber: utrVal,
+                    paymentScreenshot: screenshotImg || "",
                     registrationStatus: "Pending",
                     timestamp: new Date().toISOString()
                 };
 
                 set(newStudentRef, data).then(() => {
-                    // WhatsApp Message Construction
                     const msg = encodeURIComponent(
                         `*SNT COMPUTER INSTITUTE - ADMISSION FORM*\n\n` +
                         `*Student ID:* ${customId}\n` +
                         `*Name:* ${data.name}\n` +
                         `*Course:* ${data.courses.join(', ')}\n` +
                         `*Phone:* ${data.mobile}\n` +
-                        `*Father:* ${data.fatherName}\n` +
+                        `*UTR No:* ${data.utrNumber}\n` +
                         `*Batch:* ${data.batches.join(', ')}\n` +
                         `*Address:* ${data.address}\n\n` +
-                        `_Registration Fee Paid._`
+                        `_Registration Details & Screenshot Submitted Successfully._`
                     );
 
                     alert("सफल! आपकी ID है: " + customId + "\nविवरण WhatsApp पर भेजने के लिए OK दबाएं।");
 
-                    
-window.open(`whatsapp://send?phone=919129191898&text=${msg}`, '_blank');
-setTimeout(() => {
-    window.location.href = `whatsapp://send?phone=91${data.mobile}&text=${msg}`;
-}, 1500);
+                    window.open(`whatsapp://send?phone=919129191898&text=${msg}`, '_blank');
+                    setTimeout(() => {
+                        window.location.href = `whatsapp://send?phone=91${data.mobile}&text=${msg}`;
+                    }, 1500);
 
-
-                }).catch(err => { alert("Error: " + err.message); submitBtn.disabled = false; });
-            };
-
-            if (profilePictureFile && profilePictureFile.size < 1048576) {
-                const reader = new FileReader();
-                reader.onload = () => saveAllData(reader.result);
-                reader.readAsDataURL(profilePictureFile);
-            } else { saveAllData(''); }
+                }).catch(err => { alert("Error: " + err.message); submitBtn.disabled = false; submitBtn.innerText = "I HAVE PAID - FINAL SUBMIT"; });
+            });
         });
 
         // Progress & Preview
