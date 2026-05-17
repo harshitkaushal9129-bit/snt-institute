@@ -13,61 +13,58 @@
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; user-select: none; }
     header { background: var(--primary); color: white; padding: 15px 20px; border-radius: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(230, 81, 0, 0.2); }
     header h1 { font-size: 20px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
- .search-container { margin: 15px 0; }
+    .search-container { margin: 15px 0; }
     #search-input { width: 100%; padding: 14px 20px; border: 2px solid #ddd; border-radius: 30px; outline: none; font-size: 16px; transition: 0.3s; box-sizing: border-box; }
     #search-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(230,81,0,0.1); }
- .outer-wrapper { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
- .table-scroll { overflow-x: auto; }
+    .outer-wrapper { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
+    .table-scroll { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; min-width: 1100px; }
     th { background: #f8f9fa; color: #666; padding: 15px; font-size: 13px; text-align: center; border-bottom: 2px solid #eee; }
     td { padding: 12px; border-bottom: 1px solid #f1f1f1; font-size: 13px; text-align: center; vertical-align: middle; }
- .profile-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); padding: 2px; }
- .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
- .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
- .btn-green { background: var(--success); color: white; }
- .btn-blue { background: var(--secondary); color: white; }
- .btn-orange { background: var(--primary); color: white; }
- .btn-yellow { background: #fbbc05; color: black; }
- .btn-red { background: var(--danger); color: white; grid-column: span 2; }
- .form-box { display: none; background: white; padding: 20px; border-radius: 15px; border: 2px solid var(--primary); margin-top: 10px; }
+    .profile-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); padding: 2px; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+    .btn { padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-green { background: var(--success); color: white; }
+    .btn-blue { background: var(--secondary); color: white; }
+    .btn-orange { background: var(--primary); color: white; }
+    .btn-yellow { background: #fbbc05; color: black; }
+    .btn-red { background: var(--danger); color: white; grid-column: span 2; }
+    .form-box { display: none; background: white; padding: 20px; border-radius: 15px; border: 2px solid var(--primary); margin-top: 10px; }
     input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
- .fee-badge { padding: 4px 8px; border-radius: 6px; display: inline-block; margin: 2px; font-size: 11px; font-weight: bold; background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
- .extra-badge { background: #e8f0fe; color: #1a73e8; border: 1px solid #d0e1fd; }
+    .fee-badge { padding: 4px 8px; border-radius: 6px; display: inline-block; margin: 2px; font-size: 11px; font-weight: bold; background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+    .extra-badge { background: #e8f0fe; color: #1a73e8; border: 1px solid #d0e1fd; }
     #common-modal, #password-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
- .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 320px; position: relative; }
- .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
- .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
- .scratch-container { position: relative; width: 260px; height: 260px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
+    .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 320px; position: relative; }
+    .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+    .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    .scratch-container { position: relative; width: 260px; height: 260px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
     #scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 2; }
- .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; }
- .att-count { background: #333; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; }
- .form-group { text-align: left; margin: 12px 0; }
- .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #475569; }
- .loading { text-align: center; padding: 40px; color: #999; }
+    .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; }
+    .att-count { background: #333; color: #fff; padding: 2px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; }
   </style>
 </head>
 <body oncontextmenu="return false;">
 
   <header>
-    <h1>SNT Computer Institute - Admin</h1>
+    <h1>SNT Computer Institute</h1>
     <button class="btn" style="padding:8px 12px; background:rgba(255,255,255,0.2);" onclick="location.reload()">🔄</button>
   </header>
-
+  
   <div class="search-container">
     <input type="text" id="search-input" placeholder="नाम, मोबाइल या Gmail से खोजें..." onkeyup="filterTable()">
   </div>
-
+  
   <div class="outer-wrapper">
     <div class="table-scroll">
         <table id="data-table">
           <thead>
             <tr>
               <th>चुनें</th>
-              <th>Student ID</th>
+              <th>Student ID</th> 
               <th>फोटो</th>
               <th>विद्यार्थी विवरण</th>
               <th>कोर्स</th>
-              <th>मोबाइल / Gmail</th>
+              <th>मोबाइल / Gmail</th> 
               <th>हाजिरी</th>
               <th>फीस इतिहास</th>
               <th>इनाम</th>
@@ -75,8 +72,7 @@
             </tr>
           </thead>
           <tbody id="table-body">
-            <tr><td colspan="10" class="loading">Loading students...</td></tr>
-          </tbody>
+            </tbody>
         </table>
     </div>
   </div>
@@ -92,20 +88,11 @@
   <div id="payment-form" class="form-box">
     <h3>मासिक फीस जमा करें</h3>
     <select id="p-month">
-      <!-- Dynamic months will load here -->
+      <option>Admission Fee</option><option>January</option><option>February</option><option>March</option>
+      <option>April</option><option>May</option><option>June</option><option>July</option>
+      <option>August</option><option>September</option><option>October</option><option>November</option><option>December</option>
     </select>
-    <input type="number" id="p-amount" placeholder="राशि ₹" value="500">
-
-    <div class="form-group">
-      <label>Transaction UTR / Ref No. <span style="color:red;">*</span></label>
-      <input type="text" id="p-utr" placeholder="12-digit UPI Ref/UTR No." maxlength="12">
-    </div>
-
-    <div class="form-group">
-      <label>Upload Payment Screenshot <span style="color:red;">*</span></label>
-      <input type="file" id="p-screenshot" accept="image/*">
-    </div>
-
+    <input type="number" id="p-amount" placeholder="राशि ₹">
     <button class="btn btn-green" style="width:100%" onclick="genQRCode('fee')">QR कोड दिखाएँ</button>
   </div>
 
@@ -113,17 +100,6 @@
     <h3>अन्य चार्ज</h3>
     <input type="text" id="e-reason" placeholder="कारण (जैसे- Exam, Card)">
     <input type="number" id="e-amount" placeholder="राशि ₹">
-
-    <div class="form-group">
-      <label>Transaction UTR / Ref No. <span style="color:red;">*</span></label>
-      <input type="text" id="e-utr" placeholder="12-digit UPI Ref/UTR No." maxlength="12">
-    </div>
-
-    <div class="form-group">
-      <label>Upload Payment Screenshot <span style="color:red;">*</span></label>
-      <input type="file" id="e-screenshot" accept="image/*">
-    </div>
-
     <button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
   </div>
 
@@ -161,82 +137,74 @@
   </div>
 
   <script>
-    // --- Firebase Initialization - AUTH HATA DIYA ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
-        authDomain: "snt-computer-institute.firebaseapp.com",
-        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
-        projectId: "snt-computer-institute",
-        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
+    // --- Security ---
+    document.addEventListener('keydown', (e) => {
+        if (e.keyCode >= 112 && e.keyCode <= 123) e.preventDefault();
+        if (e.ctrlKey && (e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67) || e.keyCode === 85)) e.preventDefault();
+    });
+
+    // --- Firebase Initialization ---
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
+        authDomain: "snt-computer-institute.firebaseapp.com", 
+        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/", 
+        projectId: "snt-computer-institute", 
+        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4" 
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
+    
     let usersData = [];
-    let currentId = null;
+    let currentId = null; 
     let enteredPin = "";
     let pinTarget = "";
     let lastWinAmount = 0;
     const MASTER_PIN = "912919";
-    const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const MONTHLY_FEE = 500;
-    const MAX_MONTHS = 12;
 
-    // --- DIRECT LOAD - NO AUTH ---
+    // --- Load Students ---
     function fetchStudents() {
-        console.log("Fetching students from Firebase...");
-        const tbody = document.getElementById('table-body');
-        tbody.innerHTML = '<tr><td colspan="10" class="loading">Loading students...</td></tr>';
-
         db.ref('students').on('value', (snapshot) => {
             const data = snapshot.val();
+            const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             usersData = [];
-
             if (data) {
-                console.log("✅ Students found:", Object.keys(data).length);
                 Object.keys(data).forEach((key) => {
-                    let u = data[key];
-                    u.id = key;
+                    let u = data[key]; 
+                    u.id = key; 
                     usersData.push(u);
                     let pHist = (u.paymentHistory || []).map(p => `<span class="fee-badge">${p.month}: ₹${p.amount}</span>`).join('');
                     let eHist = (u.extraHistory || []).map(e => `<span class="fee-badge extra-badge">${e.reason}: ₹${e.amount}</span>`).join('');
-
+                    
                     tbody.innerHTML += `<tr>
                       <td><input type="checkbox" class="st-check" data-id="${key}"></td>
-                      <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td>
+                      <td style="font-weight:bold; color:var(--secondary);">${u.studentId || 'N/A'}</td> 
                       <td><img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img"></td>
-                      <td style="text-align:left;"><b>${u.name || 'No Name'}</b><br><small style="color:${u.registrationStatus === 'Pending'? 'red' : 'green'}">${u.registrationStatus || 'Paid'}</small></td>
-                      <td><span class="fee-badge extra-badge">${u.courses? (Array.isArray(u.courses)? u.courses.join(', ') : u.courses) : 'N/A'}</span></td>
-                      <td style="font-size:11px;">${u.mobile || u.phone || 'N/A'}<br>${u.email || ''}</td>
-                      <td><div class="att-count" onclick="location.href='calendar.html?id=${key}&name=${encodeURIComponent(u.name || '')}'">📅 History</div></td>
+                      <td style="text-align:left;"><b>${u.name}</b><br><small style="color:${u.registrationStatus === 'Pending' ? 'red' : 'green'}">${u.registrationStatus || 'Paid'}</small></td>
+                      <td><span class="fee-badge extra-badge">${u.courses ? u.courses.join(', ') : 'N/A'}</span></td>
+                      <td style="font-size:11px;">${u.mobile || u.phone}<br>${u.email || ''}</td> 
+                      <td><div class="att-count" onclick="location.href='calendar.html?id=${key}&name=${u.name}'">📅 History</div></td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
                       <td style="color:var(--success); font-weight:bold;">₹${u.wonCash || 0}</td>
                       <td><button class="btn" onclick="window.location.href='receipt.html?id=${key}'">🖨️</button></td>
                     </tr>`;
                 });
-            } else {
-                console.log("❌ No students found in database");
-                tbody.innerHTML = '<tr><td colspan="10" style="padding:40px; opacity:0.5;">No students found in database</td></tr>';
             }
-        }, (error) => {
-            console.error("❌ Firebase error:", error);
-            tbody.innerHTML = `<tr><td colspan="10" style="padding:40px; color:red;">Error: ${error.message}</td></tr>`;
         });
     }
 
     // --- PIN System ---
     function openPinGate(target) {
         if(target === 'delete' && document.querySelectorAll('.st-check:checked').length === 0) return alert("विद्यार्थी चुनें!");
-        pinTarget = target; enteredPin = "";
-        document.getElementById('pin-input').value = "";
+        pinTarget = target; enteredPin = ""; 
+        document.getElementById('pin-input').value = ""; 
         document.getElementById('password-modal').style.display = 'flex';
     }
 
     function addPin(num) { if(enteredPin.length < 6) { enteredPin += num; document.getElementById('pin-input').value = enteredPin.replace(/./g, '●'); } }
     function clearPin() { enteredPin = ""; document.getElementById('pin-input').value = ""; }
     function closePinModal() { document.getElementById('password-modal').style.display = 'none'; }
-
+    
     function verifyPin() {
         if(enteredPin === MASTER_PIN) {
             if(pinTarget === 'attendance') location.href = 'attendence.html';
@@ -251,203 +219,77 @@
         alert("सफलतापूर्वक हटाया गया!");
     }
 
-    // --- Generate Valid Months ---
-    function populateValidMonths(student) {
-        const monthSelect = document.getElementById('p-month');
-        monthSelect.innerHTML = '';
-
-        let regDateStr = student.admissionDate || student.registrationDate || student.date || student.timestamp;
-        let regDate;
-
-        if (regDateStr) {
-            regDate = new Date(regDateStr);
-            if (isNaN(regDate.getTime())) {
-                console.log("Invalid date, using current date");
-                regDate = new Date();
-            }
-        } else {
-            console.log("No admission date, using current date");
-            regDate = new Date();
-        }
-
-        console.log("Student:", student.name, "Admission Date:", regDate);
-
-        let checkDate = new Date(regDate.getFullYear(), regDate.getMonth(), 1);
-        let monthCount = 0;
-        const existingMonths = (student.paymentHistory || []).map(p => p.month);
-
-        // Add Admission Fee option
-        const admissionOption = document.createElement('option');
-        admissionOption.value = 'Admission Fee';
-        admissionOption.innerText = 'Admission Fee';
-        if (student.registrationStatus === 'Paid') {
-            admissionOption.disabled = true;
-            admissionOption.innerText += ' (Paid)';
-        }
-        monthSelect.appendChild(admissionOption);
-
-        const separator = document.createElement('option');
-        separator.disabled = true;
-        separator.innerText = '───────';
-        monthSelect.appendChild(separator);
-
-        while (monthCount < MAX_MONTHS) {
-            const mName = MONTHS[checkDate.getMonth()];
-            const year = checkDate.getFullYear();
-            const monthYear = `${mName} ${year}`;
-
-            const option = document.createElement('option');
-            option.value = mName;
-            option.innerText = monthYear;
-
-            if (existingMonths.includes(mName)) {
-                option.disabled = true;
-                option.innerText += ' (Paid)';
-            }
-
-            monthSelect.appendChild(option);
-            checkDate.setMonth(checkDate.getMonth() + 1);
-            monthCount++;
-        }
-
-        console.log("Generated", monthCount, "months");
-    }
-
     // --- Payments & QR ---
     function genQRCode(type) {
         const sel = document.querySelector('.st-check:checked');
         if(!sel) return alert("विद्यार्थी चुनें!");
         currentId = sel.dataset.id;
-        const student = usersData.find(u => u.id === currentId);
-
-        let amt, label, utr, screenshot;
-        if (type === 'fee') {
-            amt = document.getElementById('p-amount').value;
-            label = document.getElementById('p-month').value;
-            utr = document.getElementById('p-utr').value.trim();
-            screenshot = document.getElementById('p-screenshot').files[0];
-        } else {
-            amt = document.getElementById('e-amount').value;
-            label = document.getElementById('e-reason').value;
-            utr = document.getElementById('e-utr').value.trim();
-            screenshot = document.getElementById('e-screenshot').files[0];
-        }
-
+        let amt = (type === 'fee') ? document.getElementById('p-amount').value : document.getElementById('e-amount').value;
+        let label = (type === 'fee') ? document.getElementById('p-month').value : document.getElementById('e-reason').value;
         if(!amt) return alert("राशि भरें!");
-        if(!utr) return alert("कृपया Transaction UTR संख्या दर्ज करें!");
-        if(!screenshot) return alert("कृपया पेमेंट का स्क्रीनशॉट अपलोड करें!");
 
-        document.getElementById('common-modal').style.display='flex';
-        document.getElementById('qr-ui').style.display='block';
+        document.getElementById('common-modal').style.display='flex'; 
+        document.getElementById('qr-ui').style.display='block'; 
         document.getElementById('scratch-ui').style.display='none';
         document.getElementById('qrcode-container').innerHTML = "";
-
-        new QRCode(document.getElementById('qrcode-container'), {
-            text: `upi://pay?pa=9580807075@ybl&pn=Sandeep%20Kumar&am=${amt}&cu=INR&tn=SNT_${student.name}_${label}`,
-            width:180, height:180
+        
+        new QRCode(document.getElementById('qrcode-container'), { 
+            text: `upi://pay?pa=9580807075@ybl&pn=Sandeep%20Kumar&am=${amt}&cu=INR`, 
+            width:180, height:180 
         });
-
-        document.getElementById('qr-title').innerText = student.name;
+        
+        document.getElementById('qr-title').innerText = usersData.find(u => u.id === currentId).name;
         document.getElementById('qr-text').innerText = `${label}: ₹${amt}`;
-        document.getElementById('confirm-btn').onclick = () => confirmPayment(type, amt, label, utr, screenshot);
+        document.getElementById('confirm-btn').onclick = () => confirmPayment(type, amt, label);
     }
 
-    function confirmPayment(type, amt, label, utr, screenshotFile) {
+    function confirmPayment(type, amt, label) {
         let student = usersData.find(u => u.id === currentId);
-        const btn = document.getElementById('confirm-btn');
-        btn.innerText = "Uploading...";
-        btn.disabled = true;
-
-        const reader = new FileReader();
-        reader.onload = function() {
-            const screenshotBase64 = reader.result;
-
-            if (screenshotBase64.length > 1048576) {
-                alert("Screenshot size too large! Please upload under 1MB");
-                btn.innerText = "✅ भुगतान सफल";
-                btn.disabled = false;
-                return;
-            }
-
-            if(type === 'fee') {
-                if(!student.paymentHistory) student.paymentHistory = [];
-                student.paymentHistory.push({
-                    month: label,
-                    amount: amt,
-                    date: new Date().toLocaleDateString(),
-                    utrNumber: utr,
-                    paymentScreenshot: screenshotBase64
-                });
-                if(label === "Admission Fee") student.registrationStatus = "Paid";
-            } else {
-                if(!student.extraHistory) student.extraHistory = [];
-                student.extraHistory.push({
-                    reason: label,
-                    amount: amt,
-                    date: new Date().toLocaleDateString(),
-                    utrNumber: utr,
-                    paymentScreenshot: screenshotBase64
-                });
-            }
-
-            db.ref('students/' + currentId).update(student).then(() => {
-                closeModal();
-                alert("Payment Recorded!");
-                document.getElementById('p-utr').value = '';
-                document.getElementById('p-screenshot').value = '';
-                document.getElementById('e-utr').value = '';
-                document.getElementById('e-screenshot').value = '';
-            }).catch(err => {
-                alert("Error: " + err.message);
-                btn.disabled = false;
-                btn.innerText = "✅ भुगतान सफल";
-            });
-        };
-        reader.readAsDataURL(screenshotFile);
+        if(type === 'fee') {
+            if(!student.paymentHistory) student.paymentHistory = [];
+            student.paymentHistory.push({month: label, amount: amt, date: new Date().toLocaleDateString()});
+            if(label === "Admission Fee") student.registrationStatus = "Paid";
+        } else {
+            if(!student.extraHistory) student.extraHistory = [];
+            student.extraHistory.push({reason: label, amount: amt, date: new Date().toLocaleDateString()});
+        }
+        db.ref('students/' + currentId).update(student).then(() => {
+            closeModal();
+            alert("Payment Recorded!");
+        });
     }
 
     function filterTable() {
         let input = document.getElementById('search-input').value.toLowerCase();
         document.querySelectorAll('#table-body tr').forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(input)? '' : 'none';
+            row.style.display = row.innerText.toLowerCase().includes(input) ? '' : 'none';
         });
     }
 
     function showForm(id) {
         document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none');
         document.getElementById(id).style.display = 'block';
-
-        if (id === 'payment-form') {
-            const sel = document.querySelector('.st-check:checked');
-            if (sel) {
-                const student = usersData.find(u => u.id === sel.dataset.id);
-                if (student) populateValidMonths(student);
-            } else {
-                alert("कृपया पहले विद्यार्थी चुनें!");
-                document.getElementById(id).style.display = 'none';
-            }
-        }
     }
 
     function closeModal() { document.getElementById('common-modal').style.display='none'; }
 
     // --- Scratch Coupon ---
-    const canvas = document.getElementById('scratch-canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('scratch-canvas'); 
+    const ctx = canvas.getContext('2d'); 
     let isDrawing = false;
 
     function openScracityModal() {
-        const sel = document.querySelector('.st-check:checked');
+        const sel = document.querySelector('.st-check:checked'); 
         if(!sel) return alert("विद्यार्थी चुनें!");
-        currentId = sel.dataset.id;
+        currentId = sel.dataset.id; 
         lastWinAmount = Math.floor(Math.random() * 15) + 1;
         document.getElementById('win-txt').innerText = `₹${lastWinAmount}`;
-        document.getElementById('common-modal').style.display='flex';
-        document.getElementById('scratch-ui').style.display='block';
+        document.getElementById('common-modal').style.display='flex'; 
+        document.getElementById('scratch-ui').style.display='block'; 
         document.getElementById('qr-ui').style.display='none';
-
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = '#C0C0C0';
+        
+        ctx.globalCompositeOperation = 'source-over'; 
+        ctx.fillStyle = '#C0C0C0'; 
         ctx.fillRect(0, 0, 260, 260);
         ctx.fillStyle = "#888";
         ctx.font = "bold 20px Arial";
@@ -457,11 +299,11 @@
     function scratch(e) {
         if (!isDrawing) return;
         const rect = canvas.getBoundingClientRect();
-        const x = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
-        const y = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.lineWidth = 40;
-        ctx.lineCap = 'round';
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        ctx.globalCompositeOperation = 'destination-out'; 
+        ctx.lineWidth = 40; 
+        ctx.lineCap = 'round'; 
         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y); ctx.stroke();
     }
 
@@ -480,11 +322,7 @@
         });
     }
 
-    // --- AUTO LOAD ON PAGE LOAD ---
-    window.onload = function() {
-        console.log("Page loaded, fetching students...");
-        fetchStudents();
-    };
+    window.onload = fetchStudents;
   </script>
 </body>
 </html>
