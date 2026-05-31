@@ -37,9 +37,9 @@
     .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 320px; position: relative; }
     .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
     .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
-    .scratch-container { position: relative; width: 260px; height: 260px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
+    .scratch-container { position: relative; width: 200px; height: 200px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
     #scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 2; }
-    .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; }
+    .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; top:0; left:0;}
     .form-group { text-align: left; margin: 12px 0; }
     .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #475569; }
   </style>
@@ -65,6 +65,7 @@
               <th>फोटो</th>
               <th>विद्यार्थी विवरण</th>
               <th>कोर्स</th>
+              <th>DOB</th>
               <th>मोबाइल / Gmail</th>
               <th>हाजिरी</th>
               <th>फीस इतिहास</th>
@@ -137,6 +138,21 @@
           <button class="btn btn-green" id="confirm-btn">✅ भुगतान सफल</button>
           <button onclick="closeModal()" style="margin-top:10px; border:none; background:none; color:gray; cursor:pointer;">बंद करें</button>
       </div>
+
+      <!-- Scratch Coupon UI inside Common Modal -->
+      <div class="modal-content" id="scratch-ui" style="display:none;">
+          <h3 id="scratch-student-name">विद्यार्थी का नाम</h3>
+          <p>कार्ड को स्क्रैच करें और इनाम जीतें!</p>
+          <div class="scratch-container">
+              <div class="reward-under">
+                  <h2 style="color:var(--success); margin:0; font-size:32px;" id="reward-amount">₹0</h2>
+                  <span style="font-size:14px; color:#666;">कैशबैक बोनस</span>
+              </div>
+              <canvas id="scratch-canvas" width="200" height="200"></canvas>
+          </div>
+          <button class="btn btn-orange" style="width:100%; display:none;" id="save-reward-btn">🎁 अकाउंट में जोड़ें</button>
+          <button onclick="closeModal()" style="margin-top:15px; border:none; background:none; color:gray; cursor:pointer;">बंद करें</button>
+      </div>
   </div>
 
   <script>
@@ -154,6 +170,8 @@
     let currentId = null;
     let enteredPin = "";
     let pinTarget = "";
+    let generatedReward = 0;
+    let isScratched = false;
     const MASTER_PIN = "912919";
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -175,6 +193,7 @@
                       <td><img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img"></td>
                       <td style="text-align:left;"><b>${u.name}</b><br><small style="color:${u.registrationStatus === 'Pending'?'red':'green'}">${u.registrationStatus || 'Paid'}</small></td>
                       <td><span class="fee-badge extra-badge">${u.courses? u.courses : 'N/A'}</span></td>
+                      <td>${u.dob || 'N/A'}</td>
                       <td style="font-size:11px;">${u.mobile || 'N/A'}<br>${u.email || ''}</td>
                       <td>📅 Records</td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
@@ -239,6 +258,7 @@
 
         document.getElementById('common-modal').style.display='flex';
         document.getElementById('qr-ui').style.display='block';
+        document.getElementById('scratch-ui').style.display='none';
         document.getElementById('qrcode-container').innerHTML = "";
 
         new QRCode(document.getElementById('qrcode-container'), {
@@ -272,6 +292,89 @@
             });
         };
         reader.readAsDataURL(file);
+    }
+
+    // New Function for Selected Student Scratch Coupon Working
+    function openScracityModal() {
+        const sel = document.querySelector('.st-check:checked');
+        if (!sel) { return alert("कृपया पहले किसी विद्यार्थी को चुनें!"); }
+        
+        currentId = sel.dataset.id;
+        const student = usersData.find(u => u.id === currentId);
+        
+        document.getElementById('scratch-student-name').innerText = student.name;
+        
+        // Random Rewards Logic (₹5 से ₹50 के बीच)
+        generatedReward = Math.floor(Math.random() * 46) + 5;
+        document.getElementById('reward-amount').innerText = "₹" + generatedReward;
+        
+        document.getElementById('common-modal').style.display = 'flex';
+        document.getElementById('qr-ui').style.display = 'none';
+        document.getElementById('scratch-ui').style.display = 'block';
+        document.getElementById('save-reward-btn').style.display = 'none';
+        isScratched = false;
+
+        // Initialize Scratch Canvas
+        initScratchCanvas();
+    }
+
+    function initScratchCanvas() {
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Reset Canvas
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#b0bec5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Add text over grey sheet
+        ctx.fillStyle = '#37474f';
+        ctx.font = 'bold 16px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.fillText('यहाँ स्क्रैच करें', canvas.width / 2, canvas.height / 2);
+        
+        let isDrawing = false;
+        
+        function scratch(e) {
+            if (!isDrawing) return;
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = 30;
+            ctx.lineCap = 'round';
+            
+            let rect = canvas.getBoundingClientRect();
+            let x = (e.clientX || e.touches[0].clientX) - rect.left;
+            let y = (e.clientY || e.touches[0].clientY) - rect.top;
+            
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+
+            // Simple Area check to auto-reveal button
+            if(!isScratched) {
+                isScratched = true;
+                document.getElementById('save-reward-btn').style.display = 'block';
+            }
+        }
+        
+        canvas.onmousedown = (e) => { isDrawing = true; ctx.beginPath(); scratch(e); };
+        canvas.onmousemove = scratch;
+        canvas.onmouseup = () => { isDrawing = false; };
+        
+        canvas.ontouchstart = (e) => { isDrawing = true; ctx.beginPath(); scratch(e); };
+        canvas.ontouchmove = scratch;
+        canvas.ontouchend = () => { isDrawing = false; };
+
+        document.getElementById('save-reward-btn').onclick = function() {
+            let student = usersData.find(u => u.id === currentId);
+            let currentReward = parseInt(student.wonCash || 0);
+            let newReward = currentReward + generatedReward;
+            
+            db.ref('students/' + currentId).update({ wonCash: newReward }).then(() => {
+                alert(`सफलतापूर्वक ₹${generatedReward} इनाम राशि जोड़ दी गयी है!`);
+                closeModal();
+            });
+        };
     }
 
     function closeModal() { document.getElementById('common-modal').style.display='none'; }
