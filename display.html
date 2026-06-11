@@ -37,9 +37,9 @@
     .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 320px; position: relative; }
     .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
     .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
-    .scratch-container { position: relative; width: 200px; height: 200px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
+    .scratch-container { position: relative; width: 260px; height: 260px; background: #fff; margin: 20px auto; border-radius: 20px; overflow: hidden; border: 4px solid #eee; }
     #scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; touch-action: none; z-index: 2; }
-    .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; top:0; left:0;}
+    .reward-under { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1; background: #fff; }
     .form-group { text-align: left; margin: 12px 0; }
     .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #475569; }
   </style>
@@ -65,7 +65,6 @@
               <th>फोटो</th>
               <th>विद्यार्थी विवरण</th>
               <th>कोर्स</th>
-              <th>DOB</th>
               <th>मोबाइल / Gmail</th>
               <th>हाजिरी</th>
               <th>फीस इतिहास</th>
@@ -90,11 +89,11 @@
     <select id="p-month"></select>
     <input type="number" id="p-amount" placeholder="राशि ₹" value="500">
     <div class="form-group">
-      <label>Transaction UTR / Ref No. <span style="color:gray;">(वैकल्पिक)</span></label>
+      <label>Transaction UTR / Ref No. <span style="color:red;">*</span></label>
       <input type="text" id="p-utr" placeholder="12-digit UPI Ref/UTR No." maxlength="12">
     </div>
     <div class="form-group">
-      <label>Upload Payment Screenshot <span style="color:gray;">(वैकल्पिक)</span></label>
+      <label>Upload Payment Screenshot <span style="color:red;">*</span></label>
       <input type="file" id="p-screenshot" accept="image/*">
     </div>
     <button class="btn btn-green" style="width:100%" onclick="genQRCode('fee')">QR कोड दिखाएँ</button>
@@ -105,11 +104,11 @@
     <input type="text" id="e-reason" placeholder="कारण (जैसे- Exam, Card)">
     <input type="number" id="e-amount" placeholder="राशि ₹">
     <div class="form-group">
-      <label>Transaction UTR / Ref No. <span style="color:gray;">(वैकल्पिक)</span></label>
+      <label>Transaction UTR / Ref No. <span style="color:red;">*</span></label>
       <input type="text" id="e-utr" placeholder="12-digit UPI Ref/UTR No." maxlength="12">
     </div>
     <div class="form-group">
-      <label>Upload Payment Screenshot <span style="color:gray;">(वैकल्पिक)</span></label>
+      <label>Upload Payment Screenshot <span style="color:red;">*</span></label>
       <input type="file" id="e-screenshot" accept="image/*">
     </div>
     <button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
@@ -122,6 +121,7 @@
         <div class="calc-grid">
             <button class="calc-btn" onclick="addPin('1')">1</button><button class="calc-btn" onclick="addPin('2')">2</button><button class="calc-btn" onclick="addPin('3')">3</button>
             <button class="calc-btn" onclick="addPin('4')">4</button><button class="calc-btn" onclick="addPin('5')">5</button><button class="calc-btn" onclick="addPin('6')">6</button>
+            <button class="calc-btn" onclick="addPin('7')">7</button><button class="calc-btn" onclick="addPin('8')">8</button><button class="calc-btn" onclick="addPin('9')">9</button>
             <button class="calc-btn" style="color:red" onclick="clearPin()">C</button><button class="calc-btn" onclick="addPin('0')">0</button>
             <button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button>
         </div>
@@ -136,20 +136,6 @@
           <p id="qr-text"></p>
           <button class="btn btn-green" id="confirm-btn">✅ भुगतान सफल</button>
           <button onclick="closeModal()" style="margin-top:10px; border:none; background:none; color:gray; cursor:pointer;">बंद करें</button>
-      </div>
-
-      <div class="modal-content" id="scratch-ui" style="display:none;">
-          <h3 id="scratch-student-name">विद्यार्थी का नाम</h3>
-          <p>कार्ड को स्क्रैच करें और इनाम जीतें!</p>
-          <div class="scratch-container">
-              <div class="reward-under">
-                  <h2 style="color:var(--success); margin:0; font-size:32px;" id="reward-amount">₹0</h2>
-                  <span style="font-size:14px; color:#666;">कैशबैक बोनस</span>
-              </div>
-              <canvas id="scratch-canvas" width="200" height="200"></canvas>
-          </div>
-          <button class="btn btn-orange" style="width:100%; display:none;" id="save-reward-btn">🎁 अकाउंट में जोड़ें</button>
-          <button onclick="closeModal()" style="margin-top:15px; border:none; background:none; color:gray; cursor:pointer;">बंद करें</button>
       </div>
   </div>
 
@@ -168,8 +154,6 @@
     let currentId = null;
     let enteredPin = "";
     let pinTarget = "";
-    let generatedReward = 0;
-    let isScratched = false;
     const MASTER_PIN = "912919";
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -191,7 +175,6 @@
                       <td><img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img"></td>
                       <td style="text-align:left;"><b>${u.name}</b><br><small style="color:${u.registrationStatus === 'Pending'?'red':'green'}">${u.registrationStatus || 'Paid'}</small></td>
                       <td><span class="fee-badge extra-badge">${u.courses? u.courses : 'N/A'}</span></td>
-                      <td>${u.dob || 'N/A'}</td>
                       <td style="font-size:11px;">${u.mobile || 'N/A'}<br>${u.email || ''}</td>
                       <td>📅 Records</td>
                       <td><div style="max-width:200px; margin:auto;">${pHist} ${eHist}</div></td>
@@ -214,9 +197,7 @@
 
     function verifyPin() {
         if(enteredPin === MASTER_PIN) {
-            if(pinTarget === 'attendance') {
-                window.location.href = 'attendance.html'; // यहाँ attendance.html ओपन होगा
-            }
+            if(pinTarget === 'attendance') alert("Attendance Sheet Opened");
             else if(pinTarget === 'delete') deleteRows();
             closePinModal();
         } else { alert("गलत पिन!"); clearPin(); }
@@ -247,164 +228,50 @@
 
     function genQRCode(type) {
         const sel = document.querySelector('.st-check:checked');
-        if (!sel) return alert("विद्यार्थी चुनें!");
-        
         currentId = sel.dataset.id;
         const student = usersData.find(u => u.id === currentId);
         let amt = type==='fee'? document.getElementById('p-amount').value: document.getElementById('e-amount').value;
         let label = type==='fee'? document.getElementById('p-month').value: document.getElementById('e-reason').value;
+        let utr = type==='fee'? document.getElementById('p-utr').value.trim(): document.getElementById('e-utr').value.trim();
+        let sc = type==='fee'? document.getElementById('p-screenshot').files[0]: document.getElementById('e-screenshot').files[0];
 
-        // सिर्फ राशि (Amount) का अनिवार्य होना आवश्यक है, QR कोड देखने के लिए
-        if(!amt) return alert("कृपया राशि दर्ज करें!");
+        if(!amt || !utr || !sc) return alert("सभी फ़ील्ड भरें!");
 
         document.getElementById('common-modal').style.display='flex';
         document.getElementById('qr-ui').style.display='block';
-        document.getElementById('scratch-ui').style.display='none';
         document.getElementById('qrcode-container').innerHTML = "";
 
         new QRCode(document.getElementById('qrcode-container'), {
             text: `upi://pay?pa=9580807075@ybl&pn=Sandeep%20Kumar&am=${amt}&cu=INR&tn=SNT_${student.name}_${label}`,
             width:180, height:180
         });
-        document.getElementById('confirm-btn').onclick = () => savePaymentDirect(type, amt, label);
+        document.getElementById('confirm-btn').onclick = () => savePaymentDirect(type, amt, label, utr, sc);
     }
 
-    function savePaymentDirect(type, amt, label) {
-        let utr = type==='fee'? document.getElementById('p-utr').value.trim(): document.getElementById('e-utr').value.trim();
-        let fileInput = type==='fee'? document.getElementById('p-screenshot'): document.getElementById('e-screenshot');
-        let sc = fileInput.files[0];
-
-        let student = usersData.find(u => u.id === currentId);
-        
-        // डेटाबेस अपडेट करने का मुख्य फंक्शन
-        const updateDataInFirebase = (screenshotData = "") => {
-            let payData = { 
-                month: label, 
-                amount: amt, 
-                date: new Date().toLocaleDateString(), 
-                utrNumber: utr || "N/A", 
-                paymentScreenshot: screenshotData 
-            };
+    function savePaymentDirect(type, amt, label, utr, file) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            let student = usersData.find(u => u.id === currentId);
+            let payData = { month: label, amount: amt, date: new Date().toLocaleDateString(), utrNumber: utr, paymentScreenshot: reader.result };
             
             if(type === 'fee') {
                 if(!student.paymentHistory) student.paymentHistory = [];
                 student.paymentHistory.push(payData);
                 if(label === "Admission Fee") {
                     student.registrationStatus = "Paid";
-                    student.utrNumber = utr || "N/A";
-                    student.paymentScreenshot = screenshotData;
+                    student.utrNumber = utr;
+                    student.paymentScreenshot = reader.result;
                 }
             } else {
                 if(!student.extraHistory) student.extraHistory = [];
-                student.extraHistory.push({ 
-                    reason: label, 
-                    amount: amt, 
-                    date: new Date().toLocaleDateString(), 
-                    utrNumber: utr || "N/A", 
-                    paymentScreenshot: screenshotData 
-                });
+                student.extraHistory.push({ reason: label, amount: amt, date: new Date().toLocaleDateString(), utrNumber: utr, paymentScreenshot: reader.result });
             }
 
             db.ref('students/' + currentId).update(student).then(() => {
-                alert("Payment Saved!"); 
-                // फॉर्म रीसेट करें
-                if(type === 'fee') {
-                    document.getElementById('p-utr').value = "";
-                    document.getElementById('p-screenshot').value = "";
-                } else {
-                    document.getElementById('e-utr').value = "";
-                    document.getElementById('e-screenshot').value = "";
-                }
-                closeModal();
+                alert("Payment Saved!"); closeModal();
             });
         };
-
-        // यदि स्क्रीनशॉट अपलोड किया गया है तो उसे Base64 में बदलें वरना डायरेक्ट सेव करें
-        if(sc) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                updateDataInFirebase(reader.result);
-            };
-            reader.readAsDataURL(sc);
-        } else {
-            updateDataInFirebase("");
-        }
-    }
-
-    function openScracityModal() {
-        const sel = document.querySelector('.st-check:checked');
-        if (!sel) { return alert("कृपया पहले किसी विद्यार्थी को चुनें!"); }
-        
-        currentId = sel.dataset.id;
-        const student = usersData.find(u => u.id === currentId);
-        
-        document.getElementById('scratch-student-name').innerText = student.name;
-        generatedReward = Math.floor(Math.random() * 46) + 5;
-        document.getElementById('reward-amount').innerText = "₹" + generatedReward;
-        
-        document.getElementById('common-modal').style.display = 'flex';
-        document.getElementById('qr-ui').style.display = 'none';
-        document.getElementById('scratch-ui').style.display = 'block';
-        document.getElementById('save-reward-btn').style.display = 'none';
-        isScratched = false;
-
-        initScratchCanvas();
-    }
-
-    function initScratchCanvas() {
-        const canvas = document.getElementById('scratch-canvas');
-        const ctx = canvas.getContext('2d');
-        
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = '#b0bec5';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = '#37474f';
-        ctx.font = 'bold 16px Segoe UI';
-        ctx.textAlign = 'center';
-        ctx.fillText('यहाँ स्क्रैच करें', canvas.width / 2, canvas.height / 2);
-        
-        let isDrawing = false;
-        
-        function scratch(e) {
-            if (!isDrawing) return;
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.lineWidth = 30;
-            ctx.lineCap = 'round';
-            
-            let rect = canvas.getBoundingClientRect();
-            let x = (e.clientX || e.touches[0].clientX) - rect.left;
-            let y = (e.clientY || e.touches[0].clientY) - rect.top;
-            
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-
-            if(!isScratched) {
-                isScratched = true;
-                document.getElementById('save-reward-btn').style.display = 'block';
-            }
-        }
-        
-        canvas.onmousedown = (e) => { isDrawing = true; ctx.beginPath(); scratch(e); };
-        canvas.onmousemove = scratch;
-        canvas.onmouseup = () => { isDrawing = false; };
-        
-        canvas.ontouchstart = (e) => { isDrawing = true; ctx.beginPath(); scratch(e); };
-        canvas.ontouchmove = scratch;
-        canvas.ontouchend = () => { isDrawing = false; };
-
-        document.getElementById('save-reward-btn').onclick = function() {
-            let student = usersData.find(u => u.id === currentId);
-            let currentReward = parseInt(student.wonCash || 0);
-            let newReward = currentReward + generatedReward;
-            
-            db.ref('students/' + currentId).update({ wonCash: newReward }).then(() => {
-                alert(`सफलतापूर्वक ₹${generatedReward} इनाम राशि जोड़ दी गयी है!`);
-                closeModal();
-            });
-        };
+        reader.readAsDataURL(file);
     }
 
     function closeModal() { document.getElementById('common-modal').style.display='none'; }
