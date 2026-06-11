@@ -260,6 +260,7 @@
                           <img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img">
                           <div class="student-info">
                             <h3>${u.name}</h3>
+                            <p><b>पिता का नाम:</b> ${u.fatherName || 'N/A'}</p>
                             <p><b>ID:</b> ${u.studentId || 'N/A'}</p>
                             <p><b>कोर्स:</b> <span class="fee-badge extra-badge" style="margin:0;">${u.courses ? u.courses : 'N/A'}</span></p>
                             <p><small style="color:${u.registrationStatus === 'Pending'?'red':'green'}">${u.registrationStatus || 'Paid'}</small></p>
@@ -484,6 +485,7 @@
           </div>
           <h3>${u.name}</h3>
           <div class="detail-section">
+            <p><b>पिता का नाम:</b> ${u.fatherName || 'N/A'}</p>
             <p><b>Student ID:</b> ${u.studentId || 'N/A'}</p>
             <p><b>कोर्स:</b> ${u.courses || 'N/A'}</p>
             <p><b>मोबाइल:</b> ${u.mobile || 'N/A'}</p>
