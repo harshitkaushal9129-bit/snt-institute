@@ -21,39 +21,40 @@
     /* Student Grid Layout */
     .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
     
-    /* Card Design with Animated Border on Selection */
+    /* Card Design with Continuous Animated Border */
     .student-card { 
       background: white; 
       border-radius: 15px; 
-      padding: 15px 15px 15px 40px; /* Left padding expanded for checkbox */
+      padding: 20px 15px 15px 15px; 
       box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-      border: 2px solid transparent; 
       display: flex; 
       align-items: center; 
       gap: 15px; 
       cursor: pointer; 
-      transition: transform 0.2s, box-shadow 0.2s, border-image 0.3s; 
+      transition: transform 0.2s, box-shadow 0.2s; 
       position: relative; 
       overflow: hidden;
+      border: 3px solid transparent;
+      border-image: linear-gradient(45deg, #e65100, #1a73e8, #e65100) 1;
+      animation: borderRotate 3s linear infinite, glow 1.5s ease-in-out infinite alternate;
     }
-    .student-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    .student-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
     
-    /* Checkbox Alignment Fix */
+    /* Top-Right Checkbox Placement */
     .student-card input[type="checkbox"] { 
       position: absolute; 
-      top: 50%; 
-      left: 12px; 
-      transform: translateY(-50%) scale(1.3); 
+      top: 12px; 
+      right: 12px; 
+      transform: scale(1.4); 
       z-index: 10; 
       cursor: pointer; 
       margin: 0;
     }
     
-    /* Orange/Blue Animated Border Class when Checked */
+    /* Selected Card Extra Overlay Effect */
     .student-card.selected-card {
-      border: 2px solid transparent;
-      border-image: linear-gradient(45deg, #e65100, #1a73e8, #e65100) 1;
-      animation: borderRotate 3s linear infinite;
+      background: #fff8f0;
+      box-shadow: 0 0 15px rgba(230, 81, 0, 0.3);
     }
     
     @keyframes borderRotate {
@@ -62,9 +63,14 @@
       100% { border-image-source: linear-gradient(45deg, #e65100, #1a73e8, #e65100); }
     }
 
+    @keyframes glow {
+      from { box-shadow: 0 0 5px rgba(230,81,0,0.2); }
+      to { box-shadow: 0 0 12px rgba(26,115,232,0.4); }
+    }
+
     .profile-img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); padding: 2px; }
     .student-info { flex: 1; }
-    .student-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #222; }
+    .student-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #222; padding-right: 20px; }
     .student-info p { margin: 2px 0; font-size: 13px; color: #666; }
 
     .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
@@ -81,16 +87,18 @@
     .fee-badge { padding: 4px 8px; border-radius: 6px; display: inline-block; margin: 2px; font-size: 11px; font-weight: bold; background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
     .extra-badge { background: #e8f0fe; color: #1a73e8; border: 1px solid #d0e1fd; }
     
-    #common-modal, #password-modal, #detail-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
+    #common-modal, #password-modal, #detail-modal, #captcha-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
     .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 340px; position: relative; max-height: 80vh; overflow-y: auto; }
     
+    /* Captcha Specific Styles */
+    .captcha-box { background: #f0f0f0; font-size: 24px; font-weight: bold; letter-spacing: 5px; padding: 10px; border-radius: 10px; margin: 15px 0; display: inline-block; font-style: italic; color: #1a73e8; user-select: none; border: 1px dashed #333; }
+
     .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
     .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
     
     .detail-section { text-align: left; margin-top: 15px; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 14px; }
     .detail-section b { color: #555; }
     
-    /* Download Indicator Style */
     .download-avatar { cursor: pointer; transition: transform 0.2s; position: relative; display: inline-block; }
     .download-avatar:hover { transform: scale(1.05); }
     .download-avatar::after { content: "⬇ डाउनलोड करें"; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; opacity: 0; transition: 0.2s; }
@@ -113,9 +121,9 @@
   <div class="controls">
     <button class="btn btn-green" onclick="showForm('payment-form')">💰 फीस जोड़ें</button>
     <button class="btn btn-blue" onclick="showForm('extra-charge-form')">📑 अन्य चार्ज</button>
-    <button class="btn btn-orange" onclick="openPinGate('attendance')">📝 अटेंडेंस भरें</button>
-    <button class="btn btn-yellow" onclick="openScracityModal()">🎁 स्क्रैच कूपन</button>
-    <button class="btn btn-red" onclick="openPinGate('delete')">🗑️ चयनित डेटा डिलीट करें</button>
+    <button class="btn btn-orange" onclick="startVerificationFlow('attendance')">📝 अटेंडेंस भरें</button>
+    <button class="btn btn-yellow" onclick="alert('कूपन प्रणाली जल्द आ रही है!')">🎁 स्क्रैच कूपन</button>
+    <button class="btn btn-red" onclick="startVerificationFlow('delete')">🗑️ चयनित डेटा डिलीट करें</button>
   </div>
 
   <div id="payment-form" class="form-box">
@@ -132,11 +140,15 @@
     <button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
   </div>
 
-  <div id="detail-modal">
+  <div id="captcha-modal">
     <div class="modal-content">
-      <h3 style="margin-top:0;">विद्यार्थी का पूरा विवरण</h3>
-      <div id="detail-content"></div>
-      <button class="btn btn-blue" style="width:100%; margin-top:15px;" onclick="closeDetailModal()">बंद करें</button>
+      <h3>🤖 सुरक्षा सत्यापन (Captcha)</h3>
+      <p>आगे बढ़ने के लिए नीचे दिया गया कोड दर्ज करें:</p>
+      <div class="captcha-box" id="captcha-display">0000</div>
+      <button class="btn btn-blue" style="padding: 5px 10px; display: inline-flex; margin-bottom: 10px;" onclick="generateCaptcha()">🔄 कोड बदलें</button>
+      <input type="text" id="captcha-input" placeholder="यहाँ कैप्चा कोड लिखें" style="text-align:center; font-size:18px; text-transform:uppercase;">
+      <button class="btn btn-green" style="width:100%; margin-top:10px;" onclick="verifyCaptcha()">सत्यापित करें</button>
+      <button onclick="closeCaptchaModal()" style="margin-top:15px; border:none; background:none; cursor:pointer; color:gray;">रद्द करें</button>
     </div>
   </div>
 
@@ -152,6 +164,14 @@
             <button class="calc-btn" style="color:green" onclick="verifyPin()">OK</button>
         </div>
         <button onclick="closePinModal()" style="margin-top:15px; border:none; background:none; cursor:pointer; color:gray;">रद्द करें</button>
+    </div>
+  </div>
+
+  <div id="detail-modal">
+    <div class="modal-content">
+      <h3 style="margin-top:0;">विद्यार्थी का पूरा विवरण</h3>
+      <div id="detail-content"></div>
+      <button class="btn btn-blue" style="width:100%; margin-top:15px;" onclick="closeDetailModal()">बंद करें</button>
     </div>
   </div>
 
@@ -180,6 +200,7 @@
     let currentId = null;
     let enteredPin = "";
     let pinTarget = "";
+    let generatedCaptchaCode = "";
     const MASTER_PIN = "912919";
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -209,7 +230,6 @@
         });
     }
 
-    // Toggle border styling when check-box inside div is clicked
     function toggleCardSelection(key, event) {
         event.stopPropagation();
         const card = document.getElementById(`card-${key}`);
@@ -221,7 +241,72 @@
         }
     }
 
-    // Function to download image directly
+    /* --- CAPTCHA FLOW VALIDATION --- */
+    function startVerificationFlow(target) {
+        if(target === 'delete' && document.querySelectorAll('.st-check:checked').length === 0) {
+            return alert("कृपया पहले विद्यार्थी चुनें!");
+        }
+        pinTarget = target;
+        openCaptchaModal();
+    }
+
+    function openCaptchaModal() {
+        document.getElementById('captcha-input').value = "";
+        generateCaptcha();
+        document.getElementById('captcha-modal').style.display = 'flex';
+    }
+
+    function closeCaptchaModal() {
+        document.getElementById('captcha-modal').style.display = 'none';
+    }
+
+    function generateCaptcha() {
+        const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let code = "";
+        for (let i = 0; i < 4; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        generatedCaptchaCode = code;
+        document.getElementById('captcha-display').innerText = code;
+    }
+
+    function verifyCaptcha() {
+        let inputVal = document.getElementById('captcha-input').value.trim().toUpperCase();
+        if(inputVal === generatedCaptchaCode) {
+            closeCaptchaModal();
+            openPinGate();
+        } else {
+            alert("गलत कैप्चा कोड! कृपया पुनः प्रयास करें।");
+            generateCaptcha();
+            document.getElementById('captcha-input').value = "";
+        }
+    }
+
+    function openPinGate() {
+        enteredPin = "";
+        document.getElementById('pin-input').value = "";
+        document.getElementById('password-modal').style.display = 'flex';
+    }
+
+    function addPin(num) { if(enteredPin.length < 6) { enteredPin += num; document.getElementById('pin-input').value = enteredPin.replace(/./g, '●'); } }
+    function clearPin() { enteredPin = ""; document.getElementById('pin-input').value = ""; }
+    function closePinModal() { document.getElementById('password-modal').style.display = 'none'; }
+
+    function verifyPin() {
+        if(enteredPin === MASTER_PIN) {
+            if(pinTarget === 'attendance') {
+                window.location.href = 'attendance.html';
+            }
+            else if(pinTarget === 'delete') deleteRows();
+            closePinModal();
+        } else { alert("गलत पिन!"); clearPin(); }
+    }
+
+    function deleteRows() {
+        if(!confirm("क्या आप वाकई हटाना चाहते हैं?")) return;
+        document.querySelectorAll('.st-check:checked').forEach(c => db.ref('students/' + c.dataset.id).remove());
+    }
+
     function downloadImage(imgUrl, studentName) {
         if(!imgUrl || imgUrl === 'SNT.jpg') {
             alert("डिफ़ॉल्ट इमेज डाउनलोड नहीं की जा सकती!");
@@ -244,7 +329,6 @@
     }
 
     function openStudentDetails(id, event) {
-        // Prevent opening detail view if clicking exactly on checkbox or its vicinity 
         if(event.target.type === 'checkbox') return;
         
         let u = usersData.find(student => student.id === id);
@@ -278,32 +362,6 @@
     }
 
     function closeDetailModal() { document.getElementById('detail-modal').style.display = 'none'; }
-
-    function openPinGate(target) {
-        if(target === 'delete' && document.querySelectorAll('.st-check:checked').length === 0) return alert("विद्यार्थी चुनें!");
-        pinTarget = target; enteredPin = "";
-        document.getElementById('pin-input').value = "";
-        document.getElementById('password-modal').style.display = 'flex';
-    }
-    function addPin(num) { if(enteredPin.length < 6) { enteredPin += num; document.getElementById('pin-input').value = enteredPin.replace(/./g, '●'); } }
-    function clearPin() { enteredPin = ""; document.getElementById('pin-input').value = ""; }
-    function closePinModal() { document.getElementById('password-modal').style.display = 'none'; }
-
-    function verifyPin() {
-        if(enteredPin === MASTER_PIN) {
-            if(pinTarget === 'attendance') {
-                // Fixed: Redirecting to attendance.html page
-                window.location.href = 'attendance.html';
-            }
-            else if(pinTarget === 'delete') deleteRows();
-            closePinModal();
-        } else { alert("गलत पिन!"); clearPin(); }
-    }
-
-    function deleteRows() {
-        if(!confirm("क्या आप वाकई हटाना चाहते हैं?")) return;
-        document.querySelectorAll('.st-check:checked').forEach(c => db.ref('students/' + c.dataset.id).remove());
-    }
 
     function showForm(id) {
         document.querySelectorAll('.form-box').forEach(f => f.style.display = 'none');
