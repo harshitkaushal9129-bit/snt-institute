@@ -25,11 +25,9 @@
     .student-card { 
       background: white; 
       border-radius: 15px; 
-      padding: 20px 15px 15px 15px; 
       box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
       display: flex; 
-      align-items: center; 
-      gap: 15px; 
+      flex-direction: column;
       cursor: pointer; 
       transition: transform 0.2s, box-shadow 0.2s; 
       position: relative; 
@@ -40,18 +38,35 @@
     }
     .student-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
     
-    /* Top-Right Checkbox Placement */
-    .student-card input[type="checkbox"] { 
-      position: absolute; 
-      top: 12px; 
-      right: 12px; 
-      transform: scale(1.4); 
+    /* Card Colored Header */
+    .card-header {
+      background: linear-gradient(135deg, #e65100, #ff8000);
+      color: white;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    /* Card Main Content Area */
+    .card-body {
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    /* Checkbox Style inside Header */
+    .card-header input[type="checkbox"] { 
+      transform: scale(1.2); 
       z-index: 10; 
       cursor: pointer; 
       margin: 0;
     }
     
-    /* Selected Card Extra Overlay Effect */
     .student-card.selected-card {
       background: #fff8f0;
       box-shadow: 0 0 15px rgba(230, 81, 0, 0.3);
@@ -70,7 +85,7 @@
 
     .profile-img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); padding: 2px; }
     .student-info { flex: 1; }
-    .student-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #222; padding-right: 20px; }
+    .student-info h3 { margin: 0 0 5px 0; font-size: 16px; color: #222; }
     .student-info p { margin: 2px 0; font-size: 13px; color: #666; }
 
     .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
@@ -87,11 +102,14 @@
     .fee-badge { padding: 4px 8px; border-radius: 6px; display: inline-block; margin: 2px; font-size: 11px; font-weight: bold; background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
     .extra-badge { background: #e8f0fe; color: #1a73e8; border: 1px solid #d0e1fd; }
     
-    #common-modal, #password-modal, #detail-modal, #captcha-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
+    #common-modal, #password-modal, #detail-modal, #captcha-modal, #scratch-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
     .modal-content { background:white; padding:25px; border-radius:25px; text-align:center; width: 340px; position: relative; max-height: 80vh; overflow-y: auto; }
     
-    /* Captcha Specific Styles */
+    /* Captcha and Scratch Canvas Layout */
     .captcha-box { background: #f0f0f0; font-size: 24px; font-weight: bold; letter-spacing: 5px; padding: 10px; border-radius: 10px; margin: 15px 0; display: inline-block; font-style: italic; color: #1a73e8; user-select: none; border: 1px dashed #333; }
+    .scratch-container { position: relative; width: 200px; height: 200px; margin: 20px auto; background: #fff; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+    .scratch-prize { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; color: #333; z-index: 1; background: #fffde7; }
+    #scratch-canvas { position: absolute; top: 0; left: 0; z-index: 2; cursor: crosshair; }
 
     .calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
     .calc-btn { background: #f0f0f0; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
@@ -122,7 +140,7 @@
     <button class="btn btn-green" onclick="showForm('payment-form')">💰 फीस जोड़ें</button>
     <button class="btn btn-blue" onclick="showForm('extra-charge-form')">📑 अन्य चार्ज</button>
     <button class="btn btn-orange" onclick="startVerificationFlow('attendance')">📝 अटेंडेंस भरें</button>
-    <button class="btn btn-yellow" onclick="alert('कूपन प्रणाली जल्द आ रही है!')">🎁 स्क्रैच कूपन</button>
+    <button class="btn btn-yellow" onclick="openScratchCardSystem()">🎁 स्क्रैच कूपन</button>
     <button class="btn btn-red" onclick="startVerificationFlow('delete')">🗑️ चयनित डेटा डिलीट करें</button>
   </div>
 
@@ -138,6 +156,22 @@
     <input type="text" id="e-reason" placeholder="कारण (जैसे- Exam, Card)">
     <input type="number" id="e-amount" placeholder="राशि ₹">
     <button class="btn btn-blue" style="width:100%" onclick="genQRCode('extra')">QR कोड दिखाएँ</button>
+  </div>
+
+  <div id="scratch-modal">
+    <div class="modal-content">
+      <h3 style="margin:0;">🎁 स्टूडेंट स्क्रैच कूपन</h3>
+      <p id="scratch-user-name" style="font-weight:bold; color:var(--primary); margin:5px 0;"></p>
+      <div class="scratch-container">
+        <div class="scratch-prize" id="prize-display">
+          <span style="font-size:30px;">🎉</span>
+          <span id="prize-text">₹0</span>
+        </div>
+        <canvas id="scratch-canvas" width="200" height="200"></canvas>
+      </div>
+      <button class="btn btn-green" id="claim-prize-btn" style="width:100%; display:none;" onclick="saveScratchPrize()">✅ इनाम कलेक्ट करें</button>
+      <button onclick="closeScratchModal()" style="margin-top:15px; border:none; background:none; cursor:pointer; color:gray;">बंद करें</button>
+    </div>
   </div>
 
   <div id="captcha-modal">
@@ -201,6 +235,8 @@
     let enteredPin = "";
     let pinTarget = "";
     let generatedCaptchaCode = "";
+    let currentPrizeAmount = 0;
+    
     const MASTER_PIN = "912919";
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -216,13 +252,18 @@
                     
                     container.innerHTML += `
                       <div class="student-card" id="card-${key}" onclick="openStudentDetails('${key}', event)">
-                        <input type="checkbox" class="st-check" data-id="${key}" onclick="toggleCardSelection('${key}', event)">
-                        <img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img">
-                        <div class="student-info">
-                          <h3>${u.name}</h3>
-                          <p><b>ID:</b> ${u.studentId || 'N/A'}</p>
-                          <p><b>कोर्स:</b> <span class="fee-badge extra-badge" style="margin:0;">${u.courses ? u.courses : 'N/A'}</span></p>
-                          <p><small style="color:${u.registrationStatus === 'Pending'?'red':'green'}">${u.registrationStatus || 'Paid'}</small></p>
+                        <div class="card-header">
+                          <span>Action</span>
+                          <input type="checkbox" class="st-check" data-id="${key}" onclick="toggleCardSelection('${key}', event)">
+                        </div>
+                        <div class="card-body">
+                          <img src="${u.profilePicture || 'SNT.jpg'}" class="profile-img">
+                          <div class="student-info">
+                            <h3>${u.name}</h3>
+                            <p><b>ID:</b> ${u.studentId || 'N/A'}</p>
+                            <p><b>कोर्स:</b> <span class="fee-badge extra-badge" style="margin:0;">${u.courses ? u.courses : 'N/A'}</span></p>
+                            <p><small style="color:${u.registrationStatus === 'Pending'?'red':'green'}">${u.registrationStatus || 'Paid'}</small></p>
+                          </div>
                         </div>
                       </div>`;
                 });
@@ -241,6 +282,107 @@
         }
     }
 
+    /* --- SCRATCH COUPON CODES --- */
+    function openScratchCardSystem() {
+        const sel = document.querySelector('.st-check:checked');
+        if(!sel) return alert("कृपया स्क्रैच कूपन के लिए पहले विद्यार्थी चुनें!");
+        
+        currentId = sel.dataset.id;
+        let student = usersData.find(u => u.id === currentId);
+        document.getElementById('scratch-user-name').innerText = `विद्यार्थी: ${student.name}`;
+        
+        // Random Prize Generator logic
+        const prizes = [10, 20, 30, 50, 100, 0, 5, 0];
+        let randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
+        currentPrizeAmount = randomPrize;
+
+        if(randomPrize > 0) {
+            document.getElementById('prize-text').innerText = `₹${randomPrize} कैश`;
+        } else {
+            document.getElementById('prize-text').innerText = "Better Luck Next Time!";
+        }
+
+        document.getElementById('claim-prize-btn').style.display = 'none';
+        document.getElementById('scratch-modal').style.display = 'flex';
+        initScratchCanvas();
+    }
+
+    function initScratchCanvas() {
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Fill canvas overlay color (Gray)
+        ctx.fillStyle = '#b0bec5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Text instructions on scratch area
+        ctx.fillStyle = '#37474f';
+        ctx.font = 'bold 16px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.fillText('यहाँ स्क्रैच करें!', canvas.width / 2, canvas.height / 2);
+
+        let isDrawing = false;
+
+        function scratch(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            
+            let rect = canvas.getBoundingClientRect();
+            let x, y;
+            
+            if(e.touches) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, Math.PI * 2);
+            ctx.fill();
+            
+            checkScratchPercentage();
+        }
+
+        canvas.addEventListener('mousedown', () => isDrawing = true);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mousemove', scratch);
+        
+        canvas.addEventListener('touchstart', () => isDrawing = true);
+        canvas.addEventListener('touchend', () => isDrawing = false);
+        canvas.addEventListener('touchmove', scratch);
+
+        function checkScratchPercentage() {
+            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let pixels = imgData.data;
+            let transparentPixels = 0;
+            
+            for (let i = 0; i < pixels.length; i += 4) {
+                if (pixels[i + 3] === 0) transparentPixels++;
+            }
+            
+            let percentage = (transparentPixels / (canvas.width * canvas.height)) * 100;
+            if (percentage > 50) { // If 50% area is scratched, clear fully and show button
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('claim-prize-btn').style.display = 'block';
+            }
+        }
+    }
+
+    function saveScratchPrize() {
+        let student = usersData.find(u => u.id === currentId);
+        let absoluteCash = parseInt(student.wonCash || 0) + parseInt(currentPrizeAmount);
+        
+        db.ref('students/' + currentId).update({ wonCash: absoluteCash }).then(() => {
+            alert(`सफलतापूर्वक ₹${currentPrizeAmount} विद्यार्थी के वॉलेट में जोड़ दिए गए हैं!`);
+            closeScratchModal();
+        });
+    }
+
+    function closeScratchModal() { document.getElementById('scratch-modal').style.display = 'none'; }
+
     /* --- CAPTCHA FLOW VALIDATION --- */
     function startVerificationFlow(target) {
         if(target === 'delete' && document.querySelectorAll('.st-check:checked').length === 0) {
@@ -256,9 +398,7 @@
         document.getElementById('captcha-modal').style.display = 'flex';
     }
 
-    function closeCaptchaModal() {
-        document.getElementById('captcha-modal').style.display = 'none';
-    }
+    function closeCaptchaModal() { document.getElementById('captcha-modal').style.display = 'none'; }
 
     function generateCaptcha() {
         const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -329,7 +469,7 @@
     }
 
     function openStudentDetails(id, event) {
-        if(event.target.type === 'checkbox') return;
+        if(event.target.type === 'checkbox' || event.target.closest('.card-header')) return;
         
         let u = usersData.find(student => student.id === id);
         if(!u) return;
