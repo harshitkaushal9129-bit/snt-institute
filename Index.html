@@ -31,7 +31,7 @@
         .section-title { background: #eff6ff; color: var(--primary); padding: 12px 20px; border-radius: 10px; font-weight: 700; margin: 40px 0 25px 0; border-left: 6px solid var(--primary); font-size: 18px; }
         .form-group { margin-bottom: 22px; }
         label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 14.5px; color: #475569; }
-        input[type="text"], input[type="email"], input[type="number"], input[type="date"], select { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: 0.3s; }
+        input[type="text"], input[type="email"], input[type="number"], input[type="date"], select { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; transition: 0.3s; box-sizing: border-box; }
         input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #f8fafc; padding: 25px; border-radius: 16px; }
         .checkbox-item { display: flex; align-items: center; font-size: 14px; cursor: pointer; }
@@ -54,6 +54,12 @@
         .progress-ring__circle { transition: stroke-dashoffset 0.4s ease; stroke-linecap: round; }
         .profile-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border-radius: 50%; overflow: hidden; background: #fff; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; }
         .profile-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Camera Elements Style */
+        .camera-container { display: none; margin-top: 10px; border-radius: 12px; overflow: hidden; border: 2px dashed var(--primary); background: #000; position: relative; }
+        #camera-video { width: 100%; display: block; }
+        .btn-camera { background: var(--primary); color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-camera:hover { background: var(--primary-dark); }
     </style>
 </head>
 <body oncontextmenu="return false;"> 
@@ -129,7 +135,18 @@
             
             <div class="section-title">Step 4: Verification & Photo</div>
             <div class="row">
-                <div class="form-group"><label>Upload Profile Picture</label><input type="file" id="profile-picture" name="profilePicture" accept="image/*"></div>
+                <div class="form-group">
+                    <label>Upload Profile Picture / Take Live Photo</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="file" id="profile-picture" name="profilePicture" accept="image/*" style="width: auto; flex: 1;">
+                        <button type="button" id="btn-start-camera" class="btn-camera"><i class="fa-solid fa-camera"></i> Open Camera</button>
+                        <button type="button" id="btn-capture" class="btn-camera" style="display:none; background:#10b981;"><i class="fa-solid fa-circle"></i> Capture Photo</button>
+                    </div>
+                    <div class="camera-container" id="camera-wrapper">
+                        <video id="camera-video" autoplay playsinline></video>
+                    </div>
+                    <canvas id="camera-canvas" style="display:none;" width="400" height="400"></canvas>
+                </div>
                 <div class="form-group"><label>How did you know about us?</label><select name="source"><option value="Friends">Friends</option><option value="Newspaper">Newspaper</option><option value="Banner">Banner</option><option value="Social Media">Social Media</option></select></div>
             </div>
             <div class="row">
@@ -138,7 +155,6 @@
             </div>
             <button type="button" id="btn-next" class="btn-next">PROCEED TO ADMISSION FEE (₹100)</button>
             
-            <!-- Modified Payment Overlay with UTR & Screenshot -->
             <div id="payment-overlay">
                 <div id="payment-box">
                     <h2 style="font-size: 40px; margin: 0; color: #10b981;">₹100</h2>
@@ -146,16 +162,9 @@
                     
                     <div id="qr-container" style="background:#f1f5f9; padding:15px; border-radius:15px; margin-bottom: 15px; display: flex; justify-content: center;"><p id="qr-loading">Generating QR...</p></div>
                     
-                    <!-- UTR Field -->
-                    <div class="form-group" style="text-align: left;">
+                    <div class="form-group" style="text-align: left; margin-bottom: 20px;">
                         <label style="margin-bottom: 5px;">Transaction UTR / Ref No. <span style="color:red;">*</span></label>
                         <input type="text" id="utr-number" placeholder="12-digit UPI Ref/UTR No." required>
-                    </div>
-
-                    <!-- Payment Screenshot Field -->
-                    <div class="form-group" style="text-align: left; margin-bottom: 20px;">
-                        <label style="margin-bottom: 5px;">Upload Payment Screenshot <span style="color:red;">*</span></label>
-                        <input type="file" id="payment-screenshot" accept="image/*" required>
                     </div>
 
                     <button type="submit" id="final-submit-btn" style="width:100%; padding:16px; background:#10b981; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px;">I HAVE PAID - FINAL SUBMIT</button>
@@ -203,6 +212,10 @@
         const UPI_ID = "9580807075@ybl"; 
         const MERCHANT_NAME = "Sandip kumar";
 
+        // Camera State Variables
+        let liveCameraStream = null;
+        let capturedImageBase64 = "";
+
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
@@ -220,6 +233,49 @@
             
             const dateInput = document.getElementById('current-date');
             if(dateInput) dateInput.valueAsDate = new Date();
+        });
+
+        // Camera Logic
+        const btnStartCamera = document.getElementById('btn-start-camera');
+        const btnCapture = document.getElementById('btn-capture');
+        const cameraWrapper = document.getElementById('camera-wrapper');
+        const cameraVideo = document.getElementById('camera-video');
+        const cameraCanvas = document.getElementById('camera-canvas');
+
+        btnStartCamera.addEventListener('click', async () => {
+            try {
+                liveCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                cameraVideo.srcObject = liveCameraStream;
+                cameraWrapper.style.display = 'block';
+                btnCapture.style.display = 'inline-flex';
+                btnStartCamera.innerHTML = `<i class="fa-solid fa-sync"></i> Restart Camera`;
+            } catch (err) {
+                alert("कैमरा एक्सेस करने में समस्या आ रही है! कृपया अनुमति (Permission) दें।");
+            }
+        });
+
+        btnCapture.addEventListener('click', () => {
+            if (liveCameraStream) {
+                const ctx = cameraCanvas.getContext('2d');
+                ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+                
+                // Save base64
+                capturedImageBase64 = cameraCanvas.toDataURL('image/jpeg', 0.8);
+                
+                // Preview update
+                document.getElementById('display-profile').src = capturedImageBase64;
+                
+                // Stop camera stream
+                liveCameraStream.getTracks().forEach(track => track.stop());
+                cameraWrapper.style.display = 'none';
+                btnCapture.style.display = 'none';
+                
+                // Clear input file text if it was used
+                document.getElementById('profile-picture').value = "";
+                
+                updateProgress();
+                alert("लाइव फोटो सफलतापूर्वक कैप्चर कर ली गई है!");
+            }
         });
 
         btnNext.addEventListener('click', () => {
@@ -241,10 +297,7 @@
             e.preventDefault();
             
             const utrVal = document.getElementById('utr-number').value.trim();
-            const screenshotFile = document.getElementById('payment-screenshot').files[0];
-
             if(!utrVal) { alert("कृपया Transaction UTR संख्या दर्ज करें!"); return; }
-            if(!screenshotFile) { alert("कृपया पेमेंट का स्क्रीनशॉट अपलोड करें!"); return; }
 
             const submitBtn = document.getElementById('final-submit-btn');
             submitBtn.innerText = "Processing...";
@@ -253,17 +306,21 @@
             const formData = new FormData(form);
             const profilePictureFile = document.getElementById('profile-picture').files[0];
 
-            // Image conversions using FileReader
+            // File to Base64 function
             const readAsBase64 = (file) => {
                 return new Promise((resolve) => {
-                    if (!file || file.size > 1048576) resolve(""); // Size Check (Max 1MB for Realtime DB limit)
+                    if (!file || file.size > 1048576) resolve(""); // Max 1MB limit check
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
                     reader.readAsDataURL(file);
                 });
             };
 
-            Promise.all([readAsBase64(profilePictureFile), readAsBase64(screenshotFile)]).then(([profileImg, screenshotImg]) => {
+            // Read uploaded file, if not present fallback to captured image
+            readAsBase64(profilePictureFile).then((uploadedImgBase64) => {
+                // Prioritize uploaded image, then live camera capture
+                const finalProfileImg = uploadedImgBase64 || capturedImageBase64 || "";
+
                 const selectedCourses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(c => c.value);
                 const selectedBatches = Array.from(document.querySelectorAll('input[name="batch"]:checked')).map(b => b.value);
                 const fullDOB = `${document.getElementById('dob-day').value}/${document.getElementById('dob-month').value}/${document.getElementById('dob-year').value}`;
@@ -286,11 +343,10 @@
                     batches: selectedBatches,
                     lastQualification: formData.get('lastQualification') || 'N/A',
                     passingYear: formData.get('passingYear') || 'N/A',
-                    profilePicture: profileImg || "",
+                    profilePicture: finalProfileImg, // Saves camera photo or file base64 here
                     signature: formData.get('signature') || 'N/A',
                     admissionDate: formData.get('date') || new Date().toISOString().split('T')[0],
                     utrNumber: utrVal,
-                    paymentScreenshot: screenshotImg || "",
                     registrationStatus: "Pending",
                     timestamp: new Date().toISOString()
                 };
@@ -305,7 +361,7 @@
                         `*UTR No:* ${data.utrNumber}\n` +
                         `*Batch:* ${data.batches.join(', ')}\n` +
                         `*Address:* ${data.address}\n\n` +
-                        `_Registration Details & Screenshot Submitted Successfully._`
+                        `_Registration Details Submitted Successfully._`
                     );
 
                     alert("सफल! आपकी ID है: " + customId + "\nविवरण WhatsApp पर भेजने के लिए OK दबाएं।");
@@ -329,6 +385,12 @@
             const inputs = form.querySelectorAll('input[required], input[type="text"], select');
             let filled = 0;
             inputs.forEach(i => { if(i.value.trim() !== "" && i.value !== "Month") filled++; });
+            
+            // Count profile photo if file uploaded or live photo captured
+            if(document.getElementById('profile-picture').files[0] || capturedImageBase64) {
+                filled++;
+            }
+
             let percent = (filled / 12) * 100;
             circle.style.strokeDashoffset = circumference - (Math.min(percent, 100) / 100) * circumference;
         }
@@ -337,7 +399,11 @@
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => document.getElementById('display-profile').src = e.target.result;
+                reader.onload = (e) => {
+                    document.getElementById('display-profile').src = e.target.result;
+                    capturedImageBase64 = ""; // Reset captured live image if user manually picks a file
+                    updateProgress();
+                };
                 reader.readAsDataURL(file);
             }
         });
