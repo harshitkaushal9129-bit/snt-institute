@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="hi">
 <head>
   <link rel="icon" type="image/jpeg" href="SNT.jpg">
@@ -121,9 +121,29 @@
     .download-avatar:hover { transform: scale(1.05); }
     .download-avatar::after { content: "⬇ डाउनलोड करें"; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 10px; opacity: 0; transition: 0.2s; }
     .download-avatar:hover::after { opacity: 1; }
+
+    /* Main Gate Lock Screen Style */
+    #main-gate-lock { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #e65100, #1a73e8); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+    .lock-box { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; width: 320px; }
   </style>
 </head>
 <body oncontextmenu="return false;">
+
+  <!-- Main Entrance Lock Screen (912919) -->
+  <div id="main-gate-lock">
+    <div class="lock-box">
+      <h2 style="color: var(--primary); margin-top: 0;">SNT Admin Panel</h2>
+      <p style="color: #666; font-size: 14px;">आगे बढ़ने के लिए मास्टर पिन दर्ज करें</p>
+      <input type="password" id="gate-pin-input" readonly placeholder="******" style="text-align:center; font-size:24px; border:2px solid #ddd; width:100%; letter-spacing: 5px; background: #f9f9f9;">
+      <div class="calc-grid">
+          <button class="calc-btn" onclick="addGatePin('1')">1</button><button class="calc-btn" onclick="addGatePin('2')">2</button><button class="calc-btn" onclick="addGatePin('3')">3</button>
+          <button class="calc-btn" onclick="addGatePin('4')">4</button><button class="calc-btn" onclick="addGatePin('5')">5</button><button class="calc-btn" onclick="addGatePin('6')">6</button>
+          <button class="calc-btn" onclick="addGatePin('7')">7</button><button class="calc-btn" onclick="addGatePin('8')">8</button><button class="calc-btn" onclick="addGatePin('9')">9</button>
+          <button class="calc-btn" style="color:red" onclick="clearGatePin()">C</button><button class="calc-btn" onclick="addGatePin('0')">0</button>
+          <button class="calc-btn" style="color:green" onclick="verifyGatePin()">OK</button>
+      </div>
+    </div>
+  </div>
 
   <header>
     <h1>SNT Computer Institute</h1>
@@ -233,12 +253,34 @@
     let usersData = [];
     let currentId = null;
     let enteredPin = "";
+    let enteredGatePin = ""; // Main entrance pin handler
     let pinTarget = "";
     let generatedCaptchaCode = "";
     let currentPrizeAmount = 0;
     
     const MASTER_PIN = "912919";
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    /* --- MAIN ENTRANCE PIN CODES --- */
+    function addGatePin(num) {
+        if(enteredGatePin.length < 6) {
+            enteredGatePin += num;
+            document.getElementById('gate-pin-input').value = enteredGatePin.replace(/./g, '●');
+        }
+    }
+    function clearGatePin() {
+        enteredGatePin = "";
+        document.getElementById('gate-pin-input').value = "";
+    }
+    function verifyGatePin() {
+        if(enteredGatePin === MASTER_PIN) {
+            document.getElementById('main-gate-lock').style.display = 'none';
+            fetchStudents(); // पिन सही होने पर ही डेटा लोड होना शुरू होगा
+        } else {
+            alert("गलत मास्टर पिन! आप एडमिन पैनल एक्सेस नहीं कर सकते।");
+            clearGatePin();
+        }
+    }
 
     function fetchStudents() {
         db.ref('students').on('value', (snapshot) => {
@@ -572,7 +614,11 @@
             card.style.display = card.innerText.toLowerCase().includes(input)? 'flex' : 'none'; 
         });
     }
-    window.onload = fetchStudents;
+
+    // यहाँ पर बदलाव किया गया है - शुरुआत में fetchStudents को रोककर सिर्फ लॉक स्क्रीन चालू की गई है
+    window.onload = function() {
+        document.getElementById('main-gate-lock').style.display = 'flex';
+    };
   </script>
 </body>
 </html>
