@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
   <link rel="icon" type="image/jpeg" href="SNT.jpg">
@@ -535,6 +535,12 @@
             <p><b>रजिस्ट्रेशन स्थिति:</b> ${u.registrationStatus || 'Paid'}</p>
             <p><b>जीते गए इनाम:</b> ₹${u.wonCash || 0}</p>
           </div>
+          
+          <!-- कैलेंडर खोलने का बटन जो स्टूडेंट की ID साथ लेकर जाएगा -->
+          <button class="btn btn-orange" style="width:100%; margin: 15px 0 10px 0;" onclick="window.location.href='https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/calendar.html?id=${u.id}&studentId=${u.studentId || ''}'">
+            📅 कैलेंडर देखें
+          </button>
+
           <h4 style="margin:15px 0 5px 0; text-align:left;">फीस इतिहास:</h4>
           <div style="text-align:left;">${pHist || '<p style="color:gray; font-size:12px; margin:5px 0;">कोई रिकॉर्ड नहीं</p>'}</div>
           <h4 style="margin:15px 0 5px 0; text-align:left;">अन्य चार्ज विवरण:</h4>
@@ -615,7 +621,7 @@
         });
     }
 
-    // यहाँ पर बदलाव किया गया है - शुरुआत में fetchStudents को रोककर सिर्फ लॉक स्क्रीन चालू की गई है
+    // यहाँ पर बदलाव किया गया है - शुरुआत में fetchStudents को रोककर सिर्फ锁 स्क्रीन चालू की गई है
     window.onload = function() {
         document.getElementById('main-gate-lock').style.display = 'flex';
     };
