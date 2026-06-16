@@ -1,257 +1,298 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNT Institute - Attendance Manager</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SNT - Admin Attendance Panel</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #e65100; --success: #1b5e20; --danger: #b71c1c; --holiday: #f57c00; --bg: #fff8f1; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .card { max-width: 500px; margin: 10px auto; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); overflow: hidden; }
-        header { background: var(--primary); color: white; padding: 25px; text-align: center; border-bottom: 5px solid #ffb74d; }
-        .date-picker { padding: 20px; display: flex; justify-content: center; gap: 10px; background: #fff3e0; }
-        select, input { padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .row-item { display: grid; grid-template-columns: 2fr 1.5fr; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         
-        .holiday-banner { 
-            display: none; background: #fff3e0; padding: 40px 20px; text-align: center; 
-            border: 2px dashed var(--holiday); margin: 20px; border-radius: 20px;
-        }
-        .holiday-banner h2 { color: var(--holiday); margin: 0; font-size: 28px; }
-        .holiday-banner p { font-size: 18px; font-weight: bold; color: #555; margin: 10px 0; }
-
-        .st-list { padding: 10px 20px; max-height: 400px; overflow-y: auto; }
-        .st-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .btn-group { display: flex; gap: 8px; }
+        /* Status Theme Styles */
+        .btn-p.active { color: #4ade80; border: 1.5px solid #22c55e; background: rgba(34, 197, 94, 0.25); box-shadow: 0 0 10px rgba(34, 197, 94, 0.2); font-weight: 900; }
+        .btn-a.active { color: #f87171; border: 1.5px solid #ef4444; background: rgba(239, 68, 68, 0.25); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); font-weight: 900; }
         
-        .btn { border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; background: #eee; transition: 0.2s; }
-        
-        .p-btn.active { background-color: var(--success) !important; color: white !important; }
-        .a-btn.active { background-color: var(--danger) !important; color: white !important; }
-        
-        .footer { padding: 20px; text-align: center; }
-        .save-btn { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 15px; width: 100%; font-weight: bold; cursor: pointer; }
-        .un-holiday { color: var(--primary); text-decoration: underline; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; }
+        .btn-normal { color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); background: rgba(30, 41, 59, 0.5); }
+        .snt-logo-btn { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: flex; items-center; justify-center; border: 1px solid rgba(255,255,255,0.1); }
+        .snt-logo-btn img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
-<body>
+<body class="pb-10">
 
-<div class="card">
-    <header><h2>SNT COMPUTER INSTITUTE</h2><p>Admin Attendance Panel</p></header>
-    
-    <div class="date-picker">
-        <select id="day" onchange="checkCloudHoliday()"></select>
-        <select id="month" onchange="checkCloudHoliday()">
-            <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
-            <option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option>
-            <option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option>
-            <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
-        </select>
-        <select id="year" onchange="checkCloudHoliday()"></select>
-    </div>
-
-    <div id="holiday-banner" class="holiday-banner">
-        <div id="holiday-icon" style="font-size: 50px;">🏖️</div>
-        <h2 id="holiday-title">आज छुट्टी है!</h2>
-        <p id="holiday-name-text"></p>
-        <small id="override-msg" style="color: gray; display: block; margin-top: 10px;"></small>
-        <span class="un-holiday" onclick="hideHolidayUI(); loadStudents();">नहीं, आज क्लास है (Mark Attendance)</span>
-    </div>
-
-    <div id="main-content">
-        <div class="st-list" id="st-list"></div>
-        <div style="padding: 10px 20px; background: #fafafa; display: flex; gap: 5px;">
-            <input type="text" id="h-input" placeholder="छुट्टी का नाम लिखें..." style="flex-grow: 1;">
-            <button onclick="setAsHoliday()" style="background:var(--holiday); color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">Set Holiday</button>
+    <div class="p-4 max-w-2xl mx-auto flex items-center justify-between sticky top-0 bg-[#0f172a] z-40">
+        <div class="text-sky-400 text-xl w-10 h-10 glass rounded-full flex items-center justify-center"><i class="fas fa-user-shield"></i></div>
+        <h1 class="text-lg font-black tracking-tighter italic text-center uppercase">SNT <span class="text-amber-500">Admin Grid</span></h1>
+        <div class="snt-logo-btn glass">
+            <img src="https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png" alt="SNT Logo">
         </div>
     </div>
 
-    <div class="footer"><button class="save-btn" onclick="saveToCloud()">डेटा क्लाउड पर सेव करें</button></div>
-</div>
+    <div class="px-4 max-w-2xl mx-auto mb-4">
+        <div class="glass p-5 rounded-[2rem] border-t-4 border-amber-500 shadow-2xl">
+            <p class="text-amber-500 font-black text-xs uppercase tracking-widest mb-3 text-center"><i class="fas fa-calendar-alt mr-1"></i> Select Attendance Date</p>
+            <div class="flex gap-2">
+                <select id="day" onchange="checkCloudHoliday()" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none text-white font-bold"></select>
+                <select id="month" onchange="checkCloudHoliday()" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none text-white font-bold">
+                    <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
+                    <option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option>
+                    <option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option>
+                    <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+                </select>
+                <select id="year" onchange="checkCloudHoliday()" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none text-white font-bold"></select>
+            </div>
+        </div>
+    </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
-        authDomain: "snt-computer-institute.firebaseapp.com",
-        projectId: "snt-computer-institute",
-        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
-        storageBucket: "snt-computer-institute.firebasestorage.app",
-        messagingSenderId: "117580784781",
-        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const fixedFestivals = {
-      "2026": {
-        "01-01": "New Year's Day", "03-01": "Savitribai Phule Jayanti", "04-01": "World Braille Day",
-        "10-01": "World Hindi Day", "12-01": "National Youth Day", "13-01": "Lohri",
-        "14-01": "Makar Sankranti / Pongal", "15-01": "Indian Army Day", "23-01": "Netaji Jayanti / Basant Panchami",
-        "25-01": "National Voters Day", "26-01": "Republic Day", "30-01": "Martyrs' Day",
-        "01-02": "Guru Ravidas Jayanti", "15-02": "Maha Shivaratri", "19-02": "Shivaji Jayanti",
-        "04-03": "Holi (Dhulandi)", "20-03": "Eid-ul-Fitr (Tentative)", "26-03": "Ram Navami",
-        "31-03": "Mahavir Jayanti", "03-04": "Good Friday", "14-04": "Ambedkar Jayanti",
-        "01-05": "Labour Day / Buddha Purnima", "27-05": "Eid-ul-Adha (Bakrid)", "15-08": "Independence Day",
-        "28-08": "Raksha Bandhan", "04-09": "Janmashtami", "14-09": "Ganesh Chaturthi / Hindi Diwas",
-        "02-10": "Gandhi Jayanti", "20-10": "Dussehra", "08-11": "Diwali", "15-11": "Chhath Puja",
-        "24-11": "Guru Nanak Jayanti", "25-12": "Merry Christmas"
-      }
-    };
-
-    let dailyRecords = {}, holidayMode = false;
-    let studentsCache = []; // Students data track karne ke liye cache array
-    const d = new Date(), dayS = document.getElementById('day'), monS = document.getElementById('month'), yerS = document.getElementById('year');
-    
-    for(let i=2025; i<=2030; i++) yerS.innerHTML += `<option value="${i}">${i}</option>`;
-    for(let i=1; i<=31; i++) dayS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
-    
-    dayS.value = String(d.getDate()).padStart(2,'0');
-    monS.value = String(d.getMonth()+1).padStart(2,'0');
-    yerS.value = d.getFullYear();
-
-    function checkCloudHoliday() {
-        const dateKey = `${dayS.value}-${monS.value}-${yerS.value}`;
-        const festivalKey = `${dayS.value}-${monS.value}`;
-        const year = yerS.value;
-
-        if(fixedFestivals[year] && fixedFestivals[year][festivalKey]) {
-            showHolidayUI(fixedFestivals[year][festivalKey], "पंचांग अवकाश");
-            return;
-        }
-
-        const selectedDate = new Date(`${year}-${monS.value}-${dayS.value}`);
-        if(selectedDate.getDay() === 0) {
-            showHolidayUI("साweekly अवकाश (Sunday)", "रविवार");
-            return;
-        }
-
-        db.ref('attendance/' + dateKey).once('value', snap => {
-            const data = snap.val();
-            if(data && data.type === 'HOLIDAY') {
-                showHolidayUI(data.name, "एडमिन द्वारा घोषित");
-            } else {
-                hideHolidayUI();
-                loadStudents(data);
-            }
-        });
-    }
-
-    function showHolidayUI(name, type) {
-        holidayMode = true;
-        document.getElementById('holiday-banner').style.display = "block";
-        document.getElementById('main-content').style.display = "none";
-        document.getElementById('holiday-name-text').innerText = name;
-        document.getElementById('override-msg').innerText = `(${type})`;
-        document.getElementById('holiday-icon').innerText = type === "रविवार" ? "🏖️" : "🎉";
-    }
-
-    function hideHolidayUI() {
-        holidayMode = false;
-        document.getElementById('holiday-banner').style.display = "none";
-        document.getElementById('main-content').style.display = "block";
-    }
-
-    function loadStudents(existingData = null) {
-        db.ref('students').once('value', snap => {
-            const list = document.getElementById('st-list');
-            list.innerHTML = "";
-            dailyRecords = (existingData && existingData.details) ? existingData.details : {};
-            studentsCache = []; // Clear array
+    <div id="holiday-banner" class="px-4 max-w-2xl mx-auto mb-4 hidden">
+        <div class="glass p-8 rounded-[2.5rem] border-2 border-dashed border-amber-500 shadow-2xl text-center">
+            <div id="holiday-icon" class="text-5xl mb-3">🎉</div>
+            <h2 id="holiday-title" class="text-2xl font-black text-amber-500 italic uppercase">Aaj Chhutti Hai!</h2>
+            <p id="holiday-name-text" class="text-slate-300 font-bold mt-2 text-sm uppercase tracking-wide"></p>
+            <small id="override-msg" class="text-xs text-slate-500 block mt-1 italic"></small>
             
-            if(!snap.exists()) {
-                list.innerHTML = "<p style='text-align:center; color:gray;'> can't load data...</p>";
+            <button onclick="hideHolidayUI(); loadStudents();" class="mt-5 text-xs font-black tracking-widest text-sky-400 underline uppercase cursor-pointer block mx-auto hover:text-sky-300">
+                Nahin, Aaj Class Hai (Mark Attendance)
+            </button>
+        </div>
+    </div>
+
+    <div id="main-content" class="px-4 max-w-2xl mx-auto mb-4">
+        <div class="glass rounded-[2rem] overflow-hidden border border-slate-800 mb-4 shadow-xl">
+            <div class="row-item bg-slate-800/50 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <div>Student Name & ID</div>
+                <div class="text-right">Action Buttons</div>
+            </div>
+            <div id="st-list" class="max-h-[400px] overflow-y-auto">
+                </div>
+        </div>
+
+        <div class="glass p-4 rounded-2xl border border-slate-800 flex gap-2 items-center">
+            <input type="text" id="h-input" placeholder="Chhutti ka reason likhein..." class="flex-grow bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs outline-none text-white">
+            <button onclick="setAsHoliday()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[10px] uppercase tracking-wider px-4 py-3 rounded-xl transition-all">Declare Chhutti</button>
+        </div>
+    </div>
+
+    <div class="px-4 max-w-2xl mx-auto">
+        <button onclick="saveToCloud()" class="w-full py-4 bg-gradient-to-r from-sky-500 to-emerald-500 text-slate-950 font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-lg shadow-sky-500/20">
+            <i class="fas fa-cloud-upload-alt mr-1"></i> Data Cloud Par Save Karein
+        </button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+            authDomain: "snt-computer-institute.firebaseapp.com",
+            projectId: "snt-computer-institute",
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
+            storageBucket: "snt-computer-institute.firebasestorage.app",
+            messagingSenderId: "117580784781",
+            appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const fixedFestivals = {
+          "2026": {
+            "01-01": "New Year's Day", "03-01": "Savitribai Phule Jayanti", "04-01": "World Braille Day",
+            "10-01": "World Hindi Day", "12-01": "National Youth Day", "13-01": "Lohri",
+            "14-01": "Makar Sankranti / Pongal", "15-01": "Indian Army Day", "23-01": "Netaji Jayanti / Basant Panchami",
+            "25-01": "National Voters Day", "26-01": "Republic Day", "30-01": "Martyrs' Day",
+            "01-02": "Guru Ravidas Jayanti", "15-02": "Maha Shivaratri", "19-02": "Shivaji Jayanti",
+            "04-03": "Holi (Dhulandi)", "20-03": "Eid-ul-Fitr (Tentative)", "26-03": "Ram Navami",
+            "31-03": "Mahavir Jayanti", "03-04": "Good Friday", "14-04": "Ambedkar Jayanti",
+            "01-05": "Labour Day / Buddha Purnima", "27-05": "Eid-ul-Adha (Bakrid)", "15-08": "Independence Day",
+            "28-08": "Raksha Bandhan", "04-09": "Janmashtami", "14-09": "Ganesh Chaturthi / Hindi Diwas",
+            "02-10": "Gandhi Jayanti", "20-10": "Dussehra", "08-11": "Diwali", "15-11": "Chhath Puja",
+            "24-11": "Guru Nanak Jayanti", "25-12": "Merry Christmas"
+          }
+        };
+
+        let dailyRecords = {}, holidayMode = false;
+        let studentsCache = []; 
+        const d = new Date(), dayS = document.getElementById('day'), monS = document.getElementById('month'), yerS = document.getElementById('year');
+        
+        for(let i=2025; i<=2030; i++) yerS.innerHTML += `<option value="${i}">${i}</option>`;
+        for(let i=1; i<=31; i++) dayS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
+        
+        dayS.value = String(d.getDate()).padStart(2,'0');
+        monS.value = String(d.getMonth()+1).padStart(2,'0');
+        yerS.value = d.getFullYear();
+
+        function checkCloudHoliday() {
+            const dateKey = `${dayS.value}-${monS.value}-${yerS.value}`;
+            const festivalKey = `${dayS.value}-${monS.value}`;
+            const year = yerS.value;
+
+            // 1. Check fixed panchang holidays
+            if(fixedFestivals[year] && fixedFestivals[year][festivalKey]) {
+                showHolidayUI(fixedFestivals[year][festivalKey], "पंचांग अवकाश");
                 return;
             }
 
-            snap.forEach(child => {
-                const s = child.val();
-                const studentFirebaseKey = child.key;
-                
-                // Student ki basic information store karein jisse save ke waqt studentId access ho sake
-                studentsCache.push({
-                    firebaseKey: studentFirebaseKey,
-                    studentId: s.studentId,
-                    name: s.name
-                });
+            // 2. Check Sundays
+            const selectedDate = new Date(`${year}-${monS.value}-${dayS.value}`);
+            if(selectedDate.getDay() === 0) {
+                showHolidayUI("Weekly Institutional Off", "Sunday");
+                return;
+            }
 
-                const status = dailyRecords[studentFirebaseKey] || "";
-                
-                list.innerHTML += `<div class="st-row"><b>${s.name} (ID: ${s.studentId || 'N/A'})</b><div class="btn-group">
-                    <button id="p-${studentFirebaseKey}" class="btn p-btn ${status==='P'?'active':''}" onclick="mark('${studentFirebaseKey}','P')">P</button>
-                    <button id="a-${studentFirebaseKey}" class="btn a-btn ${status==='A'?'active':''}" onclick="mark('${studentFirebaseKey}','A')">A</button>
-                </div></div>`;
-            });
-        });
-    }
-
-    function mark(id, status) {
-        dailyRecords[id] = status;
-        
-        const pBtn = document.getElementById(`p-${id}`);
-        const aBtn = document.getElementById(`a-${id}`);
-        
-        if(pBtn) pBtn.classList.remove('active');
-        if(aBtn) aBtn.classList.remove('active');
-        
-        if(status === 'P' && pBtn) pBtn.classList.add('active');
-        if(status === 'A' && aBtn) aBtn.classList.add('active');
-    }
-
-    function setAsHoliday() {
-        const hName = document.getElementById('h-input').value;
-        if(!hName) return alert("Holiday Name?");
-        showHolidayUI(hName, "Manual Set");
-    }
-
-    function saveToCloud() {
-        const adminDateKey = `${dayS.value}-${monS.value}-${yerS.value}`; // Admin Panel Fetch Format
-        const studentCalendarDateKey = `${yerS.value}-${monS.value}-${dayS.value}`; // Student Portal Format (YYYY-MM-DD)
-        
-        // Multi-path object taiyar karenge jo dono paths ko ek sath update karega safely
-        let updates = {};
-
-        if (holidayMode) {
-            // Agar holiday hai to admin route update hoga
-            updates['attendance/' + adminDateKey] = { 
-                type: 'HOLIDAY', 
-                name: document.getElementById('holiday-name-text').innerText 
-            };
-        } else {
-            // 1. Admin dashboard ke liye data structure save karein
-            updates['attendance/' + adminDateKey] = { 
-                type: 'ATTENDANCE', 
-                details: dailyRecords 
-            };
-
-            // 2. Loop chala kar calendar.html ke compatible records create karein (RollNumber_YYYY-MM-DD)
-            studentsCache.forEach(student => {
-                if (student.studentId) {
-                    const calendarFormatPath = `attendance/${student.studentId}_${studentCalendarDateKey}`;
-                    const currentStatus = dailyRecords[student.firebaseKey];
-                    
-                    let mappedStatus = "";
-                    if (currentStatus === 'P') mappedStatus = "Present";
-                    if (currentStatus === 'A') mappedStatus = "Absent";
-
-                    if (mappedStatus) {
-                        updates[calendarFormatPath] = {
-                            status: mappedStatus,
-                            studentId: student.studentId
-                        };
-                    }
+            // 3. Check Admin Panel Custom/Manual Holiday
+            db.ref('attendance/' + dateKey).once('value', snap => {
+                const data = snap.val();
+                if(data && data.type === 'HOLIDAY') {
+                    showHolidayUI(data.name, "Declared by Admin");
+                } else {
+                    hideHolidayUI();
+                    loadStudents(data);
                 }
             });
         }
-        
-        // Pure structure ko ek sath single push mein Realtime Database par save karein
-        db.ref().update(updates).then(() => {
-            alert("डेटा सुरक्षित किया गया! ✅ (Admin Dashboard & Student Portal up-to-date)");
-        }).catch(err => alert("Error: " + err.message));
-    }
 
-    window.onload = checkCloudHoliday;
-</script>
+        function showHolidayUI(name, type) {
+            holidayMode = true;
+            document.getElementById('holiday-banner').classList.remove('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('holiday-name-text').innerText = name;
+            document.getElementById('override-msg').innerText = `(${type})`;
+            document.getElementById('holiday-icon').innerText = type === "Sunday" ? "🏖️" : "🎉";
+        }
+
+        function hideHolidayUI() {
+            holidayMode = false;
+            document.getElementById('holiday-banner').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+        }
+
+        function loadStudents(existingData = null) {
+            db.ref('students').once('value', snap => {
+                const list = document.getElementById('st-list');
+                list.innerHTML = "";
+                dailyRecords = (existingData && existingData.details) ? existingData.details : {};
+                studentsCache = []; 
+                
+                if(!snap.exists()) {
+                    list.innerHTML = "<p class='text-slate-500 text-center text-xs font-bold py-6 uppercase tracking-wider'>Data fetch error/No students found</p>";
+                    return;
+                }
+
+                snap.forEach(child => {
+                    const s = child.val();
+                    const studentFirebaseKey = child.key;
+                    
+                    studentsCache.push({
+                        firebaseKey: studentFirebaseKey,
+                        uid: s.uid || child.key, // Fallback key agar uid blank ho toh
+                        name: s.name,
+                        email: s.email || ""
+                    });
+
+                    const status = dailyRecords[studentFirebaseKey] || "";
+                    
+                    list.innerHTML += `
+                        <div class="row-item">
+                            <div>
+                                <p class="text-xs font-black tracking-tight text-white uppercase">${s.name}</p>
+                                <p class="text-[9px] font-bold text-sky-400 tracking-wider uppercase">${s.course || 'O LEVEL STUDENT'}</p>
+                            </div>
+                            <div class="flex gap-2 justify-end">
+                                <button id="p-${studentFirebaseKey}" class="btn-normal py-2 px-4 rounded-lg text-[10px] font-black transition-all btn-p ${status==='P'?'active':''}" onclick="mark('${studentFirebaseKey}','P')">P</button>
+                                <button id="a-${studentFirebaseKey}" class="btn-normal py-2 px-4 rounded-lg text-[10px] font-black transition-all btn-a ${status==='A'?'active':''}" onclick="mark('${studentFirebaseKey}','A')">A</button>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
+        function mark(id, status) {
+            dailyRecords[id] = status;
+            
+            const pBtn = document.getElementById(`p-${id}`);
+            const aBtn = document.getElementById(`a-${id}`);
+            
+            if(pBtn) pBtn.className = "btn-normal py-2 px-4 rounded-lg text-[10px] font-black transition-all btn-p";
+            if(aBtn) aBtn.className = "btn-normal py-2 px-4 rounded-lg text-[10px] font-black transition-all btn-a";
+            
+            if(status === 'P' && pBtn) pBtn.classList.add('active');
+            if(status === 'A' && aBtn) aBtn.classList.add('active');
+        }
+
+        function setAsHoliday() {
+            const hName = document.getElementById('h-input').value;
+            if(!hName || hName.trim() === "") return alert("Please specify a reason/name for the Holiday!");
+            showHolidayUI(hName, "Manual Set");
+        }
+
+        function saveToCloud() {
+            const adminDateKey = `${dayS.value}-${monS.value}-${yerS.value}`; 
+            const studentCalendarDateKey = `${yerS.value}-${monS.value}-${dayS.value}`; // YYYY-MM-DD
+            
+            let updates = {};
+
+            if (holidayMode) {
+                // 1. Save in global route for admin monitor path
+                updates['admin_holidays/' + studentCalendarDateKey] = {
+                    status: "Holiday",
+                    reason: document.getElementById('holiday-name-text').innerText,
+                    timestamp: Date.now()
+                };
+                // 2. Clear old state backup structure mapping reference if exists
+                updates['attendance/' + adminDateKey] = { 
+                    type: 'HOLIDAY', 
+                    name: document.getElementById('holiday-name-text').innerText 
+                };
+            } else {
+                // 1. Admin dashboard control backup status
+                updates['attendance/' + adminDateKey] = { 
+                    type: 'ATTENDANCE', 
+                    details: dailyRecords 
+                };
+
+                // Remove from holidays schema since tracking record mode is currently active
+                updates['admin_holidays/' + studentCalendarDateKey] = null;
+
+                // 2. Loop to load and update multi-path dynamic pointers for every unique student safely
+                studentsCache.forEach(student => {
+                    if (student.uid) {
+                        const calendarFormatPath = `attendance/${student.uid}_${studentCalendarDateKey}`;
+                        const currentStatus = dailyRecords[student.firebaseKey];
+                        
+                        let mappedStatus = "";
+                        if (currentStatus === 'P') mappedStatus = "Present";
+                        if (currentStatus === 'A') mappedStatus = "Absent";
+
+                        if (mappedStatus) {
+                            updates[calendarFormatPath] = {
+                                status: mappedStatus,
+                                date: studentCalendarDateKey,
+                                email: student.email,
+                                name: student.name,
+                                timestamp: Date.now()
+                            };
+                        } else {
+                            // Agar unselected ya reset ho to student calendar path wipe clean ho jaye node block se
+                            updates[calendarFormatPath] = null;
+                        }
+                    }
+                });
+            }
+            
+            // Atomic multi-path write invocation logic execution
+            db.ref().update(updates).then(() => {
+                alert("Data Cloud Par Save Ho Gaya! ✅ (Dashboard & Portals Sync Completed)");
+                document.getElementById('h-input').value = "";
+            }).catch(err => alert("Error: " + err.message));
+        }
+
+        window.onload = checkCloudHoliday;
+    </script>
 </body>
 </html>
