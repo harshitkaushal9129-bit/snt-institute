@@ -161,17 +161,18 @@
             dailyRecords = (existingData && existingData.details) ? existingData.details : {};
             
             if(!snap.exists()) {
-                list.innerHTML = "<p style='text-align:center; color:gray;'>छात्रों का डेटा लोड करें...</p>";
+                list.innerHTML = "<p style='text-align:center; color:gray;'> can't load data...</p>";
                 return;
             }
 
             snap.forEach(child => {
                 const s = child.val();
-                const studentId = child.key;
-                const status = dailyRecords[studentId] || "";
+                const studentFirebaseKey = child.key; // Hum hamesha database ki main unique key ka hi use karenge mapping ke liye
+                const status = dailyRecords[studentFirebaseKey] || "";
+                
                 list.innerHTML += `<div class="st-row"><b>${s.name}</b><div class="btn-group">
-                    <button id="p-${studentId}" class="btn p-btn ${status==='P'?'active':''}" onclick="mark('${studentId}','P')">P</button>
-                    <button id="a-${studentId}" class="btn a-btn ${status==='A'?'active':''}" onclick="mark('${studentId}','A')">A</button>
+                    <button id="p-${studentFirebaseKey}" class="btn p-btn ${status==='P'?'active':''}" onclick="mark('${studentFirebaseKey}','P')">P</button>
+                    <button id="a-${studentFirebaseKey}" class="btn a-btn ${status==='A'?'active':''}" onclick="mark('${studentFirebaseKey}','A')">A</button>
                 </div></div>`;
             });
         });
@@ -179,13 +180,17 @@
 
     function mark(id, status) {
         dailyRecords[id] = status;
-        // स्टूडेंट के दोनों बटन से एक्टिव हटाओ
-        document.getElementById(`p-${id}`).classList.remove('active');
-        document.getElementById(`a-${id}`).classList.remove('active');
         
-        // जो क्लिक हुआ उसपर एक्टिव लगाओ
-        if(status === 'P') document.getElementById(`p-${id}`).classList.add('active');
-        if(status === 'A') document.getElementById(`a-${id}`).classList.add('active');
+        // Dono buttons se active class hatao
+        const pBtn = document.getElementById(`p-${id}`);
+        const aBtn = document.getElementById(`a-${id}`);
+        
+        if(pBtn) pBtn.classList.remove('active');
+        if(aBtn) aBtn.classList.remove('active');
+        
+        // Jo active hua use highlight karo
+        if(status === 'P' && pBtn) pBtn.classList.add('active');
+        if(status === 'A' && aBtn) aBtn.classList.add('active');
     }
 
     function setAsHoliday() {
