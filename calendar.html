@@ -165,13 +165,16 @@
                     if (snap.exists()) {
                         snap.forEach(child => {
                             const val = child.val();
+                            // Image key validation (profilePic, image, ya photo kuch bhi ho)
+                            const imgUrl = val.profilePic || val.image || val.photo || '';
+                            
                             studentsList.push({
                                 firebaseKey: child.key,
                                 uid: val.uid || child.key,
                                 name: val.name,
                                 studentId: val.studentId || 'N/A',
                                 course: val.course || 'NIELIT O LEVEL',
-                                profilePic: val.profilePic || '',
+                                profilePic: imgUrl,
                                 admissionDate: val.admissionDate || ''
                             });
                             
@@ -184,7 +187,11 @@
             });
         }
 
-        window.handleStudentChange = () => {
+        // Global Object variables taaki dono nodes real-time parallel load ho sakein
+        let primaryLog = {};
+        let secondaryLog = {};
+
+        function handleStudentChange() {
             const selectedUid = document.getElementById('student-selector').value;
             const profileBox = document.getElementById('student-mini-profile');
             
@@ -200,26 +207,31 @@
             document.getElementById('profile-name').innerText = selectedStudent.name;
             document.getElementById('profile-course').innerText = selectedStudent.course;
             document.getElementById('profile-admission').innerText = `Admission: ${selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString() : 'N/A'}`;
+            
+            // Backup Placeholder image agar DB mein URL absent ho
             document.getElementById('profile-avatar').src = selectedStudent.profilePic || "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
             
             profileBox.classList.remove('hidden');
-            
             admissionDate = selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate) : new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
 
-            // Dono alag nodes se attendance records merge karne ke liye complex event logic tracker
-            db.ref('attendance').on('value', attSnapshot => {
-                const primaryData = attSnapshot.val() || {};
-                
-                // Aapka alternative secondary data node fetch check up (`student_attendance_logs`)
-                db.ref('student_attendance_logs').on('value', secondSnapshot => {
-                    const secondaryData = secondSnapshot.val() || {};
-                    
-                    // Dono databases ke objects ko safely ek master register state mein mix up karein
-                    attendanceData = { ...secondaryData, ...primaryData };
-                    renderUI();
-                });
+            // NODE 1: Attendance Snapshot Listener
+            db.ref('attendance').on('value', snap => {
+                primaryLog = snap.val() || {};
+                combineAndRender();
             });
-        };
+
+            // NODE 2: Student Attendance Logs Snapshot Listener (Independent parallel tracking)
+            db.ref('student_attendance_logs').on('value', snap => {
+                secondaryLog = snap.val() || {};
+                combineAndRender();
+            });
+        }
+
+        // Dono nodes ko mix karke refresh karne ka optimized processor
+        function combineAndRender() {
+            attendanceData = { ...secondaryLog, ...primaryLog };
+            renderUI();
+        }
 
         window.navigateMonth = (direction) => {
             currentSelectedDate.setMonth(currentSelectedDate.getMonth() + direction);
