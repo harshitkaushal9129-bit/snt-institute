@@ -1,280 +1,518 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNT Student Attendance Finder</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SNT - Smart Register & Calendar</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root {
-            --tp-header-red: #d32f2f;
-            --present: #2e7d32;
-            --absent: #c62828;
-            --leave: #f57c00;
-            --star-gold: #ff9800;
-            --event-blue: #1976d2;
-            --bg-light: #f4f7f6;
-            --holiday: #1976d2;
-        }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-light); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
-        .search-container { background: white; width: 100%; max-width: 450px; border: 2px solid #ddd; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 15px; margin-bottom: 15px; box-sizing: border-box; }
-        .search-container label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .student-selector { width: 100%; padding: 10px 12px; border-radius: 8px; border: 2px solid #ccc; font-size: 14px; font-weight: 600; color: #333; outline: none; background: #fff; cursor: pointer; transition: 0.3s; }
-        .student-selector:focus { border-color: var(--tp-header-red); }
-        .calendar-card { background: white; width: 100%; max-width: 450px; border: 2px solid #ddd; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
-        .header { background: var(--tp-header-red); color: white; padding: 15px; text-align: center; }
-        .st-profile-box { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px; margin-top: 10px; text-align: left; }
-        .st-photo-circle { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #eee; }
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fff; border-bottom: 1px solid #eee; }
-        .nav h2 { font-size: 1.1rem; margin: 0; color: #333; font-weight: 700; text-transform: capitalize; }
-        .nav button { background: #f0f0f0; border: 1px solid #ddd; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; }
-        .day-head { text-align: center; font-size: 12px; font-weight: bold; color: #666; padding: 12px 0; background: #f9f9f9; }
-        .cell { height: 85px; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; }
-        .date-num { font-size: 18px; font-weight: 600; color: #333; z-index: 5; }
-        .fest-star-marker { color: var(--star-gold); font-size: 10px; position: absolute; top: 6px; left: 6px; z-index: 10; }
-        .today { background: #fffde7 !important; border: 1.5px solid #fbc02d !important; }
-        .sunday .date-num { color: #d32f2f; }
-        .att-status { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: center; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: block; border: 1px solid white; }
-        .bg-p { background: var(--present); }
-        .bg-a { background: var(--absent); }
-        .bg-l { background: var(--leave); }
-        .holiday-text { font-size: 8px; color: var(--holiday); font-weight: bold; text-align: center; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
-        .fest-btn { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--tp-header-red); color: white; padding: 15px 8px; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 10px 0 0 10px; cursor: pointer; font-weight: bold; z-index: 100; box-shadow: -2px 0 10px rgba(0,0,0,0.2); }
-        .sidebar { position: fixed; right: -320px; top: 0; width: 300px; height: 100%; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 101; display: flex; flex-direction: column; }
-        .sidebar.active { right: 0; }
-        .sidebar-header { background: var(--tp-header-red); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        #fest-list-container { flex: 1; overflow-y: auto; padding: 15px; }
-        .fest-item { background: #fff9f0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--star-gold); box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 100; }
-        .overlay.active { display: block; }
-        .footer { padding: 15px; display: flex; justify-content: space-around; font-size: 11px; background: #fff; border-top: 1px solid #eee; flex-wrap: wrap; gap: 5px; }
-        #profile-display-area { width: 100%; }
+        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .row-item { display: grid; grid-template-columns: 1fr 2fr 1.5fr; align-items: center; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Status Theme Styles */
+        .btn-p, .status-p { color: #4ade80; border: 1.5px solid #22c55e; background: rgba(34, 197, 94, 0.15); box-shadow: 0 0 10px rgba(34, 197, 94, 0.1); }
+        .btn-a, .status-a { color: #f87171; border: 1.5px solid #ef4444; background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
+        .btn-l, .status-l { color: #fbbf24; border: 1.5px solid #f59e0b; background: rgba(245, 158, 11, 0.15); box-shadow: 0 0 10px rgba(245, 158, 11, 0.1); }
+        .btn-h, .status-h { color: #38bdf8; border: 1.5px solid #0284c7; background: rgba(2, 132, 199, 0.1); }
+        .btn-lock { color: #475569; border: 1px dashed #334155; background: rgba(15, 23, 42, 0.6); opacity: 0.4; cursor: not-allowed !important; }
+
+        /* Calendar Grid Specifics */
+        .cal-box { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 14px; font-weight: 700; font-size: 13px; position: relative; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.03); background: rgba(30, 41, 59, 0.3); cursor: pointer; }
+        .cal-box:not(.btn-lock):hover { transform: translateY(-2px); border-color: rgba(56, 189, 248, 0.4); background: rgba(30, 41, 59, 0.6); }
+        .cal-dot { width: 5px; height: 5px; border-radius: 50%; position: absolute; bottom: 6px; }
+
+        .status-badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; display: inline-block; min-width: 70px; }
+        #admin-controls { display: none; }
+        
+        .snt-logo-btn { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: flex; items-center; justify-center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .snt-logo-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Modal Overlay Animation */
+        #profile-card-modal { backdrop-filter: blur(20px); transition: all 0.3s ease; }
     </style>
 </head>
-<body>
-<div class="search-container">
-    <label for="student-dropdown"><i class="fas fa-search-user"></i> छात्र चुनें (Select Student):</label>
-    <select id="student-dropdown" class="student-selector" onchange="onStudentSelected(this.value)">
-        <option value="">-- छात्र लोड हो रहे हैं / Select Student --</option>
-    </select>
-</div>
-<div class="fest-btn" onclick="toggleSidebar()"><i class="fas fa-calendar-alt"></i> त्यौहार सूची</div>
-<div class="overlay" id="overlay" onclick="closeAll()"></div>
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h3>महीने के त्यौहार</h3>
-        <span onclick="toggleSidebar()" style="cursor:pointer; font-size: 24px;">&times;</span>
-    </div>
-    <div id="fest-list-container"></div>
-</div>
-<div class="calendar-card">
-    <div class="header" id="header-box">
-        <div style="font-weight: 700; font-size: 1.1rem;">SNT ATTENDANCE PORTAL</div>
-        <div id="profile-display-area"></div>
-    </div>
-    <div class="nav">
-        <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
-        <h2 id="month-info"></h2>
-        <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
-    </div>
-    <div class="grid">
-        <div class="day-head">रवि</div><div class="day-head">सोम</div><div class="day-head">मंगल</div>
-        <div class="day-head">बुध</div><div class="day-head">गुरु</div><div class="day-head">शुक्र</div><div class="day-head">शनि</div>
-    </div>
-    <div id="calendar-body" class="grid"></div>
-    <div class="footer">
-        <span><i class="fas fa-circle" style="color:var(--present)"></i> Present</span>
-        <span><i class="fas fa-circle" style="color:var(--absent)"></i> Absent</span>
-        <span><i class="fas fa-circle" style="color:var(--leave)"></i> Leave</span>
-        <span><i class="fas fa-circle" style="color:var(--holiday)"></i> Holiday</span>
-    </div>
-</div>
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
-        authDomain: "snt-computer-institute.firebaseapp.com",
-        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
-        projectId: "snt-computer-institute",
-        storageBucket: "snt-computer-institute.firebasestorage.app",
-        messagingSenderId: "117580784781",
-        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let displayDate = new Date();
-    const today = new Date();
-    let studentsMasterList = {};
-    let globalAttendance = {};
-    let globalHolidays = {};
-    let activeStudentUID = null;
-    let activeStudentProfile = null;
+<body class="pb-10">
 
-    // Holidays Data (2025, 2026, 2027)
-    const fixedFestivals = {
-      "2025": {
-        "01-01": "नया साल (New Year)", "01-14": "मकर संक्रांति", "01-26": "गणतंत्र दिवस",
-        "02-12": "गुरु रविदास जयंती", "02-26": "महाशिवरात्रि", "03-13": "होलिका दहन",
-        "03-14": "होली (धुलेंडी)", "03-31": "ईद-उल-फ़ित्र", "04-06": "राम नवमी",
-        "04-10": "महावीर जयंती", "04-11": "गुड फ्राइडे", "04-14": "डॉ. अम्बेडकर जयंती",
-        "05-12": "बुद्ध पूर्णिमा", "06-07": "ईद-उल-जुहा", "07-06": "मुहर्रम",
-        "08-09": "रक्षा बंधन", "08-15": "स्वतंत्रता दिवस / जन्माष्टमी", "09-05": "मिलाद-उन-नबी",
-        "10-02": "गांधी जयंती / दशहरा", "10-20": "दीपावली", "10-21": "गोवर्धन पूजा",
-        "10-22": "भाई दूज", "11-05": "गुरु नानक जयंती", "12-25": "क्रिसमस डे"
-      },
-      "2026": {
-        "01-01": "नया साल (New Year)", "01-03": "सावित्रीबाई फुले जयंती", "01-04": "विश्व ब्रेल दिवस",
-        "01-10": "विश्व हिंदी दिवस", "01-12": "राष्ट्रीय युवा दिवस", "01-13": "लोहड़ी",
-        "01-14": "मकर संक्रांति", "01-15": "थल सेना दिवस", "01-23": "नेताजी सुभाष चंद्र बोस जयंती",
-        "01-25": "राष्ट्रीय मतदाता दिवस", "01-26": "गणतंत्र दिवस", "01-30": "शहीद दिवस",
-        "02-01": "गुरु रविदास जयंती", "02-15": "महाशिवरात्रि", "02-19": "छत्रपति शिवाजी महाराज जयंती",
-        "02-28": "राष्ट्रीय विज्ञान दिवस", "03-03": "होलिका दहन", "03-04": "होली (धुलेंडी)",
-        "03-08": "अंतर्राष्ट्रीय महिला दिवस", "03-19": "चैत्र नवरात्रि प्रारंभ", "03-20": "ईद-उल-फ़ित्र",
-        "03-26": "राम नवमी", "03-31": "महावीर जयंती", "04-03": "गुड फ्राइडे", "04-14": "डॉ. अम्बेडकर जयंती",
-        "05-01": "मजदूर दिवस / बुद्ध पूर्णिमा", "05-27": "ईद-उल-जुहा", "06-05": "विश्व पर्यावरण दिवस",
-        "07-26": "मुहर्रम", "08-15": "स्वतंत्रता दिवस", "08-26": "मिलाद-उन-नबी", "08-28": "रक्षा बंधन",
-        "09-04": "जन्माष्टमी", "09-05": "शिक्षक दिवस", "09-14": "हिंदी दिवस", "10-02": "गांधी जयंती",
-        "10-20": "दशहरा", "11-08": "दीपावली", "11-09": "गोवर्धन पूजा", "11-11": "भाई दूज",
-        "11-14": "बाल दिवस", "11-24": "गुरु नानक जयंती", "12-25": "क्रिसमस डे"
-      },
-      "2027": {
-        "01-01": "नया साल (New Year)", "01-14": "मकर संक्रांति", "01-26": "गणतंत्र दिवस",
-        "02-21": "गुरु रविदास जयंती", "03-06": "महाशिवरात्रि", "03-09": "ईद-उल-फ़ित्र",
-        "03-22": "होलिका दहन", "03-23": "होली (धुलेंडी)", "04-14": "डॉ. अम्बेडकर जयंती",
-        "04-16": "राम नवमी", "04-20": "महावीर जयंती", "04-23": "गुड फ्राइडे",
-        "05-16": "ईद-उल-जुहा", "05-20": "बुद्ध पूर्णिमा", "06-15": "मुहर्रम",
-        "08-15": "स्वतंत्रता दिवस", "08-16": " मिलाद-उन-नबी", "08-17": "रक्षा बंधन",
-        "08-25": "जन्माष्टमी", "10-02": "गांधी जयंती", "10-09": "दशहरा",
-        "10-29": "दीपावली", "10-30": "गोवर्धन पूजा", "10-31": "भाई दूज",
-        "11-14": "गुरु नानक जयंती", "12-25": "क्रिसमस डे"
-      }
-    };
+    <div class="p-4 max-w-2xl mx-auto flex items-center justify-between sticky top-0 bg-[#0f172a] z-40">
+        <button onclick="history.back()" class="text-sky-400 text-xl w-10 h-10 glass rounded-full flex items-center justify-center"><i class="fas fa-arrow-left"></i></button>
+        <h1 class="text-lg font-black tracking-tighter italic text-center uppercase">SNT <span class="text-sky-500">Smart Grid</span></h1>
+        
+        <div id="admin-toggle-btn" onclick="handleAdminToggle()" class="snt-logo-btn glass">
+            <div id="icon-container" class="flex items-center justify-center w-full h-full">
+                <img id="snt-img" src="https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png" alt="SNT Logo">
+                <i id="close-icon" class="fas fa-times text-amber-500 hidden text-lg"></i>
+            </div>
+        </div>
+    </div>
 
-    function toggleSidebar() { 
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        sidebar.classList.toggle('active'); 
-        overlay.classList.toggle('active'); 
-        if(sidebar.classList.contains('active')) updateFestivalList(); 
-    }
-    function closeAll() { 
-        document.getElementById('sidebar').classList.remove('active'); 
-        document.getElementById('overlay').classList.remove('active'); 
-    }
-    function onStudentSelected(uid) {
-        if(!uid) {
-            activeStudentUID = null;
-            activeStudentProfile = null;
-            document.getElementById('profile-display-area').innerHTML = '';
-            renderCalendar();
-            return;
-        }
-        activeStudentUID = uid;
-        activeStudentProfile = studentsMasterList[uid];
-        document.getElementById('profile-display-area').innerHTML = `
-            <div class="st-profile-box">
-                <img src="${activeStudentProfile.profilePic || 'https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png'}" class="st-photo-circle">
-                <div>
-                    <b>${activeStudentProfile.name}</b><br>
-                    <small>Course: ${activeStudentProfile.course || 'NIELIT O LEVEL'}</small><br>
-                    <small style="opacity:0.8;">Email: ${activeStudentProfile.email}</small>
+    <div id="admin-panel" class="px-4 max-w-2xl mx-auto mb-6">
+        <div id="admin-controls" class="glass p-5 rounded-[2rem] border-l-4 border-amber-500 shadow-xl">
+            <h3 class="text-[10px] font-black uppercase text-amber-500 mb-3 tracking-widest"><i class="fas fa-calendar-plus mr-1"></i> Admin: Holiday Details</h3>
+            <div class="flex flex-col gap-3">
+                <input type="date" id="holiday-picker" class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none focus:border-amber-500 text-white">
+                <input type="text" id="holiday-reason" placeholder="Kyun chhutti hai? (Barna confirm nahi hoga)" class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm outline-none focus:border-amber-500 text-white">
+                <button onclick="setAdminHoliday()" class="bg-amber-500 text-slate-950 py-3 rounded-xl font-black text-[10px] uppercase transition-all active:scale-95 shadow-lg shadow-amber-500/20">Declare Holiday</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-4 max-w-2xl mx-auto mb-4">
+        <div class="glass p-6 rounded-[2.5rem] border-t-4 border-sky-500 shadow-2xl relative">
+            <p id="today-date-display" class="text-sky-400 font-black text-xs uppercase tracking-widest mb-1"></p>
+            <div id="action-area">
+                <h2 class="text-xl font-bold mb-4 italic">Aaj ki Attendance:</h2>
+                <div id="action-buttons" class="flex gap-2">
+                    <button onclick="markAttendance('Present')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-p active:scale-95 transition-all">P (PRESENT)</button>
+                    <button onclick="markAttendance('Absent')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-a active:scale-95 transition-all">A (ABSENT)</button>
+                    <button onclick="markAttendance('Leave')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-l active:scale-95 transition-all">L (LEAVE)</button>
                 </div>
-            </div>`;
-        renderCalendar();
-    }
-    function renderCalendar() {
-        const body = document.getElementById('calendar-body');
-        body.innerHTML = '';
-        const year = displayDate.getFullYear(), month = displayDate.getMonth();
-        const monthName = new Date(year, month).toLocaleString('hi-IN', {month:'long'});
-        document.getElementById('month-info').innerText = `${monthName} ${year}`;
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        for (let x = 0; x < firstDay; x++) body.innerHTML += `<div class="cell" style="background:#f9f9f9"></div>`;
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayFormatted = String(day).padStart(2, '0');
-            const monthFormatted = String(month + 1).padStart(2, '0');
-            const dStr = `${year}-${monthFormatted}-${dayFormatted}`; 
-            const fKey = `${dayFormatted}-${monthFormatted}`;
-            const isToday = new Date(year, month, day).toDateString() === today.toDateString();
-            const isSunday = new Date(year, month, day).getDay() === 0;
-            body.innerHTML += `
-                <div class="cell ${isToday?'today':''} ${isSunday?'sunday':''}" id="cell-${dStr}">
-                    ${fixedFestivals[year] && fixedFestivals[year][fKey] ? '<i class="fas fa-star fest-star-marker"></i>' : ''}
-                    <span class="date-num">${day}</span>
-                    <div class="att-status" id="stat-${dStr}"></div>
-                </div>`;
-            const targetBox = document.getElementById(`stat-${dStr}`);
-            const cellContainer = document.getElementById(`cell-${dStr}`);
-            if (globalHolidays && globalHolidays[dStr]) {
-                if(cellContainer) cellContainer.style.background = "#e0f2fe";
-                if(targetBox) targetBox.innerHTML = `<span class="holiday-text" title="${globalHolidays[dStr].reason}">HOLIDAY</span>`;
-            } 
-            else if (activeStudentProfile && activeStudentUID) {
-                const attID = activeStudentUID + "_" + dStr;
-                const record = globalAttendance[attID];
-                if (record && record.email === activeStudentProfile.email) {
-                    if (record.status === 'Present') {
-                        targetBox.innerHTML = `<span class="dot bg-p"></span>`;
-                    } else if (record.status === 'Absent') {
-                        targetBox.innerHTML = `<span class="dot bg-a"></span>`;
-                    } else if (record.status === 'Leave') {
-                        targetBox.innerHTML = `<span class="dot bg-l"></span>`;
+            </div>
+            <p id="status-msg" class="mt-3 text-[10px] font-bold text-center text-slate-500 uppercase"></p>
+        </div>
+    </div>
+
+    <div class="px-4 max-w-2xl mx-auto mb-4 flex justify-between items-center glass p-3 rounded-2xl border border-slate-800">
+        <button id="prev-month-btn" onclick="navigateMonth(-1)" class="px-4 py-2 bg-slate-800 text-sky-400 font-black text-[10px] uppercase rounded-xl active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+            <i class="fas fa-chevron-left mr-1"></i> Prev
+        </button>
+        <div id="current-month-display" class="font-black italic text-sm text-white uppercase tracking-wider">Loading Month...</div>
+        <button id="next-month-btn" onclick="navigateMonth(1)" class="px-4 py-2 bg-slate-800 text-sky-400 font-black text-[10px] uppercase rounded-xl active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+            Next <i class="fas fa-chevron-right ml-1"></i>
+        </button>
+    </div>
+
+    <div class="px-4 max-w-2xl mx-auto mb-6">
+        <div class="glass p-4 rounded-[2rem] border border-slate-800 shadow-2xl">
+            <div class="grid grid-cols-7 text-center text-[10px] font-black uppercase text-slate-400 tracking-wider mb-2 py-1 border-b border-white/5">
+                <div class="text-red-400">Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+        </div>
+    </div>
+
+    <div class="px-4 max-w-2xl mx-auto">
+        <div class="glass rounded-[2rem] overflow-hidden border border-slate-800">
+            <div class="row-item bg-slate-800/50 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <div>Date</div>
+                <div class="text-center">Reason / Day</div>
+                <div class="text-right">Record</div>
+            </div>
+            <div id="register-list"></div>
+        </div>
+    </div>
+
+    <div id="profile-card-modal" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass w-full max-w-sm rounded-[2.5rem] overflow-hidden border border-slate-700/50 shadow-2xl transform scale-95 transition-transform duration-300 relative p-6 text-center">
+            
+            <button onclick="closeProfileCard()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors w-8 h-8 rounded-full bg-slate-900/50 flex items-center justify-center border border-white/5">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+
+            <div class="mt-4 flex flex-col items-center">
+                <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-sky-500 to-emerald-500 shadow-xl mb-4 relative">
+                    <img id="card-student-pic" src="https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png" class="w-full h-full object-cover rounded-full border-2 border-slate-900 bg-slate-800" alt="Student Profile Pic">
+                    <div id="card-status-dot" class="w-5 h-5 rounded-full absolute bottom-0 right-0 border-4 border-slate-900 flex items-center justify-center text-[8px] font-black"></div>
+                </div>
+                
+                <h3 id="card-student-name" class="text-lg font-black tracking-tight text-white uppercase">Loading Student...</h3>
+                <p id="card-student-course" class="text-[10px] font-bold text-sky-400 tracking-widest uppercase mb-4">O LEVEL STUDENT</p>
+                
+                <div class="w-full bg-slate-900/60 rounded-2xl p-4 border border-white/5 flex flex-col gap-2 text-left text-xs">
+                    <div class="flex justify-between border-b border-white/5 pb-1.5">
+                        <span class="text-slate-400 font-medium">Target Date:</span>
+                        <span id="card-attendance-date" class="font-bold text-slate-200">-- -- ----</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/5 pb-1.5">
+                        <span class="text-slate-400 font-medium">Status Log:</span>
+                        <span id="card-attendance-status" class="font-black uppercase">--</span>
+                    </div>
+                    <div class="flex justify-between pt-0.5">
+                        <span class="text-slate-400 font-medium">Description:</span>
+                        <span id="card-attendance-desc" class="font-medium italic text-slate-400 truncate max-w-[150px]">Regular Day</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+            authDomain: "snt-computer-institute.firebaseapp.com",
+            projectId: "snt-computer-institute",
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com",
+            appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentUser = null;
+        let adminHolidays = {};
+        let attendanceData = {};
+        let studentProfile = {}; 
+        
+        const realToday = new Date();
+        let currentSelectedDate = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
+        let admissionDate = null; 
+
+        const todayStr = realToday.toISOString().split('T')[0];
+        document.getElementById('today-date-display').innerText = realToday.toDateString();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadData();
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        window.handleAdminToggle = () => {
+            const controls = document.getElementById('admin-controls');
+            const sntImg = document.getElementById('snt-img');
+            const closeIcon = document.getElementById('close-icon');
+
+            if (controls.style.display === 'block') {
+                controls.style.display = 'none';
+                sntImg.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            } else {
+                const pass = prompt("Enter Admin PIN:");
+                if (pass === "912919") {
+                    controls.style.display = 'block';
+                    sntImg.classList.add('hidden');
+                    closeIcon.classList.remove('hidden');
+                } else if (pass !== null) {
+                    alert("Galat Password!");
+                }
+            }
+        };
+
+        function loadData() {
+            onValue(ref(db, 'students'), (snapshot) => {
+                if (snapshot.exists()) {
+                    const sData = Object.values(snapshot.val()).find(s => s.email === currentUser.email);
+                    if (sData) {
+                        studentProfile = sData;
+                        admissionDate = sData.admissionDate ? new Date(sData.admissionDate) : new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
+                    } else {
+                        admissionDate = new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
+                    }
+                } else {
+                    admissionDate = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
+                }
+
+                onValue(ref(db, 'admin_holidays'), (holSnapshot) => {
+                    adminHolidays = holSnapshot.val() || {};
+                    onValue(ref(db, 'attendance'), (attSnapshot) => {
+                        attendanceData = attSnapshot.val() || {};
+                        
+                        // BACKGROUND CRON: AUTO MARK ABSENT FOR MISSED DAYS
+                        checkAndMarkPastAbsents();
+                        
+                        renderUI();
+                    });
+                });
+            });
+        }
+
+        function checkAndMarkPastAbsents() {
+            if (!admissionDate || !currentUser) return;
+
+            let checkDate = new Date(admissionDate.getFullYear(), admissionDate.getMonth(), admissionDate.getDate());
+            const yesterday = new Date(realToday);
+            yesterday.setDate(realToday.getDate() - 1);
+
+            while (checkDate <= yesterday) {
+                const loopYear = checkDate.getFullYear();
+                const loopMonth = String(checkDate.getMonth() + 1).padStart(2, '0');
+                const loopDay = String(checkDate.getDate()).padStart(2, '0');
+                const dateStrLoop = `${loopYear}-${loopMonth}-${loopDay}`;
+
+                const isSun = checkDate.getDay() === 0;
+                const isHoliday = adminHolidays[dateStrLoop];
+                
+                const hasRecord = Object.values(attendanceData).find(
+                    r => r.email === currentUser.email && r.date === dateStrLoop
+                );
+
+                if (!isSun && !isHoliday && !hasRecord) {
+                    const attID = currentUser.uid + "_" + dateStrLoop;
+                    set(ref(db, 'attendance/' + attID), {
+                        email: currentUser.email,
+                        name: studentProfile.name || currentUser.displayName || "Student",
+                        date: dateStrLoop,
+                        status: "Absent",
+                        timestamp: Date.now(),
+                        autoMarked: true
+                    });
+                }
+                checkDate.setDate(checkDate.getDate() + 1);
+            }
+        }
+
+        window.navigateMonth = (direction) => {
+            currentSelectedDate.setMonth(currentSelectedDate.getMonth() + direction);
+            renderUI();
+        };
+
+        window.setAdminHoliday = () => {
+            const date = document.getElementById('holiday-picker').value;
+            const reason = document.getElementById('holiday-reason').value;
+
+            if(!date) return alert("Pehle date select karein!");
+            if(!reason || reason.trim() === "") return alert("Chhutti ka reason zaroori hai!");
+
+            set(ref(db, 'admin_holidays/' + date), {
+                status: "Holiday",
+                reason: reason,
+                timestamp: Date.now()
+            }).then(() => {
+                alert("Holiday set ho gaya!");
+                document.getElementById('holiday-reason').value = "";
+                document.getElementById('admin-controls').style.display = 'none';
+                document.getElementById('snt-img').classList.remove('hidden');
+                document.getElementById('close-icon').classList.add('hidden');
+            });
+        };
+
+        window.openProfileCard = (dateStr, statusType, description) => {
+            const modal = document.getElementById('profile-card-modal');
+            const cardInner = modal.querySelector('.glass');
+            
+            document.getElementById('card-student-name').innerText = studentProfile.name || currentUser.displayName || "SNT Student";
+            document.getElementById('card-student-course').innerText = studentProfile.course || "NIELIT O LEVEL";
+            document.getElementById('card-attendance-date').innerText = new Date(dateStr).toDateString();
+            document.getElementById('card-attendance-desc').innerText = description;
+            
+            // --- FIX 2: LOGO KI JAGAH STUDENT PROFILE IMAGE DYNAMICALLY LOAD HO ---
+            const profilePicField = document.getElementById('card-student-pic');
+            if(studentProfile && studentProfile.profilePic) {
+                profilePicField.src = studentProfile.profilePic;
+            } else if (currentUser && currentUser.photoURL) {
+                profilePicField.src = currentUser.photoURL;
+            } else {
+                profilePicField.src = "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
+            }
+
+            const dot = document.getElementById('card-status-dot');
+            const statusLabel = document.getElementById('card-attendance-status');
+
+            if(statusType === 'Present') {
+                statusLabel.innerText = "Present"; statusLabel.className = "font-black uppercase text-green-400";
+                dot.className = "w-5 h-5 rounded-full absolute bottom-0 right-0 border-4 border-slate-900 bg-green-500";
+            } else if(statusType === 'Absent') {
+                statusLabel.innerText = "Absent"; statusLabel.className = "font-black uppercase text-red-400";
+                dot.className = "w-5 h-5 rounded-full absolute bottom-0 right-0 border-4 border-slate-900 bg-red-500";
+            } else if(statusType === 'Leave') {
+                statusLabel.innerText = "Leave Granted"; statusLabel.className = "font-black uppercase text-amber-400";
+                dot.className = "w-5 h-5 rounded-full absolute bottom-0 right-0 border-4 border-slate-900 bg-amber-500";
+            } else if(statusType === 'Sunday' || statusType === 'Holiday') {
+                statusLabel.innerText = statusType; statusLabel.className = "font-black uppercase text-sky-400";
+                dot.className = "w-5 h-5 rounded-full absolute bottom-0 right-0 border-4 border-slate-900 bg-sky-500";
+            } else {
+                statusLabel.innerText = "No Record"; statusLabel.className = "font-black uppercase text-slate-500";
+                dot.className = "w-5 h-5 rounded-full absolute bottom-0 right-0 border-4 border-slate-900 bg-slate-600";
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                cardInner.classList.remove('scale-95');
+            }, 10);
+        };
+
+        window.closeProfileCard = () => {
+            const modal = document.getElementById('profile-card-modal');
+            const cardInner = modal.querySelector('.glass');
+            
+            modal.classList.add('opacity-0');
+            cardInner.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
+
+        function renderUI() {
+            const list = document.getElementById('register-list');
+            const calGrid = document.getElementById('calendar-grid');
+            const actionArea = document.getElementById('action-area');
+            const monthDisplay = document.getElementById('current-month-display');
+            const prevBtn = document.getElementById('prev-month-btn');
+            const nextBtn = document.getElementById('next-month-btn');
+
+            const viewYear = currentSelectedDate.getFullYear();
+            const viewMonth = currentSelectedDate.getMonth();
+
+            monthDisplay.innerText = currentSelectedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const admMonthLimit = new Date(admissionDate.getFullYear(), admissionDate.getMonth(), 1);
+            const twelveMonthsLimit = new Date(realToday.getFullYear(), realToday.getMonth() - 11, 1);
+            const dynamicPastLimit = admMonthLimit > twelveMonthsLimit ? admMonthLimit : twelveMonthsLimit;
+
+            const viewCurrentCompare = new Date(viewYear, viewMonth, 1);
+            const viewNextCompare = new Date(viewYear, viewMonth + 1, 1);
+
+            prevBtn.disabled = viewCurrentCompare <= dynamicPastLimit;
+            nextBtn.disabled = viewNextCompare > realToday;
+
+            const isSunToday = realToday.getDay() === 0;
+            const holToday = adminHolidays[todayStr];
+            const attID = currentUser.uid + "_" + todayStr;
+
+            // --- FIX 1 (A): IF PRESENT WAS WRONGLY MARKED ON TODAY'S HOLIDAY/SUNDAY -> AUTO FORCE REMOVE IT ---
+            if ((isSunToday || holToday) && attendanceData[attID]) {
+                remove(ref(db, 'attendance/' + attID));
+                delete attendanceData[attID];
+            }
+
+            if (isSunToday || holToday) {
+                const r = holToday ? holToday.reason : "SUNDAY (WEEKLY OFF)";
+                actionArea.innerHTML = `<h2 class="text-xl font-bold mb-4 italic">Aaj Chhutti Hai:</h2><div class="w-full py-4 glass text-amber-500 font-black text-center rounded-2xl border border-amber-500/20 italic uppercase tracking-tighter">${r}</div>`;
+            } else if (attendanceData[attID]) {
+                const s = attendanceData[attID].status;
+                actionArea.innerHTML = `<h2 class="text-xl font-bold mb-4 italic">Aaj ki Attendance:</h2><div class="w-full py-4 glass text-sky-400 font-black text-center rounded-2xl border border-sky-500/30 uppercase text-[10px] tracking-widest"><i class="fas fa-check-circle mr-1"></i> RECORD SAVED (${s})</div>`;
+            } else {
+                actionArea.innerHTML = `
+                    <h2 class="text-xl font-bold mb-4 italic">Aaj ki Attendance:</h2>
+                    <div id="action-buttons" class="flex gap-2">
+                        <button onclick="markAttendance('Present')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-p active:scale-95 transition-all">P (PRESENT)</button>
+                        <button onclick="markAttendance('Absent')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-a active:scale-95 transition-all">A (ABSENT)</button>
+                        <button onclick="markAttendance('Leave')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-l active:scale-95 transition-all">L (LEAVE)</button>
+                    </div>`;
+            }
+
+            let calHtml = '';
+            const firstDayIndex = new Date(viewYear, viewMonth, 1).getDay(); 
+            const totalDaysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+            for (let e = 0; e < firstDayIndex; e++) {
+                calHtml += `<div class="opacity-0 pointer-events-none"></div>`;
+            }
+
+            const admissionCompareTime = new Date(admissionDate.getFullYear(), admissionDate.getMonth(), admissionDate.getDate()).getTime();
+
+            for (let d = 1; d <= totalDaysInMonth; d++) {
+                const dayStrLoop = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const loopDateObj = new Date(dayStrLoop);
+                const loopTime = loopDateObj.getTime();
+                
+                let boxClass = "cal-box";
+                let dotHtml = "";
+                let clickActionHtml = "";
+                
+                const isSun = loopDateObj.getDay() === 0;
+                const isHoliday = adminHolidays[dayStrLoop];
+                let hasRecord = Object.values(attendanceData).find(r => r.email === currentUser.email && r.date === dayStrLoop);
+
+                // --- FIX 1 (B): CONVERT PAST WRONGLY MARKED PRESENT/ABSENT ON SUNDAYS/HOLIDAYS TO RESET MODE ---
+                if ((isSun || isHoliday) && hasRecord) {
+                    const loopAttID = currentUser.uid + "_" + dayStrLoop;
+                    remove(ref(db, 'attendance/' + loopAttID));
+                    hasRecord = null; // Instantly clean internal pointer
+                }
+
+                if (loopTime < admissionCompareTime) {
+                    boxClass += " btn-lock text-slate-600";
+                    clickActionHtml = `onclick="alert('Aapka Admission is date ke baad hua hai!')"`;
+                } else {
+                    if (hasRecord) {
+                        if (hasRecord.status === 'Present') { boxClass += " status-p font-black text-emerald-400"; dotHtml = '<div class="cal-dot bg-green-400"></div>'; }
+                        else if (hasRecord.status === 'Absent') { boxClass += " status-a font-black text-red-400"; dotHtml = '<div class="cal-dot bg-red-400"></div>'; }
+                        else if (hasRecord.status === 'Leave') { boxClass += " status-l font-black text-amber-400"; dotHtml = '<div class="cal-dot bg-amber-400"></div>'; }
+                        clickActionHtml = `onclick="openProfileCard('${dayStrLoop}', '${hasRecord.status}', 'Attendance Registered')"`;
+                    } else if (isSun) {
+                        boxClass += " status-h text-sky-400 border border-sky-500/20";
+                        dotHtml = '<div class="cal-dot bg-sky-400"></div>';
+                        clickActionHtml = `onclick="openProfileCard('${dayStrLoop}', 'Sunday', 'Weekly Institutional Off')"`;
+                    } else if (isHoliday) {
+                        boxClass += " status-h text-sky-400 border border-sky-500/20";
+                        dotHtml = '<div class="cal-dot bg-sky-400"></div>';
+                        clickActionHtml = `onclick="openProfileCard('${dayStrLoop}', 'Holiday', '${isHoliday.reason}')"`;
+                    } else if (loopDateObj > realToday) {
+                        boxClass += " opacity-25 text-slate-600 cursor-not-allowed";
+                        clickActionHtml = `onclick="console.log('Future Date')"`;
+                    } else {
+                        boxClass += " text-slate-300 bg-slate-800/40 ring-1 ring-white/5"; 
+                        clickActionHtml = `onclick="openProfileCard('${dayStrLoop}', 'None', 'No entries recorded for this day')"`;
                     }
                 }
-            }
-        }
-    }
-    function updateFestivalList() {
-        const container = document.getElementById('fest-list-container');
-        const monthNum = String(displayDate.getMonth() + 1).padStart(2, '0');
-        container.innerHTML = "";
-        const fests = fixedFestivals[displayDate.getFullYear()] || {};
-        let found = false;
-        Object.keys(fests).sort().forEach(k => {
-            if(k.split('-')[1] === monthNum) {
-                container.innerHTML += `<div class="fest-item"><b>${k.split('-')[0]} तारीख</b>: ${fests[k]}</div>`;
-                found = true;
-            }
-        });
-        if(!found) container.innerHTML = "<p style='text-align:center; color:#999;'>इस महीने कोई त्यौहार नहीं है।</p>";
-    }
-    function changeMonth(s) { displayDate.setMonth(displayDate.getMonth() + s); renderCalendar(); }
-    window.onload = () => {
-        db.ref('students').on('value', snap => {
-            const dropdown = document.getElementById('student-dropdown');
-            dropdown.innerHTML = '<option value="">-- छात्र चुनें / Select Student --</option>';
-            if (snap.exists()) {
-                studentsMasterList = snap.val();
-                Object.keys(studentsMasterList).forEach(key => {
-                    const student = studentsMasterList[key];
-                    const studentUID = student.uid || key; 
-                    const option = document.createElement('option');
-                    option.value = studentUID;
-                    option.textContent = `${student.name || 'Unknown'} (${student.course || 'O Level'})`;
-                    dropdown.appendChild(option);
-                });
-                const params = new URLSearchParams(window.location.search);
-                const queryID = params.get('id');
-                if (queryID && studentsMasterList[queryID]) {
-                    dropdown.value = queryID;
-                    onStudentSelected(queryID);
+
+                if (viewYear === realToday.getFullYear() && viewMonth === realToday.getMonth() && d === realToday.getDate()) {
+                    boxClass += " ring-2 ring-sky-400 ring-offset-2 ring-offset-slate-950";
                 }
-            } else {
-                dropdown.innerHTML = '<option value="">Database has no students</option>';
+
+                calHtml += `<div class="${boxClass}" ${clickActionHtml}>${d}${dotHtml}</div>`;
             }
-        });
-        db.ref('admin_holidays').on('value', holSnap => {
-            globalHolidays = holSnap.val() || {};
-            db.ref('attendance').on('value', attSnap => {
-                globalAttendance = attSnap.val() || {};
-                renderCalendar();
+            calGrid.innerHTML = calHtml;
+
+            let listHtml = '';
+            let startDay = (viewYear === realToday.getFullYear() && viewMonth === realToday.getMonth()) ? realToday.getDate() : totalDaysInMonth;
+
+            for (let d = startDay; d >= 1; d--) {
+                const dayDateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dateObj = new Date(dayDateStr);
+                
+                if (dateObj.getTime() < admissionCompareTime) continue;
+
+                const sun = dateObj.getDay() === 0;
+                const hol = adminHolidays[dayDateStr];
+                const record = Object.values(attendanceData).find(r => r.email === currentUser.email && r.date === dayDateStr);
+
+                let badge = '<span class="status-badge btn-lock">No Data</span>';
+                let reasonText = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+                if (sun) {
+                    badge = '<span class="status-badge btn-h text-xs">Sunday</span>';
+                    reasonText = "Weekly Off";
+                } else if (hol) {
+                    badge = '<span class="status-badge btn-h text-xs">Holiday</span>';
+                    reasonText = hol.reason;
+                } else if (record) {
+                    if (record.status === 'Present') badge = '<span class="status-badge btn-p">Present</span>';
+                    else if (record.status === 'Absent') badge = '<span class="status-badge btn-a">Absent</span>';
+                    else if (record.status === 'Leave') badge = '<span class="status-badge btn-l">Leave</span>';
+                }
+
+                listHtml += `
+                    <div class="row-item" onclick="openProfileCard('${dayDateStr}', '${record ? record.status : (sun ? 'Sunday' : (hol ? 'Holiday' : 'None'))}', '${hol ? hol.reason : (sun ? 'Weekly Off' : 'Regular Log Entry')}')">
+                        <div class="font-bold text-xs text-slate-300">${d} ${dateObj.toLocaleString('default', { month: 'short' })}</div>
+                        <div class="text-center text-[9px] font-bold text-slate-500 uppercase tracking-tighter italic overflow-hidden whitespace-nowrap px-1">${reasonText}</div>
+                        <div class="text-right">${badge}</div>
+                    </div>`;
+            }
+            
+            list.innerHTML = listHtml || `<p class="text-slate-500 text-center text-[10px] font-bold py-8 uppercase tracking-widest">No records available</p>`;
+        }
+
+        window.markAttendance = (status) => {
+            const isSunToday = realToday.getDay() === 0;
+            const holToday = adminHolidays[todayStr];
+
+            if (isSunToday || holToday) {
+                alert("Aaj chhutti hai! Attendance lagana allowed nahi hai.");
+                return;
+            }
+
+            const attID = currentUser.uid + "_" + todayStr;
+            set(ref(db, 'attendance/' + attID), {
+                email: currentUser.email,
+                name: studentProfile.name || currentUser.displayName || "Student",
+                date: todayStr,
+                status: status,
+                timestamp: Date.now()
             });
-        });
-    };
-</script>
+        };
+    </script>
 </body>
 </html>
