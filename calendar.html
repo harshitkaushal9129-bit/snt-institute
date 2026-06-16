@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SNT Attendance & Festival Calendar</title>
+    <!-- Firebase App and Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -38,10 +40,12 @@
         .fest-star-marker { color: var(--star-gold); font-size: 10px; position: absolute; top: 6px; left: 6px; z-index: 10; }
         .today { background: #fffde7 !important; border: 1.5px solid #fbc02d !important; }
         .sunday .date-num { color: #d32f2f; }
-        .att-status { position: absolute; bottom: 8px; }
+        
+        .att-status { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: center; }
         .dot { width: 10px; height: 10px; border-radius: 50%; display: block; border: 1px solid white; }
         .bg-p { background: var(--present); }
         .bg-a { background: var(--absent); }
+        .holiday-text { font-size: 9px; color: var(--holiday); font-weight: bold; text-align: center; }
 
         .fest-btn { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--tp-header-red); color: white; padding: 15px 8px; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 10px 0 0 10px; cursor: pointer; font-weight: bold; z-index: 100; box-shadow: -2px 0 10px rgba(0,0,0,0.2); }
         .sidebar { position: fixed; right: -320px; top: 0; width: 300px; height: 100%; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 101; display: flex; flex-direction: column; }
@@ -94,6 +98,7 @@
 </div>
 
 <script>
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
         authDomain: "snt-computer-institute.firebaseapp.com",
@@ -107,112 +112,60 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // URL parameters se Student ID read karna (?id=STUDENT_ID)
     const params = new URLSearchParams(window.location.search);
     const studentId = params.get('id'); 
     let displayDate = new Date();
     const today = new Date();
 
- 
-         const fixedFestivals = {
+    // 2026 ke Fixed Festivals Dataset
+    const fixedFestivals = {
       "2026": {
-        // January
         "01-01": "नया साल (New Year)",
         "03-01": "सावित्रीबाई फुले जयंती / हजरत अली जन्मदिन",
         "04-01": "विश्व ब्रेल दिवस",
         "10-01": "विश्व हिंदी दिवस",
-        "12-01": "राष्ट्रीय युवा दिवस (स्वामी विवेकानंद जयंती)",
+        "12-01": "राष्ट्रीय युवा दिवस",
         "13-01": "लोहड़ी",
-        "14-01": "मकर संक्रांति / पोंगल",
+        "14-01": "मकर संक्रांति / पอนगल",
         "15-01": "थल सेना दिवस (Army Day)",
-        "23-01": "नेताजी सुभाष चंद्र बोस जयंती / बसंत पंचमी",
+        "23-01": "नेताजी सुभाष चंद्र बोस जयंती",
         "25-01": "राष्ट्रीय मतदाता दिवस",
         "26-01": "गणतंत्र दिवस",
         "30-01": "शहीद दिवस",
-
-        // February
         "01-02": "गुरु रविदास जयंती",
-        "04-02": "विश्व कैंसर दिवस",
-        "14-02": "वैलेंटाइन डे / महर्षि दयानंद सरस्वती जयंती",
         "15-02": "महाशिवरात्रि",
         "19-02": "छत्रपति शिवाजी महाराज जयंती",
         "28-02": "राष्ट्रीय विज्ञान दिवस",
-
-        // March
         "03-03": "होलिका दहन",
         "04-03": "होली (धुलेंडी)",
         "08-03": "अंतर्राष्ट्रीय महिला दिवस",
-          
-        "19-03": "गुड़ी पड़वा / उगादि / चैत्र नवरात्रि प्रारंभ",
+        "19-03": "चैत्र नवरात्रि प्रारंभ",
         "20-03": "ईद-उल-फ़ित्र (Meethi Eid)",
         "26-03": "राम नवमी",
         "31-03": "महावीर जयंती",
-
-        // April
-        "01-04": "बैंक हॉलिडे / अप्रैल फूल",
         "03-04": "गुड फ्राइडे",
-        "05-04": "ईस्टर संडे",
-        "07-04": "विश्व स्वास्थ्य दिवस",
-        "14-04": "डॉ. अम्बेडकर जयंती / बैसाखी",
-        "22-04": "पृथ्वी दिवस (Earth Day)",
-
-        // May
+        "14-04": "डॉ. अम्बेडकर जयंती",
         "01-05": "मजदूर दिवस / बुद्ध पूर्णिमा",
-        "07-05": "विश्व एथलेटिक्स दिवस",
-        "08-05": "विश्व रेड क्रॉस दिवस",
-        "10-05": "मदर्स डे",
         "27-05": "ईद-उल-जुहा (बकरीद)",
-
-        // June
         "05-06": "विश्व पर्यावरण दिवस",
-        "16-06": "इस्लामी नव वर्ष",
-        "21-06": "अंतर्राष्ट्रीय योग दिवस / फादर्स डे",
-        "26-06": "मुहर्रम",
-
-        // July
-        "01-07": "डॉक्टर्स डे",
-        "07-07": "जगन्नाथ रथ यात्रा",
-        "11-07": "विश्व जनसंख्या दिवस",
-        "29-07": "गुरु पूर्णिमा",
-
-        // August
-        "02-08": "फ्रेंडशिप डे",
+        "21-06": "अंतर्राष्ट्रीय योग दिवस",
         "15-08": "स्वतंत्रता दिवस",
-        "26-08": "मिलाद-उन-नबी (पैगंबर जन्मदिन)",
+        "26-08": "मिलाद-उन-नबी",
         "28-08": "रक्षा बंधन",
-
-        // September
         "04-09": "जन्माष्टमी",
-        "05-09": "शिक्षक दिवस (Teachers Day)",
-        "14-09": "गणेश चतुर्थी / हिंदी दिवस",
-        "25-09": "अनंत चतुर्दशी",
-
-        // October
-        "02-10": "गांधी जयंती / शास्त्री जयंती",
-        "11-10": "नवरात्रि प्रारंभ",
-        "19-10": "महानवमी",
+        "05-09": "शिक्षक दिवस",
+        "14-09": "हिंदी दिवस / गणेश चतुर्थी",
+        "02-10": "गांधी जयंती",
         "20-10": "दशहरा (विजयदशमी)",
-        "29-10": "करवा चौथ",
-        "31-10": "सरदार पटेल जयंती (राष्ट्रीय एकता दिवस)",
-
-        // November
-        "06-11": "धनतेरस",
         "08-11": "दीपावली",
         "09-11": "गोवर्धन पूजा",
         "11-11": "भाई दूज",
-        "14-11": "बाल दिवस (Children's Day)",
-        "15-11": "छठ पूजा",
+        "14-11": "बाल दिवस",
         "24-11": "गुरु नानक जयंती",
-
-        // December
-        "01-12": "विश्व एड्स दिवस",
-        "04-12": "भारतीय नौसेना दिवस",
-        "10-12": "मानवाधिकार दिवस",
-        "23-12": "किसान दिवस",
-        "25-12": "क्रिसमस डे",
-        "31-12": "न्यू ईयर ईव"
+        "25-12": "क्रिसमस डे"
       }
     };
-
 
     function toggleSidebar() { 
         const sidebar = document.getElementById('sidebar');
@@ -227,6 +180,7 @@
         document.getElementById('overlay').classList.remove('active'); 
     }
 
+    // Dynamic Calendar Rendering Function
     function renderCalendar() {
         const body = document.getElementById('calendar-body');
         body.innerHTML = '';
@@ -238,38 +192,50 @@
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+        // Khali cells generate karna starting ke days ke liye
         for (let x = 0; x < firstDay; x++) body.innerHTML += `<div class="cell" style="background:#f9f9f9"></div>`;
 
+        // Month Days loop
         for (let day = 1; day <= daysInMonth; day++) {
             const dayFormatted = String(day).padStart(2, '0');
             const monthFormatted = String(month + 1).padStart(2, '0');
+            
+            // attendance.html ke anusaar key format (DD-MM-YYYY)
             const dStr = `${dayFormatted}-${monthFormatted}-${year}`; 
             const fKey = `${dayFormatted}-${monthFormatted}`;
             const isToday = new Date(year, month, day).toDateString() === today.toDateString();
             
             body.innerHTML += `
-                <div class="cell ${isToday?'today':''} ${new Date(year, month, day).getDay()===0?'sunday':''}">
+                <div class="cell ${isToday?'today':''} ${new Date(year, month, day).getDay()===0?'sunday':''}" id="cell-${dStr}">
                     ${fixedFestivals[year] && fixedFestivals[year][fKey] ? '<i class="fas fa-star fest-star-marker"></i>' : ''}
                     <span class="date-num">${day}</span>
                     <div class="att-status" id="stat-${dStr}"></div>
                 </div>`;
 
-            // Firebase se Attendance fetch karna
+            // attendance.html schema ke matching Realtime database query
             db.ref(`attendance/${dStr}`).once('value', snap => {
                 const data = snap.val();
-                const target = document.getElementById(`stat-${dStr}`);
-                if(data && target) {
+                const targetBox = document.getElementById(`stat-${dStr}`);
+                const cellContainer = document.getElementById(`cell-${dStr}`);
+                
+                if(data && targetBox) {
                     if(data.type === 'HOLIDAY') {
-                        target.parentElement.style.background = "#fff3e0";
-                        target.innerHTML = `<span style="font-size:8px; color:var(--holiday); font-weight:bold;">HOLIDAY</span>`;
+                        if(cellContainer) cellContainer.style.background = "#fff3e0";
+                        targetBox.innerHTML = `<span class="holiday-text">HOLIDAY</span>`;
                     } else if(data.details && data.details[studentId]) {
-                        target.innerHTML = `<span class="dot ${data.details[studentId]==='P'?'bg-p':'bg-a'}"></span>`;
+                        const status = data.details[studentId];
+                        if(status === 'P') {
+                            targetBox.innerHTML = `<span class="dot bg-p"></span>`;
+                        } else if(status === 'A') {
+                            targetBox.innerHTML = `<span class="dot bg-a"></span>`;
+                        }
                     }
                 }
             });
         }
     }
 
+    // Sidebar panel me festival list updates
     function updateFestivalList() {
         const container = document.getElementById('fest-list-container');
         const monthNum = String(displayDate.getMonth() + 1).padStart(2, '0');
@@ -288,6 +254,7 @@
 
     function changeMonth(s) { displayDate.setMonth(displayDate.getMonth() + s); renderCalendar(); }
 
+    // Page initial load configuration
     window.onload = () => {
         if(studentId) {
             db.ref('students/' + studentId).once('value', snap => {
