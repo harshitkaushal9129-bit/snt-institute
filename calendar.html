@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SNT Student Attendance Finder</title>
-    <!-- Firebase App and Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -20,68 +18,52 @@
             --bg-light: #f4f7f6;
             --holiday: #1976d2;
         }
-
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-light); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
-        
-        /* Search Box Styling */
         .search-container { background: white; width: 100%; max-width: 450px; border: 2px solid #ddd; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 15px; margin-bottom: 15px; box-sizing: border-box; }
         .search-container label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         .student-selector { width: 100%; padding: 10px 12px; border-radius: 8px; border: 2px solid #ccc; font-size: 14px; font-weight: 600; color: #333; outline: none; background: #fff; cursor: pointer; transition: 0.3s; }
         .student-selector:focus { border-color: var(--tp-header-red); }
-
         .calendar-card { background: white; width: 100%; max-width: 450px; border: 2px solid #ddd; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
-        
         .header { background: var(--tp-header-red); color: white; padding: 15px; text-align: center; }
         .st-profile-box { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px; margin-top: 10px; text-align: left; }
         .st-photo-circle { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: #eee; }
-
         .nav { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fff; border-bottom: 1px solid #eee; }
         .nav h2 { font-size: 1.1rem; margin: 0; color: #333; font-weight: 700; text-transform: capitalize; }
         .nav button { background: #f0f0f0; border: 1px solid #ddd; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
-
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; }
         .day-head { text-align: center; font-size: 12px; font-weight: bold; color: #666; padding: 12px 0; background: #f9f9f9; }
         .cell { height: 85px; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: 0.2s; }
         .date-num { font-size: 18px; font-weight: 600; color: #333; z-index: 5; }
-
         .fest-star-marker { color: var(--star-gold); font-size: 10px; position: absolute; top: 6px; left: 6px; z-index: 10; }
         .today { background: #fffde7 !important; border: 1.5px solid #fbc02d !important; }
         .sunday .date-num { color: #d32f2f; }
-        
         .att-status { position: absolute; bottom: 8px; width: 100%; display: flex; justify-content: center; }
         .dot { width: 10px; height: 10px; border-radius: 50%; display: block; border: 1px solid white; }
         .bg-p { background: var(--present); }
         .bg-a { background: var(--absent); }
         .bg-l { background: var(--leave); }
         .holiday-text { font-size: 8px; color: var(--holiday); font-weight: bold; text-align: center; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
-
         .fest-btn { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--tp-header-red); color: white; padding: 15px 8px; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 10px 0 0 10px; cursor: pointer; font-weight: bold; z-index: 100; box-shadow: -2px 0 10px rgba(0,0,0,0.2); }
         .sidebar { position: fixed; right: -320px; top: 0; width: 300px; height: 100%; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 101; display: flex; flex-direction: column; }
         .sidebar.active { right: 0; }
         .sidebar-header { background: var(--tp-header-red); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         #fest-list-container { flex: 1; overflow-y: auto; padding: 15px; }
         .fest-item { background: #fff9f0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--star-gold); box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; }
-
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 100; }
         .overlay.active { display: block; }
-        
         .footer { padding: 15px; display: flex; justify-content: space-around; font-size: 11px; background: #fff; border-top: 1px solid #eee; flex-wrap: wrap; gap: 5px; }
         #profile-display-area { width: 100%; }
     </style>
 </head>
 <body>
-
-<!-- TOP SEARCH & SELECT COMPONENT -->
 <div class="search-container">
     <label for="student-dropdown"><i class="fas fa-search-user"></i> छात्र चुनें (Select Student):</label>
     <select id="student-dropdown" class="student-selector" onchange="onStudentSelected(this.value)">
         <option value="">-- छात्र लोड हो रहे हैं / Select Student --</option>
     </select>
 </div>
-
 <div class="fest-btn" onclick="toggleSidebar()"><i class="fas fa-calendar-alt"></i> त्यौहार सूची</div>
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
-
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h3>महीने के त्यौहार</h3>
@@ -89,26 +71,21 @@
     </div>
     <div id="fest-list-container"></div>
 </div>
-
 <div class="calendar-card">
     <div class="header" id="header-box">
         <div style="font-weight: 700; font-size: 1.1rem;">SNT ATTENDANCE PORTAL</div>
-        <!-- Profile Card Segment -->
         <div id="profile-display-area"></div>
     </div>
-    
     <div class="nav">
         <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
         <h2 id="month-info"></h2>
         <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
     </div>
-
     <div class="grid">
         <div class="day-head">रवि</div><div class="day-head">सोम</div><div class="day-head">मंगल</div>
         <div class="day-head">बुध</div><div class="day-head">गुरु</div><div class="day-head">शुक्र</div><div class="day-head">शनि</div>
     </div>
     <div id="calendar-body" class="grid"></div>
-
     <div class="footer">
         <span><i class="fas fa-circle" style="color:var(--present)"></i> Present</span>
         <span><i class="fas fa-circle" style="color:var(--absent)"></i> Absent</span>
@@ -116,9 +93,7 @@
         <span><i class="fas fa-circle" style="color:var(--holiday)"></i> Holiday</span>
     </div>
 </div>
-
 <script>
-    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
         authDomain: "snt-computer-institute.firebaseapp.com",
@@ -128,36 +103,53 @@
         messagingSenderId: "117580784781",
         appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     let displayDate = new Date();
     const today = new Date();
-    
     let studentsMasterList = {};
     let globalAttendance = {};
     let globalHolidays = {};
-    
     let activeStudentUID = null;
     let activeStudentProfile = null;
 
-    // 2026 Festivals Data
+    // Holidays Data (2025, 2026, 2027)
     const fixedFestivals = {
+      "2025": {
+        "01-01": "नया साल (New Year)", "01-14": "मकर संक्रांति", "01-26": "गणतंत्र दिवस",
+        "02-12": "गुरु रविदास जयंती", "02-26": "महाशिवरात्रि", "03-13": "होलिका दहन",
+        "03-14": "होली (धुलेंडी)", "03-31": "ईद-उल-फ़ित्र", "04-06": "राम नवमी",
+        "04-10": "महावीर जयंती", "04-11": "गुड फ्राइडे", "04-14": "डॉ. अम्बेडकर जयंती",
+        "05-12": "बुद्ध पूर्णिमा", "06-07": "ईद-उल-जुहा", "07-06": "मुहर्रम",
+        "08-09": "रक्षा बंधन", "08-15": "स्वतंत्रता दिवस / जन्माष्टमी", "09-05": "मिलाद-उन-नबी",
+        "10-02": "गांधी जयंती / दशहरा", "10-20": "दीपावली", "10-21": "गोवर्धन पूजा",
+        "10-22": "भाई दूज", "11-05": "गुरु नानक जयंती", "12-25": "क्रिसमस डे"
+      },
       "2026": {
-        "01-01": "नया साल (New Year)", "03-01": "सावित्रीबाई फुले जयंती", "04-01": "विश्व ब्रेल दिवस",
-        "10-01": "विश्व हिंदी दिवस", "12-01": "राष्ट्रीय युवा दिवस", "13-01": "लोहड़ी",
-        "14-01": "मकर संक्रांति", "15-01": "थल सेना दिवस", "23-01": "नेताजी सुभाष चंद्र बोस जयंती",
-        "25-01": "राष्ट्रीय मतदाता दिवस", "26-01": "गणतंत्र दिवस", "30-01": "शहीद दिवस",
-        "01-02": "गुरु रविदास जयंती", "15-02": "महाशिवरात्रि", "19-02": "छत्रपति शिवाजी महाराज जयंती",
-        "28-02": "राष्ट्रीय विज्ञान दिवस", "03-03": "होलिका दहन", "04-03": "होली (धुलेंडी)",
-        "08-03": "अंतर्राष्ट्रीय महिला दिवस", "19-03": "चैत्र नवरात्रि प्रारंभ", "20-03": "ईद-उल-फ़ित्र",
-        "26-03": "राम नवमी", "31-03": "महावीर जयंती", "03-04": "गुड फ्राइडे", "14-04": "डॉ. अम्बेडकर जयंती",
-        "01-05": "मजदूर दिवस / बुद्ध पूर्णिमा", "27-05": "ईद-उल-जुहा", "05-06": "विश्व पर्यावरण दिवस",
-        "21-06": "अंतर्राष्ट्रीय योग दिवस", "15-08": "स्वतंत्रता दिवस", "26-08": "मिलाद-उन-नबी",
-        "28-08": "रक्षा बंधन", "04-09": "जन्माष्टमी", "05-09": "शिक्षक दिवस", "14-09": "हिंदी दिवस",
-        "02-10": "गांधी जयंती", "20-10": "दशहरा", "08-11": "दीपावली", "09-11": "गोवर्धन पूजा",
-        "11-11": "भाई दूज", "14-11": "बाल दिवस", "24-11": "गुरु नानक जयंती", "25-12": "क्रिसमस डे"
+        "01-01": "नया साल (New Year)", "01-03": "सावित्रीबाई फुले जयंती", "01-04": "विश्व ब्रेल दिवस",
+        "01-10": "विश्व हिंदी दिवस", "01-12": "राष्ट्रीय युवा दिवस", "01-13": "लोहड़ी",
+        "01-14": "मकर संक्रांति", "01-15": "थल सेना दिवस", "01-23": "नेताजी सुभाष चंद्र बोस जयंती",
+        "01-25": "राष्ट्रीय मतदाता दिवस", "01-26": "गणतंत्र दिवस", "01-30": "शहीद दिवस",
+        "02-01": "गुरु रविदास जयंती", "02-15": "महाशिवरात्रि", "02-19": "छत्रपति शिवाजी महाराज जयंती",
+        "02-28": "राष्ट्रीय विज्ञान दिवस", "03-03": "होलिका दहन", "03-04": "होली (धुलेंडी)",
+        "03-08": "अंतर्राष्ट्रीय महिला दिवस", "03-19": "चैत्र नवरात्रि प्रारंभ", "03-20": "ईद-उल-फ़ित्र",
+        "03-26": "राम नवमी", "03-31": "महावीर जयंती", "04-03": "गुड फ्राइडे", "04-14": "डॉ. अम्बेडकर जयंती",
+        "05-01": "मजदूर दिवस / बुद्ध पूर्णिमा", "05-27": "ईद-उल-जुहा", "06-05": "विश्व पर्यावरण दिवस",
+        "07-26": "मुहर्रम", "08-15": "स्वतंत्रता दिवस", "08-26": "मिलाद-उन-नबी", "08-28": "रक्षा बंधन",
+        "09-04": "जन्माष्टमी", "09-05": "शिक्षक दिवस", "09-14": "हिंदी दिवस", "10-02": "गांधी जयंती",
+        "10-20": "दशहरा", "11-08": "दीपावली", "11-09": "गोवर्धन पूजा", "11-11": "भाई दूज",
+        "11-14": "बाल दिवस", "11-24": "गुरु नानक जयंती", "12-25": "क्रिसमस डे"
+      },
+      "2027": {
+        "01-01": "नया साल (New Year)", "01-14": "मकर संक्रांति", "01-26": "गणतंत्र दिवस",
+        "02-21": "गुरु रविदास जयंती", "03-06": "महाशिवरात्रि", "03-09": "ईद-उल-फ़ित्र",
+        "03-22": "होलिका दहन", "03-23": "होली (धुलेंडी)", "04-14": "डॉ. अम्बेडकर जयंती",
+        "04-16": "राम नवमी", "04-20": "महावीर जयंती", "04-23": "गुड फ्राइडे",
+        "05-16": "ईद-उल-जुहा", "05-20": "बुद्ध पूर्णिमा", "06-15": "मुहर्रम",
+        "08-15": "स्वतंत्रता दिवस", "08-16": " मिलाद-उन-नबी", "08-17": "रक्षा बंधन",
+        "08-25": "जन्माष्टमी", "10-02": "गांधी जयंती", "10-09": "दशहरा",
+        "10-29": "दीपावली", "10-30": "गोवर्धन पूजा", "10-31": "भाई दूज",
+        "11-14": "गुरु नानक जयंती", "12-25": "क्रिसमस डे"
       }
     };
 
@@ -168,13 +160,10 @@
         overlay.classList.toggle('active'); 
         if(sidebar.classList.contains('active')) updateFestivalList(); 
     }
-    
     function closeAll() { 
         document.getElementById('sidebar').classList.remove('active'); 
         document.getElementById('overlay').classList.remove('active'); 
     }
-
-    // Dropdown value change handler
     function onStudentSelected(uid) {
         if(!uid) {
             activeStudentUID = null;
@@ -183,11 +172,8 @@
             renderCalendar();
             return;
         }
-
         activeStudentUID = uid;
         activeStudentProfile = studentsMasterList[uid];
-
-        // Inject dynamic profile card into header
         document.getElementById('profile-display-area').innerHTML = `
             <div class="st-profile-box">
                 <img src="${activeStudentProfile.profilePic || 'https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png'}" class="st-photo-circle">
@@ -197,54 +183,39 @@
                     <small style="opacity:0.8;">Email: ${activeStudentProfile.email}</small>
                 </div>
             </div>`;
-        
         renderCalendar();
     }
-
-    // Grid System Compiler
     function renderCalendar() {
         const body = document.getElementById('calendar-body');
         body.innerHTML = '';
         const year = displayDate.getFullYear(), month = displayDate.getMonth();
-        
         const monthName = new Date(year, month).toLocaleString('hi-IN', {month:'long'});
         document.getElementById('month-info').innerText = `${monthName} ${year}`;
-
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-
         for (let x = 0; x < firstDay; x++) body.innerHTML += `<div class="cell" style="background:#f9f9f9"></div>`;
-
         for (let day = 1; day <= daysInMonth; day++) {
             const dayFormatted = String(day).padStart(2, '0');
             const monthFormatted = String(month + 1).padStart(2, '0');
-            
-            // Format YYYY-MM-DD standard schema matching attendance.html
             const dStr = `${year}-${monthFormatted}-${dayFormatted}`; 
             const fKey = `${dayFormatted}-${monthFormatted}`;
             const isToday = new Date(year, month, day).toDateString() === today.toDateString();
             const isSunday = new Date(year, month, day).getDay() === 0;
-            
             body.innerHTML += `
                 <div class="cell ${isToday?'today':''} ${isSunday?'sunday':''}" id="cell-${dStr}">
                     ${fixedFestivals[year] && fixedFestivals[year][fKey] ? '<i class="fas fa-star fest-star-marker"></i>' : ''}
                     <span class="date-num">${day}</span>
                     <div class="att-status" id="stat-${dStr}"></div>
                 </div>`;
-
             const targetBox = document.getElementById(`stat-${dStr}`);
             const cellContainer = document.getElementById(`cell-${dStr}`);
-
-            // 1. Check Global Institutional Holidays First
             if (globalHolidays && globalHolidays[dStr]) {
                 if(cellContainer) cellContainer.style.background = "#e0f2fe";
                 if(targetBox) targetBox.innerHTML = `<span class="holiday-text" title="${globalHolidays[dStr].reason}">HOLIDAY</span>`;
             } 
-            // 2. Map exact data if a student profile node is picked
             else if (activeStudentProfile && activeStudentUID) {
                 const attID = activeStudentUID + "_" + dStr;
                 const record = globalAttendance[attID];
-
                 if (record && record.email === activeStudentProfile.email) {
                     if (record.status === 'Present') {
                         targetBox.innerHTML = `<span class="dot bg-p"></span>`;
@@ -257,13 +228,11 @@
             }
         }
     }
-
     function updateFestivalList() {
         const container = document.getElementById('fest-list-container');
         const monthNum = String(displayDate.getMonth() + 1).padStart(2, '0');
         container.innerHTML = "";
         const fests = fixedFestivals[displayDate.getFullYear()] || {};
-        
         let found = false;
         Object.keys(fests).sort().forEach(k => {
             if(k.split('-')[1] === monthNum) {
@@ -273,32 +242,21 @@
         });
         if(!found) container.innerHTML = "<p style='text-align:center; color:#999;'>इस महीने कोई त्यौहार नहीं है।</p>";
     }
-
     function changeMonth(s) { displayDate.setMonth(displayDate.getMonth() + s); renderCalendar(); }
-
-    // On Load Lifecycle
     window.onload = () => {
-        // Step 1: Sync active student list to populate drop-down
         db.ref('students').on('value', snap => {
             const dropdown = document.getElementById('student-dropdown');
             dropdown.innerHTML = '<option value="">-- छात्र चुनें / Select Student --</option>';
-            
             if (snap.exists()) {
                 studentsMasterList = snap.val();
-                
-                // Read nested nodes inside students object mapping keys dynamically
                 Object.keys(studentsMasterList).forEach(key => {
                     const student = studentsMasterList[key];
-                    // Handle if explicit unique user IDs are used inside object tree
                     const studentUID = student.uid || key; 
-                    
                     const option = document.createElement('option');
                     option.value = studentUID;
                     option.textContent = `${student.name || 'Unknown'} (${student.course || 'O Level'})`;
                     dropdown.appendChild(option);
                 });
-
-                // URL parameter route backup (?id=STUDENT_UID)
                 const params = new URLSearchParams(window.location.search);
                 const queryID = params.get('id');
                 if (queryID && studentsMasterList[queryID]) {
@@ -309,8 +267,6 @@
                 dropdown.innerHTML = '<option value="">Database has no students</option>';
             }
         });
-
-        // Step 2: Load global nodes & triggers
         db.ref('admin_holidays').on('value', holSnap => {
             globalHolidays = holSnap.val() || {};
             db.ref('attendance').on('value', attSnap => {
