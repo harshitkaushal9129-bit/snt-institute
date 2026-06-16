@@ -25,10 +25,8 @@
         .st-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
         .btn-group { display: flex; gap: 8px; }
         
-        /* बटन बेस स्टाइल */
         .btn { border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; background: #eee; transition: 0.2s; }
         
-        /* एक्टिव होने पर रंग (P के लिए हरा, A के लिए लाल) */
         .p-btn.active { background-color: var(--success) !important; color: white !important; }
         .a-btn.active { background-color: var(--danger) !important; color: white !important; }
         
@@ -103,6 +101,7 @@
     };
 
     let dailyRecords = {}, holidayMode = false;
+    let studentsCache = []; // Students data track karne ke liye cache array
     const d = new Date(), dayS = document.getElementById('day'), monS = document.getElementById('month'), yerS = document.getElementById('year');
     
     for(let i=2025; i<=2030; i++) yerS.innerHTML += `<option value="${i}">${i}</option>`;
@@ -124,7 +123,7 @@
 
         const selectedDate = new Date(`${year}-${monS.value}-${dayS.value}`);
         if(selectedDate.getDay() === 0) {
-            showHolidayUI("साप्ताहिक अवकाश (Sunday)", "रविवार");
+            showHolidayUI("साweekly अवकाश (Sunday)", "रविवार");
             return;
         }
 
@@ -159,6 +158,7 @@
             const list = document.getElementById('st-list');
             list.innerHTML = "";
             dailyRecords = (existingData && existingData.details) ? existingData.details : {};
+            studentsCache = []; // Clear array
             
             if(!snap.exists()) {
                 list.innerHTML = "<p style='text-align:center; color:gray;'> can't load data...</p>";
@@ -167,10 +167,18 @@
 
             snap.forEach(child => {
                 const s = child.val();
-                const studentFirebaseKey = child.key; // Hum hamesha database ki main unique key ka hi use karenge mapping ke liye
+                const studentFirebaseKey = child.key;
+                
+                // Student ki basic information store karein jisse save ke waqt studentId access ho sake
+                studentsCache.push({
+                    firebaseKey: studentFirebaseKey,
+                    studentId: s.studentId,
+                    name: s.name
+                });
+
                 const status = dailyRecords[studentFirebaseKey] || "";
                 
-                list.innerHTML += `<div class="st-row"><b>${s.name}</b><div class="btn-group">
+                list.innerHTML += `<div class="st-row"><b>${s.name} (ID: ${s.studentId || 'N/A'})</b><div class="btn-group">
                     <button id="p-${studentFirebaseKey}" class="btn p-btn ${status==='P'?'active':''}" onclick="mark('${studentFirebaseKey}','P')">P</button>
                     <button id="a-${studentFirebaseKey}" class="btn a-btn ${status==='A'?'active':''}" onclick="mark('${studentFirebaseKey}','A')">A</button>
                 </div></div>`;
@@ -181,14 +189,12 @@
     function mark(id, status) {
         dailyRecords[id] = status;
         
-        // Dono buttons se active class hatao
         const pBtn = document.getElementById(`p-${id}`);
         const aBtn = document.getElementById(`a-${id}`);
         
         if(pBtn) pBtn.classList.remove('active');
         if(aBtn) aBtn.classList.remove('active');
         
-        // Jo active hua use highlight karo
         if(status === 'P' && pBtn) pBtn.classList.add('active');
         if(status === 'A' && aBtn) aBtn.classList.add('active');
     }
@@ -200,13 +206,48 @@
     }
 
     function saveToCloud() {
-        const dateKey = `${dayS.value}-${monS.value}-${yerS.value}`;
-        const data = holidayMode ? 
-            { type: 'HOLIDAY', name: document.getElementById('holiday-name-text').innerText } : 
-            { type: 'ATTENDANCE', details: dailyRecords };
+        const adminDateKey = `${dayS.value}-${monS.value}-${yerS.value}`; // Admin Panel Fetch Format
+        const studentCalendarDateKey = `${yerS.value}-${monS.value}-${dayS.value}`; // Student Portal Format (YYYY-MM-DD)
         
-        db.ref('attendance/' + dateKey).set(data).then(() => {
-            alert("डेटा सुरक्षित किया गया! ✅");
+        // Multi-path object taiyar karenge jo dono paths ko ek sath update karega safely
+        let updates = {};
+
+        if (holidayMode) {
+            // Agar holiday hai to admin route update hoga
+            updates['attendance/' + adminDateKey] = { 
+                type: 'HOLIDAY', 
+                name: document.getElementById('holiday-name-text').innerText 
+            };
+        } else {
+            // 1. Admin dashboard ke liye data structure save karein
+            updates['attendance/' + adminDateKey] = { 
+                type: 'ATTENDANCE', 
+                details: dailyRecords 
+            };
+
+            // 2. Loop chala kar calendar.html ke compatible records create karein (RollNumber_YYYY-MM-DD)
+            studentsCache.forEach(student => {
+                if (student.studentId) {
+                    const calendarFormatPath = `attendance/${student.studentId}_${studentCalendarDateKey}`;
+                    const currentStatus = dailyRecords[student.firebaseKey];
+                    
+                    let mappedStatus = "";
+                    if (currentStatus === 'P') mappedStatus = "Present";
+                    if (currentStatus === 'A') mappedStatus = "Absent";
+
+                    if (mappedStatus) {
+                        updates[calendarFormatPath] = {
+                            status: mappedStatus,
+                            studentId: student.studentId
+                        };
+                    }
+                }
+            });
+        }
+        
+        // Pure structure ko ek sath single push mein Realtime Database par save karein
+        db.ref().update(updates).then(() => {
+            alert("डेटा सुरक्षित किया गया! ✅ (Admin Dashboard & Student Portal up-to-date)");
         }).catch(err => alert("Error: " + err.message));
     }
 
