@@ -4,18 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SNT Attendance & Festival Calendar</title>
-    <!-- Firebase App and Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --tp-header-red: #e65100;
+            --tp-header-red: #d32f2f;
             --present: #2e7d32;
             --absent: #c62828;
-            --leave: #fbbf24;
+            --leave: #f57c00;
             --star-gold: #ff9800;
+            --event-blue: #1976d2;
             --bg-light: #f4f7f6;
             --holiday: #1976d2;
         }
@@ -46,7 +45,7 @@
         .bg-p { background: var(--present); }
         .bg-a { background: var(--absent); }
         .bg-l { background: var(--leave); }
-        .holiday-text { font-size: 9px; color: var(--holiday); font-weight: bold; text-align: center; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .holiday-text { font-size: 8px; color: var(--holiday); font-weight: bold; text-align: center; padding: 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
 
         .fest-btn { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--tp-header-red); color: white; padding: 15px 8px; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 10px 0 0 10px; cursor: pointer; font-weight: bold; z-index: 100; box-shadow: -2px 0 10px rgba(0,0,0,0.2); }
         .sidebar { position: fixed; right: -320px; top: 0; width: 300px; height: 100%; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 101; display: flex; flex-direction: column; }
@@ -114,29 +113,62 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // URL parameters से Student Unique ID पढ़ना (?id=UNIQUE_KEY)
+    // URL parameters se Student UID/ID read karna (?id=STUDENT_ID)
     const params = new URLSearchParams(window.location.search);
-    const firebaseStudentKey = params.get('id'); 
-    
+    const studentId = params.get('id'); 
     let displayDate = new Date();
     const today = new Date();
+    
+    let globalAttendance = {};
+    let globalHolidays = {};
+    let studentProfile = null;
 
-    // 2026 के Festivals
+    // 2026 ke Fixed Festivals Dataset
     const fixedFestivals = {
       "2026": {
-        "01-01": "नया साल (New Year)", "03-01": "सावित्रीबाई फुले जयंती", "04-01": "विश्व ब्रेल दिवस",
-        "10-01": "विश्व हिंदी दिवस", "12-01": "राष्ट्रीय युवा दिवस", "13-01": "लोहड़ी",
-        "14-01": "मकर संक्रांति", "15-01": "थल सेना दिवस", "23-01": "नेताजी सुभाष चंद्र बोस जयंती",
-        "25-01": "राष्ट्रीय मतदाता दिवस", "26-01": "गणतंत्र दिवस", "30-01": "शहीद दिवस",
-        "01-02": "गुरु रविदास जयंती", "15-02": "महाशिवरात्रि", "19-02": "छत्रपति शिवाजी महाराज जयंती",
-        "28-02": "राष्ट्रीय विज्ञान दिवस", "03-03": "होलिका दहन", "04-03": "होली (धुलेंडी)",
-        "08-03": "अंतर्राष्ट्रीय महिला दिवस", "19-03": "चैत्र नवरात्रि प्रारंभ", "20-03": "ईद-उल-फ़ित्र",
-        "26-03": "राम नवमी", "31-03": "महावीर जयंती", "03-04": "गुड फ्राइडे", "14-04": "डॉ. अम्बेडकर जयंती",
-        "01-05": "बुद्ध पूर्णिमा", "27-05": "ईद-उल-जुहा (बकरीद)", "05-06": "विश्व पर्यावरण दिवस",
-        "21-06": "अंतर्राष्ट्रीय योग दिवस", "15-08": "स्वतंत्रता दिवस", "26-08": "मिलाद-उन-नबी",
-        "28-08": "रक्षा बंधन", "04-09": "जन्माष्टमी", "05-09": "शिक्षक दिवस", "14-09": "गणेश चतुर्थी",
-        "02-10": "गांधी जयंती", "20-10": "दशहरा (विजयदशमी)", "08-11": "दीपावली", "09-11": "गोवर्धन पूजा",
-        "11-11": "भाई दूज", "14-11": "बाल दिवस", "24-11": "गुरु नानक जयंती", "25-12": "क्रिसमस डे"
+        "01-01": "नया साल (New Year)",
+        "03-01": "सावित्रीबाई फुले जयंती / हजरत अली जन्मदिन",
+        "04-01": "विश्व ब्रेल दिवस",
+        "10-01": "विश्व हिंदी दिवस",
+        "12-01": "राष्ट्रीय युवा दिवस",
+        "13-01": "लोहड़ी",
+        "14-01": "मकर संक्रांति / पอนगल",
+        "15-01": "थल सेना दिवस (Army Day)",
+        "23-01": "नेताजी सुभाष चंद्र बोस जयंती",
+        "25-01": "राष्ट्रीय मतदाता दिवस",
+        "26-01": "गणतंत्र दिवस",
+        "30-01": "शहीद दिवस",
+        "01-02": "गुरु रविदास जयंती",
+        "15-02": "महाशिवरात्रि",
+        "19-02": "छत्रपति शिवाजी महाराज जयंती",
+        "28-02": "राष्ट्रीय विज्ञान दिवस",
+        "03-03": "होलिका दहन",
+        "04-03": "होली (धुलेंडी)",
+        "08-03": "अंतर्राष्ट्रीय महिला दिवस",
+        "19-03": "चैत्र नवरात्रि प्रारंभ",
+        "20-03": "ईद-उल-फ़ित्र (Meethi Eid)",
+        "26-03": "राम नवमी",
+        "31-03": "महावीर जयंती",
+        "03-04": "गुड फ्राइडे",
+        "14-04": "डॉ. अम्बेडकर जयंती",
+        "01-05": "मजदूर दिवस / बुद्ध पूर्णिमा",
+        "27-05": "ईद-उल-जुहा (बकरीद)",
+        "05-06": "विश्व पर्यावरण दिवस",
+        "21-06": "अंतर्राष्ट्रीय योग दिवस",
+        "15-08": "स्वतंत्रता दिवस",
+        "26-08": "मिलाद-उन-नबी",
+        "28-08": "रक्षा बंधन",
+        "04-09": "जन्माष्टमी",
+        "05-09": "शिक्षक दिवस",
+        "14-09": "हिंदी दिवस / गणेश चतुर्थी",
+        "02-10": "गांधी जयंती",
+        "20-10": "दशहरा (विजयदशमी)",
+        "08-11": "दीपावली",
+        "09-11": "गोवर्धन पूजा",
+        "11-11": "भाई दूज",
+        "14-11": "बाल दिवस",
+        "24-11": "गुरु नानक जयंती",
+        "25-12": "क्रिसमस डे"
       }
     };
 
@@ -153,6 +185,7 @@
         document.getElementById('overlay').classList.remove('active'); 
     }
 
+    // Realtime UI rendering logic
     function renderCalendar() {
         const body = document.getElementById('calendar-body');
         body.innerHTML = '';
@@ -164,77 +197,49 @@
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+        // Initial blank cells padding
         for (let x = 0; x < firstDay; x++) body.innerHTML += `<div class="cell" style="background:#f9f9f9"></div>`;
 
+        // Monthly rendering engine
         for (let day = 1; day <= daysInMonth; day++) {
             const dayFormatted = String(day).padStart(2, '0');
             const monthFormatted = String(month + 1).padStart(2, '0');
             
-            // दोनों फॉर्मेट की तारीखें तैयार करना
-            const dStrOld = `${dayFormatted}-${monthFormatted}-${year}`; // DD-MM-YYYY (पुराना तरीका)
-            const dStrNew = `${year}-${monthFormatted}-${dayFormatted}`; // YYYY-MM-DD (नया तरीका)
-            
+            // attendance.html schema key format (YYYY-MM-DD)
+            const dStr = `${year}-${monthFormatted}-${dayFormatted}`; 
             const fKey = `${dayFormatted}-${monthFormatted}`;
             const isToday = new Date(year, month, day).toDateString() === today.toDateString();
             const isSunday = new Date(year, month, day).getDay() === 0;
             
             body.innerHTML += `
-                <div class="cell ${isToday?'today':''} ${isSunday?'sunday':''}" id="cell-${dStrNew}">
+                <div class="cell ${isToday?'today':''} ${isSunday?'sunday':''}" id="cell-${dStr}">
                     ${fixedFestivals[year] && fixedFestivals[year][fKey] ? '<i class="fas fa-star fest-star-marker"></i>' : ''}
                     <span class="date-num">${day}</span>
-                    <div class="att-status" id="stat-${dStrNew}"></div>
+                    <div class="att-status" id="stat-${dStr}"></div>
                 </div>`;
 
-            if (firebaseStudentKey) {
-                const targetBox = document.getElementById(`stat-${dStrNew}`);
-                const cellContainer = document.getElementById(`cell-${dStrNew}`);
+            const targetBox = document.getElementById(`stat-${dStr}`);
+            const cellContainer = document.getElementById(`cell-${dStr}`);
 
-                // फंक्शन जो स्टेटस के अनुसार डॉट या टेक्स्ट रेंडर करेगा
-                function drawStatus(status, isHolidayNode = false, holidayReason = "") {
-                    if(!targetBox) return;
-                    if(isHolidayNode) {
-                        if(cellContainer) cellContainer.style.background = "#e0f2fe";
-                        targetBox.innerHTML = `<span class="holiday-text" style="color:var(--holiday)">HOLIDAY</span>`;
-                    } else if(status === 'P' || status === 'Present') {
+            // 1. Admin Holidays check
+            if (globalHolidays && globalHolidays[dStr]) {
+                if(cellContainer) cellContainer.style.background = "#e0f2fe";
+                if(targetBox) targetBox.innerHTML = `<span class="holiday-text" title="${globalHolidays[dStr].reason}">HOLIDAY</span>`;
+            } 
+            // 2. Individual student attendance matching
+            else if (studentProfile) {
+                const attID = studentId + "_" + dStr;
+                const record = globalAttendance[attID];
+
+                if (record && record.email === studentProfile.email) {
+                    if (record.status === 'Present') {
                         targetBox.innerHTML = `<span class="dot bg-p"></span>`;
-                    } else if(status === 'A' || status === 'Absent') {
+                    } else if (record.status === 'Absent') {
                         targetBox.innerHTML = `<span class="dot bg-a"></span>`;
-                    } else if(status === 'L' || status === 'Leave') {
+                    } else if (record.status === 'Leave') {
                         targetBox.innerHTML = `<span class="dot bg-l"></span>`;
                     }
                 }
-
-                // 1. एडमिन हॉलिडे चेक करें (नया तरीका)
-                db.ref(`admin_holidays/${dStrNew}`).once('value', holSnap => {
-                    const holData = holSnap.val();
-                    
-                    if(holData) {
-                        drawStatus("", true, holData.reason);
-                    } else if(isSunday) {
-                        if(cellContainer) cellContainer.style.background = "#f1f5f9";
-                        targetBox.innerHTML = `<span class="holiday-text" style="color:#64748b">OFF</span>`;
-                    } else {
-                        // 2. पुराना अटेंडेंस नोड चेक करें (DD-MM-YYYY)
-                        db.ref(`attendance/${dStrOld}`).once('value', oldSnap => {
-                            const oldData = oldSnap.val();
-                            
-                            if(oldData && oldData.type === 'HOLIDAY') {
-                                drawStatus("", true, "Holiday");
-                            } else if(oldData && oldData.details && oldData.details[firebaseStudentKey]) {
-                                drawStatus(oldData.details[firebaseStudentKey]);
-                            } else {
-                                // 3. अगर पुराना नोड खाली है, तो नया अटेंडेंस नोड चेक करें (UID_YYYY-MM-DD)
-                                const attID = firebaseStudentKey + "_" + dStrNew;
-                                db.ref(`attendance/${attID}`).once('value', newSnap => {
-                                    const newData = newSnap.val();
-                                    if(newData && newData.status) {
-                                        drawStatus(newData.status);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
             }
         }
     }
@@ -257,24 +262,56 @@
 
     function changeMonth(s) { displayDate.setMonth(displayDate.getMonth() + s); renderCalendar(); }
 
+    // Synchronous initialization node
     window.onload = () => {
-        if(firebaseStudentKey) {
-            db.ref('students/' + firebaseStudentKey).once('value', snap => {
+        if(studentId) {
+            // Fetch student profile using ID node
+            db.ref('students/' + studentId).once('value', snap => {
                 const s = snap.val();
                 if(s) {
-                    const photo = s.profilePic || s.profilePicture || 'https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png';
+                    studentProfile = s;
                     document.getElementById('header-box').innerHTML += `
                         <div class="st-profile-box">
-                            <img src="${photo}" class="st-photo-circle">
-                            <div><b>${s.name}</b><br><small>Course: ${s.course || 'NIELIT O LEVEL'}</small></div>
+                            <img src="${s.profilePic || 'https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png'}" class="st-photo-circle">
+                            <div><b>${s.name}</b><br><small>Course: ${s.course || 'N/A'}</small></div>
                         </div>`;
+                } else {
+                    // Fallback to searching inside subkeys if saved with random push IDs
+                    db.ref('students').once('value', multiSnap => {
+                        if(multiSnap.exists()){
+                            const list = multiSnap.val();
+                            const foundNode = Object.values(list).find(item => item.uid === studentId || item.id === studentId);
+                            if(foundNode) {
+                                studentProfile = foundNode;
+                                document.getElementById('header-box').innerHTML += `
+                                    <div class="st-profile-box">
+                                        <img src="${foundNode.profilePic || 'https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png'}" class="st-photo-circle">
+                                        <div><b>${foundNode.name}</b><br><small>Course: ${foundNode.course || 'N/A'}</small></div>
+                                    </div>`;
+                                loadLogsAndBuild();
+                            }
+                        }
+                    });
                 }
-                renderCalendar();
+                loadLogsAndBuild();
             });
         } else {
-            renderCalendar();
+            loadLogsAndBuild();
         }
     };
+
+    function loadLogsAndBuild() {
+        // Fetch Admin Holidays Node
+        db.ref('admin_holidays').on('value', holSnap => {
+            globalHolidays = holSnap.val() || {};
+            
+            // Fetch Master Attendance Registry Node
+            db.ref('attendance').on('value', attSnap => {
+                globalAttendance = attSnap.val() || {};
+                renderCalendar();
+            });
+        });
+    }
 </script>
 </body>
 </html>
