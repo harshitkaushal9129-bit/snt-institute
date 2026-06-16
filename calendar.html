@@ -149,17 +149,14 @@
         let currentSelectedDate = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
         let admissionDate = null;
 
-        // On Load initial trigger setup
         window.onload = function() {
             loadGlobalMetaAndStudents();
         };
 
         function loadGlobalMetaAndStudents() {
-            // 1. Fetch Admin Holidays Config
             db.ref('admin_holidays').on('value', holSnapshot => {
                 adminHolidays = holSnapshot.val() || {};
                 
-                // 2. Fetch Master Student Directory
                 db.ref('students').once('value', snap => {
                     const selector = document.getElementById('student-selector');
                     selector.innerHTML = '<option value="">-- Choose Student --</option>';
@@ -200,7 +197,6 @@
 
             selectedStudent = studentsList.find(s => s.uid === selectedUid);
             
-            // Set dynamic values
             document.getElementById('profile-name').innerText = selectedStudent.name;
             document.getElementById('profile-course').innerText = selectedStudent.course;
             document.getElementById('profile-admission').innerText = `Admission: ${selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString() : 'N/A'}`;
@@ -208,13 +204,20 @@
             
             profileBox.classList.remove('hidden');
             
-            // Setup base admission filter limits
             admissionDate = selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate) : new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
 
-            // Fetch current state sync snapshot logs
+            // Dono alag nodes se attendance records merge karne ke liye complex event logic tracker
             db.ref('attendance').on('value', attSnapshot => {
-                attendanceData = attSnapshot.val() || {};
-                renderUI();
+                const primaryData = attSnapshot.val() || {};
+                
+                // Aapka alternative secondary data node fetch check up (`student_attendance_logs`)
+                db.ref('student_attendance_logs').on('value', secondSnapshot => {
+                    const secondaryData = secondSnapshot.val() || {};
+                    
+                    // Dono databases ke objects ko safely ek master register state mein mix up karein
+                    attendanceData = { ...secondaryData, ...primaryData };
+                    renderUI();
+                });
             });
         };
 
@@ -272,7 +275,6 @@
                 const isSun = loopDateObj.getDay() === 0;
                 const isHoliday = adminHolidays[dayStrLoop];
                 
-                // Read composite format mapping key unique path context
                 const recordKey = `${selectedStudent.uid}_${dayStrLoop}`;
                 let hasRecord = attendanceData[recordKey];
 
@@ -310,7 +312,6 @@
             }
             calGrid.innerHTML = calHtml;
 
-            // Render bottom list details trace view
             let listHtml = '';
             let startDay = (viewYear === realToday.getFullYear() && viewMonth === realToday.getMonth()) ? realToday.getDate() : totalDaysInMonth;
 
