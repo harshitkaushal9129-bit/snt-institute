@@ -49,6 +49,15 @@
         </div>
     </div>
 
+    <div class="px-4 max-w-2xl mx-auto mb-4">
+        <div class="glass p-4 rounded-2xl border border-sky-500/20 flex flex-col gap-2">
+            <label class="text-[10px] font-black uppercase text-sky-400 tracking-wider"><i class="fas fa-users mr-1"></i> Select Active Student Node:</label>
+            <select id="student-node-selector" onchange="switchStudentNode()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3.5 text-sm outline-none focus:border-sky-500 text-white font-bold uppercase tracking-tight">
+                <option value="">Fetching Neural Nodes...</option>
+            </select>
+        </div>
+    </div>
+
     <div id="admin-panel" class="px-4 max-w-2xl mx-auto mb-6">
         <div id="admin-controls" class="glass p-5 rounded-[2rem] border-l-4 border-amber-500 shadow-xl">
             <h3 class="text-[10px] font-black uppercase text-amber-500 mb-3 tracking-widest"><i class="fas fa-calendar-plus mr-1"></i> Admin: Holiday Details</h3>
@@ -156,10 +165,12 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let currentUser = null;
+        let allStudents = {}; 
+        let selectedStudentKey = null; 
+        let studentProfile = {}; 
+        
         let adminHolidays = {};
         let attendanceData = {};
-        let studentProfile = {}; 
         
         const realToday = new Date();
         let currentSelectedDate = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
@@ -169,12 +180,7 @@
         document.getElementById('today-date-display').innerText = realToday.toDateString();
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                loadData();
-            } else {
-                window.location.href = "index.html";
-            }
+            loadMasterData();
         });
 
         window.handleAdminToggle = () => {
@@ -198,36 +204,66 @@
             }
         };
 
-        function loadData() {
+        function loadMasterData() {
+            // STEP 1: FETCH ALL STUDENTS FROM THE DB NODE
             onValue(ref(db, 'students'), (snapshot) => {
+                const selector = document.getElementById('student-node-selector');
+                selector.innerHTML = "";
+                
                 if (snapshot.exists()) {
-                    const sData = Object.values(snapshot.val()).find(s => s.email === currentUser.email);
-                    if (sData) {
-                        studentProfile = sData;
-                        admissionDate = sData.admissionDate ? new Date(sData.admissionDate) : new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
-                    } else {
-                        admissionDate = new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
-                    }
-                } else {
-                    admissionDate = new Date(realToday.getFullYear(), realToday.getMonth(), 1);
-                }
-
-                onValue(ref(db, 'admin_holidays'), (holSnapshot) => {
-                    adminHolidays = holSnapshot.val() || {};
-                    onValue(ref(db, 'attendance'), (attSnapshot) => {
-                        attendanceData = attSnapshot.val() || {};
-                        
-                        // BACKGROUND CRON: AUTO MARK ABSENT FOR MISSED DAYS
-                        checkAndMarkPastAbsents();
-                        
-                        renderUI();
+                    allStudents = snapshot.val();
+                    const keys = Object.keys(allStudents);
+                    
+                    keys.forEach((key, idx) => {
+                        const s = allStudents[key];
+                        const opt = document.createElement('option');
+                        opt.value = key;
+                        opt.innerText = `${s.name || 'ANON_NODE'} (${s.studentId || 'NO_ID'})`;
+                        selector.appendChild(opt);
                     });
+
+                    // Pehla student default track hoga agar selection zero hai
+                    if(!selectedStudentKey && keys.length > 0) {
+                        selectedStudentKey = keys[0];
+                    }
+                    
+                    syncSelectedStudentData();
+                } else {
+                    selector.innerHTML = "<option value=''>No students found</option>";
+                }
+            });
+        }
+
+        // SWAPPER MECHANISM WHEN DROPDOWN CHANGED
+        window.switchStudentNode = () => {
+            selectedStudentKey = document.getElementById('student-node-selector').value;
+            syncSelectedStudentData();
+        };
+
+        function syncSelectedStudentData() {
+            if (!selectedStudentKey || !allStudents[selectedStudentKey]) return;
+            
+            studentProfile = allStudents[selectedStudentKey];
+            
+            // Dynamic Picture and Course Assignment
+            studentProfile.finalPic = studentProfile.profilePicture || studentProfile.photoURL || studentProfile.profilePic || "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
+            studentProfile.finalCourse = studentProfile.course || "NIELIT O LEVEL";
+
+            admissionDate = studentProfile.admissionDate ? new Date(studentProfile.admissionDate) : new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
+
+            onValue(ref(db, 'admin_holidays'), (holSnapshot) => {
+                adminHolidays = holSnapshot.val() || {};
+                onValue(ref(db, 'attendance'), (attSnapshot) => {
+                    attendanceData = attSnapshot.val() || {};
+                    
+                    checkAndMarkPastAbsents();
+                    renderUI();
                 });
             });
         }
 
         function checkAndMarkPastAbsents() {
-            if (!admissionDate || !currentUser) return;
+            if (!admissionDate || !selectedStudentKey) return;
 
             let checkDate = new Date(admissionDate.getFullYear(), admissionDate.getMonth(), admissionDate.getDate());
             const yesterday = new Date(realToday);
@@ -242,15 +278,17 @@
                 const isSun = checkDate.getDay() === 0;
                 const isHoliday = adminHolidays[dateStrLoop];
                 
+                // Track by specific student target instead of auth email
                 const hasRecord = Object.values(attendanceData).find(
-                    r => r.email === currentUser.email && r.date === dateStrLoop
+                    r => r.studentKey === selectedStudentKey && r.date === dateStrLoop
                 );
 
                 if (!isSun && !isHoliday && !hasRecord) {
-                    const attID = currentUser.uid + "_" + dateStrLoop;
+                    const attID = selectedStudentKey + "_" + dateStrLoop;
                     set(ref(db, 'attendance/' + attID), {
-                        email: currentUser.email,
-                        name: studentProfile.name || currentUser.displayName || "Student",
+                        studentKey: selectedStudentKey,
+                        email: studentProfile.email || "no-email",
+                        name: studentProfile.name || "Student",
                         date: dateStrLoop,
                         status: "Absent",
                         timestamp: Date.now(),
@@ -290,20 +328,12 @@
             const modal = document.getElementById('profile-card-modal');
             const cardInner = modal.querySelector('.glass');
             
-            document.getElementById('card-student-name').innerText = studentProfile.name || currentUser.displayName || "SNT Student";
-            document.getElementById('card-student-course').innerText = studentProfile.course || "NIELIT O LEVEL";
+            document.getElementById('card-student-name').innerText = studentProfile.name || "SNT Student";
+            document.getElementById('card-student-course').innerText = studentProfile.finalCourse;
             document.getElementById('card-attendance-date').innerText = new Date(dateStr).toDateString();
             document.getElementById('card-attendance-desc').innerText = description;
             
-            // --- FIX 2: LOGO KI JAGAH STUDENT PROFILE IMAGE DYNAMICALLY LOAD HO ---
-            const profilePicField = document.getElementById('card-student-pic');
-            if(studentProfile && studentProfile.profilePic) {
-                profilePicField.src = studentProfile.profilePic;
-            } else if (currentUser && currentUser.photoURL) {
-                profilePicField.src = currentUser.photoURL;
-            } else {
-                profilePicField.src = "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
-            }
+            document.getElementById('card-student-pic').src = studentProfile.finalPic;
 
             const dot = document.getElementById('card-status-dot');
             const statusLabel = document.getElementById('card-attendance-status');
@@ -344,6 +374,8 @@
         };
 
         function renderUI() {
+            if(!selectedStudentKey) return;
+
             const list = document.getElementById('register-list');
             const calGrid = document.getElementById('calendar-grid');
             const actionArea = document.getElementById('action-area');
@@ -368,9 +400,8 @@
 
             const isSunToday = realToday.getDay() === 0;
             const holToday = adminHolidays[todayStr];
-            const attID = currentUser.uid + "_" + todayStr;
+            const attID = selectedStudentKey + "_" + todayStr;
 
-            // --- FIX 1 (A): IF PRESENT WAS WRONGLY MARKED ON TODAY'S HOLIDAY/SUNDAY -> AUTO FORCE REMOVE IT ---
             if ((isSunToday || holToday) && attendanceData[attID]) {
                 remove(ref(db, 'attendance/' + attID));
                 delete attendanceData[attID];
@@ -384,7 +415,7 @@
                 actionArea.innerHTML = `<h2 class="text-xl font-bold mb-4 italic">Aaj ki Attendance:</h2><div class="w-full py-4 glass text-sky-400 font-black text-center rounded-2xl border border-sky-500/30 uppercase text-[10px] tracking-widest"><i class="fas fa-check-circle mr-1"></i> RECORD SAVED (${s})</div>`;
             } else {
                 actionArea.innerHTML = `
-                    <h2 class="text-xl font-bold mb-4 italic">Aaj ki Attendance:</h2>
+                    <h2 class="text-xl font-bold mb-4 italic">Aaj ki Attendance [${studentProfile.name || 'Student'}]:</h2>
                     <div id="action-buttons" class="flex gap-2">
                         <button onclick="markAttendance('Present')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-p active:scale-95 transition-all">P (PRESENT)</button>
                         <button onclick="markAttendance('Absent')" class="flex-1 py-4 rounded-xl text-[10px] font-black btn-a active:scale-95 transition-all">A (ABSENT)</button>
@@ -413,13 +444,12 @@
                 
                 const isSun = loopDateObj.getDay() === 0;
                 const isHoliday = adminHolidays[dayStrLoop];
-                let hasRecord = Object.values(attendanceData).find(r => r.email === currentUser.email && r.date === dayStrLoop);
+                let hasRecord = Object.values(attendanceData).find(r => r.studentKey === selectedStudentKey && r.date === dayStrLoop);
 
-                // --- FIX 1 (B): CONVERT PAST WRONGLY MARKED PRESENT/ABSENT ON SUNDAYS/HOLIDAYS TO RESET MODE ---
                 if ((isSun || isHoliday) && hasRecord) {
-                    const loopAttID = currentUser.uid + "_" + dayStrLoop;
+                    const loopAttID = selectedStudentKey + "_" + dayStrLoop;
                     remove(ref(db, 'attendance/' + loopAttID));
-                    hasRecord = null; // Instantly clean internal pointer
+                    hasRecord = null;
                 }
 
                 if (loopTime < admissionCompareTime) {
@@ -467,7 +497,7 @@
 
                 const sun = dateObj.getDay() === 0;
                 const hol = adminHolidays[dayDateStr];
-                const record = Object.values(attendanceData).find(r => r.email === currentUser.email && r.date === dayDateStr);
+                const record = Object.values(attendanceData).find(r => r.studentKey === selectedStudentKey && r.date === dayDateStr);
 
                 let badge = '<span class="status-badge btn-lock">No Data</span>';
                 let reasonText = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
@@ -496,6 +526,8 @@
         }
 
         window.markAttendance = (status) => {
+            if(!selectedStudentKey) return alert("Pehle kisi student node ko select karein!");
+            
             const isSunToday = realToday.getDay() === 0;
             const holToday = adminHolidays[todayStr];
 
@@ -504,10 +536,11 @@
                 return;
             }
 
-            const attID = currentUser.uid + "_" + todayStr;
+            const attID = selectedStudentKey + "_" + todayStr;
             set(ref(db, 'attendance/' + attID), {
-                email: currentUser.email,
-                name: studentProfile.name || currentUser.displayName || "Student",
+                studentKey: selectedStudentKey,
+                email: studentProfile.email || "no-email",
+                name: studentProfile.name || "Student",
                 date: todayStr,
                 status: status,
                 timestamp: Date.now()
