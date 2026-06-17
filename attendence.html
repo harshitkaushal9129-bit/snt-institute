@@ -49,12 +49,30 @@
         </div>
     </div>
 
+    <!-- MAIN STUDENT SELECTOR & LIVE INFO BOX -->
     <div class="px-4 max-w-2xl mx-auto mb-4">
-        <div class="glass p-4 rounded-2xl border border-sky-500/20 flex flex-col gap-2">
-            <label class="text-[10px] font-black uppercase text-sky-400 tracking-wider"><i class="fas fa-users mr-1"></i> Select Active Student Node:</label>
-            <select id="student-node-selector" onchange="switchStudentNode()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3.5 text-sm outline-none focus:border-sky-500 text-white font-bold uppercase tracking-tight">
-                <option value="">Fetching Neural Nodes...</option>
-            </select>
+        <div class="glass p-4 rounded-2xl border border-sky-500/20 flex flex-col gap-3">
+            <div>
+                <label class="text-[10px] font-black uppercase text-sky-400 tracking-wider"><i class="fas fa-users mr-1"></i> Select Active Student Node:</label>
+                <select id="student-node-selector" onchange="switchStudentNode()" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3.5 text-sm outline-none focus:border-sky-500 text-white font-bold uppercase tracking-tight">
+                    <option value="">Fetching Neural Nodes...</option>
+                </select>
+            </div>
+
+            <!-- New Connected Info Container -->
+            <div id="student-live-info-box" class="mt-2 bg-slate-900/50 rounded-xl p-3 border border-white/5 flex items-center gap-4 hidden">
+                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-sky-500/30 flex-shrink-0">
+                    <img id="live-student-pic" src="" class="w-full h-full object-cover" alt="Student Pic">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 id="live-student-name" class="text-sm font-black text-white uppercase truncate">--</h4>
+                    <p id="live-student-course" class="text-[10px] font-bold text-sky-400 tracking-wider uppercase truncate">--</p>
+                    <div class="flex flex-col gap-0.5 mt-1 text-[11px] text-slate-400 font-medium">
+                        <span class="truncate"><i class="fas fa-phone text-[9px] text-emerald-400 mr-1.5 w-3"></i><span id="live-student-phone">--</span></span>
+                        <span class="truncate"><i class="fas fa-envelope text-[9px] text-amber-400 mr-1.5 w-3"></i><span id="live-student-email">--</span></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -225,26 +243,41 @@
                         selectedStudentKey = keys[0];
                     }
                     
-                    syncSelectedStudentData();
+                    switchStudentNode();
                 } else {
                     selector.innerHTML = "<option value=''>No students found</option>";
+                    document.getElementById('student-live-info-box').classList.add('hidden');
                 }
             });
         }
 
         window.switchStudentNode = () => {
             selectedStudentKey = document.getElementById('student-node-selector').value;
+            if (!selectedStudentKey) return;
+            
+            // Sync current configuration
+            studentProfile = allStudents[selectedStudentKey];
+            studentProfile.finalPic = studentProfile.profilePicture || studentProfile.photoURL || studentProfile.profilePic || "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
+            studentProfile.finalCourse = studentProfile.course || "NIELIT O LEVEL";
+            studentProfile.finalPhone = studentProfile.mobile || studentProfile.phone || studentProfile.phoneNumber || "Not Provided";
+            studentProfile.finalEmail = studentProfile.email || "No Email Bound";
+
+            // UPDATED: Render information dynamically in the header box
+            document.getElementById('live-student-pic').src = studentProfile.finalPic;
+            document.getElementById('live-student-name').innerText = studentProfile.name || "SNT Student";
+            document.getElementById('live-student-course').innerText = studentProfile.finalCourse;
+            document.getElementById('live-student-phone').innerText = studentProfile.finalPhone;
+            document.getElementById('live-student-email').innerText = studentProfile.finalEmail;
+            
+            // Make the info box visible
+            document.getElementById('student-live-info-box').classList.remove('hidden');
+
             syncSelectedStudentData();
         };
 
         function syncSelectedStudentData() {
             if (!selectedStudentKey || !allStudents[selectedStudentKey]) return;
             
-            studentProfile = allStudents[selectedStudentKey];
-            
-            studentProfile.finalPic = studentProfile.profilePicture || studentProfile.photoURL || studentProfile.profilePic || "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
-            studentProfile.finalCourse = studentProfile.course || "NIELIT O LEVEL";
-
             admissionDate = studentProfile.admissionDate ? new Date(studentProfile.admissionDate) : new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
 
             onValue(ref(db, 'admin_holidays'), (snapshot) => {
@@ -274,7 +307,6 @@
                 const isSun = checkDate.getDay() === 0;
                 const isHoliday = adminHolidays[dateStrLoop];
                 
-                // FIXED: Check both studentKey and back-compatible email
                 const hasRecord = Object.values(attendanceData).find(
                     r => (r.studentKey === selectedStudentKey || (r.email && studentProfile.email && r.email === studentProfile.email)) && r.date === dateStrLoop
                 );
@@ -441,7 +473,6 @@
                 const isSun = loopDateObj.getDay() === 0;
                 const isHoliday = adminHolidays[dayStrLoop];
                 
-                // FIXED: Look up using both studentKey and fallback email
                 let hasRecord = Object.values(attendanceData).find(
                     r => (r.studentKey === selectedStudentKey || (r.email && studentProfile.email && r.email === studentProfile.email)) && r.date === dayStrLoop
                 );
@@ -498,7 +529,6 @@
                 const sun = dateObj.getDay() === 0;
                 const hol = adminHolidays[dayDateStr];
                 
-                // FIXED: Look up list view with both studentKey and email
                 const record = Object.values(attendanceData).find(
                     r => (r.studentKey === selectedStudentKey || (r.email && studentProfile.email && r.email === studentProfile.email)) && r.date === dayDateStr
                 );
