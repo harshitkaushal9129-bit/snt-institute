@@ -205,7 +205,6 @@
         };
 
         function loadMasterData() {
-            // STEP 1: FETCH ALL STUDENTS FROM THE DB NODE
             onValue(ref(db, 'students'), (snapshot) => {
                 const selector = document.getElementById('student-node-selector');
                 selector.innerHTML = "";
@@ -222,7 +221,6 @@
                         selector.appendChild(opt);
                     });
 
-                    // Pehla student default track hoga agar selection zero hai
                     if(!selectedStudentKey && keys.length > 0) {
                         selectedStudentKey = keys[0];
                     }
@@ -234,7 +232,6 @@
             });
         }
 
-        // SWAPPER MECHANISM WHEN DROPDOWN CHANGED
         window.switchStudentNode = () => {
             selectedStudentKey = document.getElementById('student-node-selector').value;
             syncSelectedStudentData();
@@ -245,14 +242,13 @@
             
             studentProfile = allStudents[selectedStudentKey];
             
-            // Dynamic Picture and Course Assignment
             studentProfile.finalPic = studentProfile.profilePicture || studentProfile.photoURL || studentProfile.profilePic || "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
             studentProfile.finalCourse = studentProfile.course || "NIELIT O LEVEL";
 
             admissionDate = studentProfile.admissionDate ? new Date(studentProfile.admissionDate) : new Date(realToday.getFullYear(), realToday.getMonth() - 3, 1);
 
-            onValue(ref(db, 'admin_holidays'), (holSnapshot) => {
-                adminHolidays = holSnapshot.val() || {};
+            onValue(ref(db, 'admin_holidays'), (snapshot) => {
+                adminHolidays = snapshot.val() || {};
                 onValue(ref(db, 'attendance'), (attSnapshot) => {
                     attendanceData = attSnapshot.val() || {};
                     
@@ -278,9 +274,9 @@
                 const isSun = checkDate.getDay() === 0;
                 const isHoliday = adminHolidays[dateStrLoop];
                 
-                // Track by specific student target instead of auth email
+                // FIXED: Check both studentKey and back-compatible email
                 const hasRecord = Object.values(attendanceData).find(
-                    r => r.studentKey === selectedStudentKey && r.date === dateStrLoop
+                    r => (r.studentKey === selectedStudentKey || (r.email && studentProfile.email && r.email === studentProfile.email)) && r.date === dateStrLoop
                 );
 
                 if (!isSun && !isHoliday && !hasRecord) {
@@ -444,7 +440,11 @@
                 
                 const isSun = loopDateObj.getDay() === 0;
                 const isHoliday = adminHolidays[dayStrLoop];
-                let hasRecord = Object.values(attendanceData).find(r => r.studentKey === selectedStudentKey && r.date === dayStrLoop);
+                
+                // FIXED: Look up using both studentKey and fallback email
+                let hasRecord = Object.values(attendanceData).find(
+                    r => (r.studentKey === selectedStudentKey || (r.email && studentProfile.email && r.email === studentProfile.email)) && r.date === dayStrLoop
+                );
 
                 if ((isSun || isHoliday) && hasRecord) {
                     const loopAttID = selectedStudentKey + "_" + dayStrLoop;
@@ -497,7 +497,11 @@
 
                 const sun = dateObj.getDay() === 0;
                 const hol = adminHolidays[dayDateStr];
-                const record = Object.values(attendanceData).find(r => r.studentKey === selectedStudentKey && r.date === dayDateStr);
+                
+                // FIXED: Look up list view with both studentKey and email
+                const record = Object.values(attendanceData).find(
+                    r => (r.studentKey === selectedStudentKey || (r.email && studentProfile.email && r.email === studentProfile.email)) && r.date === dayDateStr
+                );
 
                 let badge = '<span class="status-badge btn-lock">No Data</span>';
                 let reasonText = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
