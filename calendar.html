@@ -1,243 +1,203 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNT Attendance & Festival Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SNT - Master Attendance Calendar</title>
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root {
-            --tp-header-red: #d32f2f;
-            --present: #2e7d32;
-            --absent: #c62828;
-            --leave: #f59e0b;
-            --star-gold: #ff9800;
-            --bg-light: #f4f7f6;
-            --holiday: #f57c00;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-light); margin: 0; padding: 10px; display: flex; justify-content: center; overflow-x: hidden; }
-
-        #loader { position: fixed; inset: 0; background: white; z-index: 2500; display: flex; align-items: center; justify-content: center; flex-direction: column; font-weight: bold; color: var(--tp-header-red); }
-
-        .calendar-card { background: white; width: 100%; max-width: 450px; border: 2px solid #ddd; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; position: relative; min-height: 600px; }
-
-        .header { background: var(--tp-header-red); color: white; padding: 15px; text-align: center; }
-        .st-profile-box { display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 8px; margin-top: 10px; text-align: left; }
+        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .student-row { display: grid; grid-template-columns: 1.5fr 1fr; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         
-        .st-photo-circle { 
-            width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; 
-            object-fit: cover; background: #fff;
-        }
-
-        .nav { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fff; border-bottom: 1px solid #eee; }
-        .nav h2 { font-size: 1.1rem; margin: 0; color: #333; font-weight: 700; text-transform: capitalize; }
-        .nav button { background: #f0f0f0; border: 1px solid #ddd; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; }
-        .day-head { text-align: center; font-size: 12px; font-weight: bold; color: #666; padding: 12px 0; background: #f9f9f9; }
-        .cell { height: 85px; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-
-        .date-num { font-size: 18px; font-weight: 600; color: #333; z-index: 5; }
-        .fest-star-marker { color: var(--star-gold); font-size: 10px; position: absolute; top: 6px; left: 6px; z-index: 10; }
-        .today { background: #fffde7 !important; border: 1.5px solid #fbc02d !important; }
-        .sunday .date-num { color: #d32f2f; }
-
-        .att-status { position: absolute; bottom: 8px; height: 12px; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; display: block; border: 1.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
-        .bg-p { background: var(--present); }
-        .bg-a { background: var(--absent); }
-        .bg-l { background: var(--leave); }
-
-        .fest-btn { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--tp-header-red); color: white; padding: 15px 8px; writing-mode: vertical-rl; text-orientation: mixed; border-radius: 10px 0 0 10px; cursor: pointer; font-weight: bold; z-index: 100; }
-        .sidebar { position: fixed; right: -320px; top: 0; width: 300px; height: 100%; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 2001; }
-        .sidebar.active { right: 0; }
-        .sidebar-header { background: var(--tp-header-red); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        #fest-list-container { padding: 15px; overflow-y: auto; height: calc(100% - 80px); }
-        .fest-item { background: #fff9f0; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--star-gold); font-size: 14px; }
-
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 2000; }
-        .overlay.active { display: block; }
-
-        .footer { padding: 15px; display: flex; justify-content: space-around; font-size: 10px; background: #fff; border-top: 1px solid #eee; flex-wrap: wrap; }
+        /* Badges */
+        .badge-p { color: #4ade80; border: 1px solid #22c55e; background: rgba(34, 197, 94, 0.15); }
+        .badge-a { color: #f87171; border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.15); }
+        .badge-l { color: #fbbf24; border: 1px solid #f59e0b; background: rgba(245, 158, 11, 0.15); }
+        .badge-h { color: #38bdf8; border: 1px solid #0284c7; background: rgba(2, 132, 199, 0.1); }
+        .badge-none { color: #64748b; border: 1px dashed #475569; background: rgba(30, 41, 59, 0.5); }
+        
+        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; text-align: center; display: inline-block; min-width: 75px; }
     </style>
 </head>
-<body>
+<body class="pb-10">
 
-<div id="loader"><i class="fas fa-spinner fa-spin fa-3x mb-3"></i> डेटा लोड हो रहा है...</div>
+    <div class="p-4 max-w-2xl mx-auto flex items-center justify-between sticky top-0 bg-[#0f172a] z-40">
+        <button onclick="history.back()" class="text-sky-400 text-xl w-10 h-10 glass rounded-full flex items-center justify-center">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1 class="text-lg font-black tracking-tighter italic text-center uppercase">SNT <span class="text-sky-500">Master Control</span></h1>
+        <div class="w-10"></div> </div>
 
-<div class="fest-btn" onclick="toggleSidebar()"><i class="fas fa-calendar-alt"></i> त्यौहार सूची</div>
-<div class="overlay" id="overlay" onclick="closeAll()"></div>
-
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h3>महीने के त्यौहार</h3>
-        <span onclick="toggleSidebar()" style="cursor:pointer; font-size: 24px;">&times;</span>
-    </div>
-    <div id="fest-list-container"></div>
-</div>
-
-<div class="calendar-card">
-    <div class="header">
-        <div style="font-weight: 700; font-size: 1.1rem;">SNT ATTENDANCE PORTAL</div>
-        <div id="profile-area"></div> 
-    </div>
-    
-    <div class="nav">
-        <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
-        <h2 id="month-info"></h2>
-        <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+    <div class="px-4 max-w-2xl mx-auto mb-6">
+        <div class="glass p-5 rounded-2xl border border-sky-500/20 flex flex-col gap-3">
+            <label class="text-[10px] font-black uppercase text-sky-400 tracking-wider">
+                <i class="fas fa-calendar-day mr-1"></i> Target Attendance Date:
+            </label>
+            <input type="date" id="master-date-picker" onchange="loadAttendanceByDate()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3.5 text-sm outline-none focus:border-sky-500 text-white font-bold">
+        </div>
     </div>
 
-    <div class="grid">
-        <div class="day-head">रवि</div><div class="day-head">सोम</div><div class="day-head">मंगल</div>
-        <div class="day-head">बुध</div><div class="day-head">गुरु</div><div class="day-head">शुक्र</div><div class="day-head">शनि</div>
+    <div class="px-4 max-w-2xl mx-auto mb-6">
+        <div class="grid grid-cols-3 gap-3">
+            <div class="glass p-3 rounded-xl text-center border-b-2 border-emerald-500">
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Present</p>
+                <h3 id="stat-present" class="text-xl font-black text-emerald-400">0</h3>
+            </div>
+            <div class="glass p-3 rounded-xl text-center border-b-2 border-red-500">
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Absent</p>
+                <h3 id="stat-absent" class="text-xl font-black text-red-400">0</h3>
+            </div>
+            <div class="glass p-3 rounded-xl text-center border-b-2 border-amber-500">
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Leave</p>
+                <h3 id="stat-leave" class="text-xl font-black text-amber-400">0</h3>
+            </div>
+        </div>
     </div>
-    <div id="calendar-body" class="grid"></div>
 
-    <div class="footer">
-        <span><i class="fas fa-circle" style="color:var(--present)"></i> Present</span>
-        <span><i class="fas fa-circle" style="color:var(--absent)"></i> Absent</span>
-        <span><i class="fas fa-circle" style="color:var(--leave)"></i> Leave</span>
-        <span><i class="fas fa-circle" style="color:var(--holiday)"></i> Holiday</span>
+    <div id="holiday-alert-box" class="px-4 max-w-2xl mx-auto mb-4 hidden">
+        <div class="bg-sky-500/10 border border-sky-500/30 rounded-xl p-3 text-center">
+            <p id="holiday-alert-text" class="text-xs font-black text-sky-400 uppercase italic tracking-tight"></p>
+        </div>
     </div>
-</div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
-        authDomain: "snt-computer-institute.firebaseapp.com",
-        databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com/",
-        projectId: "snt-computer-institute",
-        appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
-    };
+    <div class="px-4 max-w-2xl mx-auto">
+        <div class="glass rounded-[2rem] overflow-hidden border border-slate-800 shadow-2xl">
+            <div class="student-row bg-slate-800/60 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <div>Student Profile & Node</div>
+                <div class="text-right">Status Log</div>
+            </div>
+            <div id="master-roster-list" class="divide-y divide-white/5">
+                <p class="text-center text-slate-500 font-bold text-xs py-10 uppercase">Selecting Timeline...</p>
+            </div>
+        </div>
+    </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    let studentData = null;
-    let displayDate = new Date();
-    const today = new Date();
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA",
+            authDomain: "snt-computer-institute.firebaseapp.com",
+            projectId: "snt-computer-institute",
+            databaseURL: "https://snt-computer-institute-default-rtdb.firebaseio.com",
+            appId: "1:117580784781:web:73ba19d2d008beb3a5eec4"
+        };
 
-    const holidays = { "2026-01-26": "Republic Day", "2026-08-15": "Independence Day", "2026-10-02": "Gandhi Jayanti" };
-    const fixedFestivals = { "2026": { "01-01": "नया साल", "14-01": "मकर संक्रांति", "26-01": "गणतंत्र दिवस", "15-02": "महाशिवरात्रि", "04-03": "होली", "15-08": "स्वतंत्रता दिवस", "25-12": "क्रिसमस" } };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    // Dashboard Match Logic: Email se student dhundna
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            db.ref('students').orderByChild('email').equalTo(user.email).on('value', (snap) => {
-                if (snap.exists()) {
-                    const keys = Object.keys(snap.val());
-                    studentData = snap.val()[keys[0]];
+        let globalStudents = {};
+        let globalAttendance = {};
+        let globalHolidays = {};
 
-                    // Profile Section (Dashboard ki tarah)
-                    const imgUrl = studentData.profilePicture || studentData.profilePic || 'SNT.jpg';
-                    document.getElementById('profile-area').innerHTML = `
-                        <div class="st-profile-box">
-                            <img src="${imgUrl}" class="st-photo-circle" onerror="this.src='SNT.jpg'">
-                            <div>
-                                <b style="font-size: 1rem;">${studentData.name || '---'}</b><br>
-                                <small style="opacity: 0.8;">ID: ${studentData.studentId || 'N/A'}</small>
-                            </div>
-                        </div>`;
-                    
-                    document.getElementById('loader').style.display = 'none';
-                    renderCalendar();
-                } else {
-                    alert("No record found!");
-                }
-            });
-        } else {
-            window.location.href = "index.html";
-        }
-    });
+        // Set default date to today's date on initial load
+        const today = new Date();
+        const localTodayStr = today.toISOString().split('T')[0];
+        document.getElementById('master-date-picker').value = localTodayStr;
 
-    function renderCalendar() {
-        if(!studentData) return;
-        const body = document.getElementById('calendar-body');
-        const year = displayDate.getFullYear(), month = displayDate.getMonth();
-        
-        document.getElementById('month-info').innerText = new Date(year, month).toLocaleString('hi-IN', {month:'long', year:'numeric'});
-
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        db.ref('attendance').on('value', snap => {
-            const allData = snap.val() || {};
-            body.innerHTML = '';
-
-            for (let x = 0; x < firstDay; x++) body.innerHTML += `<div class="cell" style="background:#f9f9f9"></div>`;
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const monthFmt = String(month + 1).padStart(2, '0');
-                const dayFmt = String(day).padStart(2, '0');
-                const dateKey = `${year}-${monthFmt}-${dayFmt}`; 
+        // Base Data Synchronization
+        function initMasterSync() {
+            onValue(ref(db, 'students'), (studSnap) => {
+                globalStudents = studSnap.val() || {};
                 
-                // Attendance Match Logic: "RollNumber_YYYY-MM-DD" or "UID_YYYY-MM-DD"
-                // Pehle hum studentId se check karenge, fir UID se agar zaroorat padi
-                const rollID = `${studentData.studentId}_${dateKey}`;
-                const userUID = auth.currentUser.uid;
-                const uidID = `${userUID}_${dateKey}`;
+                onValue(ref(db, 'admin_holidays'), (holSnap) => {
+                    globalHolidays = holSnap.val() || {};
+                    
+                    onValue(ref(db, 'attendance'), (attSnap) => {
+                        globalAttendance = attSnap.val() || {};
+                        loadAttendanceByDate(); 
+                    });
+                });
+            });
+        }
 
-                const attRecord = allData[rollID] || allData[uidID];
-                const fKey = `${dayFmt}-${monthFmt}`;
+        window.loadAttendanceByDate = () => {
+            const selectedDate = document.getElementById('master-date-picker').value;
+            if(!selectedDate) return;
 
-                const isToday = new Date(year, month, day).toDateString() === today.toDateString();
-                const isSunday = new Date(year, month, day).getDay() === 0;
+            const rosterContainer = document.getElementById('master-roster-list');
+            const alertBox = document.getElementById('holiday-alert-box');
+            const alertText = document.getElementById('holiday-alert-text');
 
-                let dotHtml = "";
-                let cellStyle = "";
+            let countP = 0, countA = 0, countL = 0;
+            let rosterHtml = '';
 
-                if (attRecord) {
-                    const status = attRecord.status;
-                    if(status === 'Present') dotHtml = `<span class="dot bg-p"></span>`;
-                    else if(status === 'Absent') dotHtml = `<span class="dot bg-a"></span>`;
-                    else if(status === 'Leave') dotHtml = `<span class="dot bg-l"></span>`;
-                } else if (isSunday) {
-                    cellStyle = "background: #fff3e0;";
-                    dotHtml = `<span style="font-size:8px; color:var(--holiday); font-weight:bold;">SUNDAY</span>`;
+            // Check if Sunday or Admin declared Holiday
+            const dateObj = new Date(selectedDate);
+            const isSunday = dateObj.getDay() === 0;
+            const holidayObj = globalHolidays[selectedDate];
+
+            if (isSunday || holidayObj) {
+                alertBox.classList.remove('hidden');
+                alertText.innerText = holidayObj ? `⚠️ INSTITUTIONAL HOLIDAY: ${holidayObj.reason}` : "📅 SUNDAY: WEEKLY OFF DAY";
+            } else {
+                alertBox.classList.add('hidden');
+            }
+
+            const studentKeys = Object.keys(globalStudents);
+
+            if(studentKeys.length === 0) {
+                rosterContainer.innerHTML = `<p class="text-center text-slate-500 font-bold text-xs py-10 uppercase">No Student Logs Found</p>`;
+                return;
+            }
+
+            studentKeys.forEach(key => {
+                const s = globalStudents[key];
+                
+                // Find attendance record matching both the student key and selected date
+                const record = Object.values(globalAttendance).find(
+                    r => (r.studentKey === key || (r.email && s.email && r.email === s.email)) && r.date === selectedDate
+                );
+
+                let badgeHtml = '<span class="status-badge badge-none">No Entry</span>';
+                
+                if (isSunday) {
+                    badgeHtml = '<span class="status-badge badge-h">Sunday</span>';
+                } else if (holidayObj) {
+                    badgeHtml = '<span class="status-badge badge-h">Holiday</span>';
+                } else if (record) {
+                    if (record.status === 'Present') { badgeHtml = '<span class="status-badge badge-p">Present</span>'; countP++; }
+                    else if (record.status === 'Absent') { badgeHtml = '<span class="status-badge badge-a">Absent</span>'; countA++; }
+                    else if (record.status === 'Leave') { badgeHtml = '<span class="status-badge badge-l">Leave</span>'; countL++; }
+                } else {
+                    // Check if student was admitted after this selected date
+                    if(s.admissionDate && new Date(s.admissionDate) > dateObj) {
+                        badgeHtml = '<span class="status-badge text-slate-600 border border-slate-800/40 text-[9px]">Pre-Admit</span>';
+                    }
                 }
 
-                body.innerHTML += `
-                    <div class="cell ${isToday?'today':''} ${isSunday?'sunday':''}" style="${cellStyle}">
-                        ${fixedFestivals[year] && fixedFestivals[year][fKey] ? '<i class="fas fa-star fest-star-marker"></i>' : ''}
-                        <span class="date-num">${day}</span>
-                        <div class="att-status">${dotHtml}</div>
+                const sPic = s.profilePicture || s.photoURL || s.profilePic || "https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/SNT.png";
+
+                rosterHtml += `
+                    <div class="student-row hover:bg-slate-800/30 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <img src="${sPic}" class="w-8 h-8 rounded-full object-cover bg-slate-800 border border-white/10" alt="Avatar">
+                            <div class="truncate">
+                                <h4 class="text-xs font-black text-slate-200 uppercase truncate">${s.name || 'Anonymous Node'}</h4>
+                                <p class="text-[9px] font-bold text-sky-400 tracking-tight uppercase truncate">${s.course || 'O LEVEL'}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            ${badgeHtml}
+                        </div>
                     </div>`;
-            }
-        });
-    }
+            });
 
-    function toggleSidebar() { 
-        document.getElementById('sidebar').classList.toggle('active'); 
-        document.getElementById('overlay').classList.toggle('active'); 
-        if(document.getElementById('sidebar').classList.contains('active')) updateFestivalList(); 
-    }
-    
-    function closeAll() { 
-        document.getElementById('sidebar').classList.remove('active'); 
-        document.getElementById('overlay').classList.remove('active'); 
-    }
+            // Update Counters Dashboard
+            document.getElementById('stat-present').innerText = countP;
+            document.getElementById('stat-absent').innerText = countA;
+            document.getElementById('stat-leave').innerText = countL;
 
-    function updateFestivalList() {
-        const container = document.getElementById('fest-list-container');
-        const monthNum = String(displayDate.getMonth() + 1).padStart(2, '0');
-        container.innerHTML = "";
-        const fests = fixedFestivals[displayDate.getFullYear()] || {};
-        Object.keys(fests).forEach(k => {
-            if(k.split('-')[1] === monthNum) {
-                container.innerHTML += `<div class="fest-item"><b>${k.split('-')[0]} तारीख</b>: ${fests[k]}</div>`;
-            }
-        });
-    }
+            rosterContainer.innerHTML = rosterHtml;
+        };
 
-    function changeMonth(s) { displayDate.setMonth(displayDate.getMonth() + s); renderCalendar(); }
-</script>
+        // Initialize Firebase Listeners
+        initMasterSync();
+    </script>
 </body>
 </html>
