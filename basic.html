@@ -47,23 +47,26 @@
         .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 30px; text-transform: uppercase; margin: 15px 0; color: #333; }
         
         /* Logo container capsule box with exact soft glowing shadow */
+/* Logo container capsule box with exact soft glowing white shadow */
 .logo-img {
     width: 300px;
     height: auto;
     background: #ffffff !important;
     padding: 12px 16px;
-    border-radius: 18px; /* Smooth rounded corners like the image */
+    border-radius: 18px; /* Smooth rounded corners */
     display: inline-block;
     margin-bottom: 20px;
+    box-sizing: border-box; /* Padding handling ke liye */
     
-    /* Layered smooth soft shadow effect */
+    /* Strong and soft layered white glowing shadow effect */
     box-shadow: 
-        0px 4px 20px rgba(0, 0, 0, 0.15), 
-        0px 8px 40px rgba(0, 0, 0, 0.1),
-        0px 0px 15px rgba(255, 255, 255, 0.2); 
+        0px 0px 15px rgba(255, 255, 255, 0.8), 
+        0px 4px 25px rgba(255, 255, 255, 0.5),
+        0px 0px 5px rgba(255, 255, 255, 1); 
         
-    border: 1px solid rgba(255, 255, 255, 0.4); /* Slight crisp border */
+    border: 2px solid rgba(255, 255, 255, 0.9); /* Crisp border jo glow ko badhata hai */
 }
+
 
 
         .footer-info { position: absolute; bottom: 50px; width: 92%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
