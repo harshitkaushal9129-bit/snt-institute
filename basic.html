@@ -46,14 +46,25 @@
         .title-main { font-size: 65px; color: white !important; letter-spacing: 4px; margin: 0; font-weight: bold; }
         .student-name { font-size: 45px; font-weight: bold; border-bottom: 2px solid #000; display: inline-block; padding: 0 30px; text-transform: uppercase; margin: 15px 0; color: #333; }
         
-        /* Logo design upgrade with shadow and soft edges */
-        .logo-img {
-            width: 80px; 
-            margin-bottom: 15px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4) !important;
-            border-radius: 8px;
-            display: inline-block;
-        }
+        /* Logo container capsule box with exact soft glowing shadow */
+.logo-img {
+    width: 100px;
+    height: auto;
+    background: #ffffff !important;
+    padding: 12px 16px;
+    border-radius: 18px; /* Smooth rounded corners like the image */
+    display: inline-block;
+    margin-bottom: 20px;
+    
+    /* Layered smooth soft shadow effect */
+    box-shadow: 
+        0px 4px 20px rgba(0, 0, 0, 0.15), 
+        0px 8px 40px rgba(0, 0, 0, 0.1),
+        0px 0px 15px rgba(255, 255, 255, 0.2); 
+        
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Slight crisp border */
+}
+
 
         .footer-info { position: absolute; bottom: 50px; width: 92%; display: flex; justify-content: space-between; align-items: flex-end; left: 30px; }
         .sig-box { text-align: center; width: 220px; }
@@ -74,7 +85,10 @@
     <div id="certificate-container">
         <div id="certificate">
             <div class="sidebar">
-                <img src="Logo (1).jpg" class="logo-img"> <br>
+                
+                <img src="Logo (1).jpg" class="logo-img">
+
+                
                 <h3>TOPICS COVERED</h3>
                 <ul id="topic-list"></ul>
             </div>
