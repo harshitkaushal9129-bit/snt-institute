@@ -45,7 +45,7 @@
         @media (max-width: 850px) { .row { grid-template-columns: 1fr; } .grid-container { grid-template-columns: repeat(2, 1fr); } header img { width: 280px; } }
         
         .custom-footer { background-color: #8B1A1A; color: #ffffff; padding: 40px 20px; text-align: center; font-family: 'Inter', sans-serif; margin-top: 50px; border-top: 5px solid #2563eb; }
-        .social-links { margin-bottom: 20px; display: flex; justify-content: center; gap: 20px; }
+        .social-links { margin-bottom: 20px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
         .social-links a { color: #ffffff !important; font-size: 28px; text-decoration: none; transition: transform 0.3s ease; }
         .social-links a:hover { transform: scale(1.2); color: #facc15 !important; }
         
@@ -96,6 +96,7 @@
                 <label class="checkbox-item"><input type="checkbox" name="course" value="Tally"> Tally ERP 9</label>
                 <label class="checkbox-item"><input type="checkbox" name="course" value="Adv Excel"> Adv. Excel</label>
                 <label class="checkbox-item"><input type="checkbox" name="course" value="Hardware"> Hardware & Net.</label>
+                <label class="checkbox-item"><input type="checkbox" name="course" value="Combo"> Combo</label>
             </div>
             
             <div class="section-title">Step 2: Personal Details</div>
@@ -176,18 +177,15 @@
 
     <footer class="custom-footer">
         <div class="social-links">
-                <!-- सुंदर बटन के रूप में लिंक -->
-<a href="https://harshitkaushal9129-bit.github.io/snt-institute/display.html" 
-   target="_blank" 
-   style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);">
-   View Student Data (Display Portal)
-</a>
+            <a href="https://harshitkaushal9129-bit.github.io/snt-institute/display.html" 
+               target="_blank" 
+               style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-family: 'Inter', sans-serif; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);">
+               View Student Data (Display Portal)
+            </a>
 
             <a href="https://wa.me/919129191898" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
             <a href="mailto:harshitkaushal9129@gmail.com"><i class="fa-solid fa-envelope"></i></a>
-            <a href="
-                    https://www.instagram.com/computer_skills_by_kaushalji
-                    " target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://www.instagram.com/computer_skills_by_kaushalji" target="_blank"><i class="fa-brands fa-instagram"></i></a>
             <a href="https://youtube.com/@programmingby-kaushalji" target="_blank"><i class="fa-brands fa-youtube"></i></a>
         </div>
         <div class="footer-text">Website Design By Kaushal Ji</div>
@@ -195,7 +193,6 @@
         <div style="margin-top: 15px;">
             <a href="https://harshitkaushal9129-bit.github.io/Dashboard-of-snt/" style="color: #ffffff; background: #2563eb; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 14px; font-weight: bold;">Official Portal</a>
         </div>
-            
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
