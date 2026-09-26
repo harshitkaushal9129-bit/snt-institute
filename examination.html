@@ -93,7 +93,6 @@
 </div>
 
 <script>
-    // Admin Dashboard wala Firebase Config
     const firebaseConfig = { 
         apiKey: "AIzaSyAOQtM_XYLqPgxMK1XBdfl0m7KoAseZRCA", 
         authDomain: "snt-computer-institute.firebaseapp.com", 
@@ -105,6 +104,7 @@
     const db = firebase.database();
 
     let studentData = null;
+    let studentFirebaseKey = null;
     let finalFee = 0;
 
     function findStudent() {
@@ -127,12 +127,12 @@
             if (allData) {
                 for(let key in allData) {
                     let s = allData[key];
-                    // Exact keys from your Admin Dashboard file
                     let sid = s.studentId ? s.studentId.toUpperCase() : "";
                     let mob = s.mobile || s.phone || ""; 
 
                     if(sid === input || sid === "SNT-" + input || mob.toString() === input) {
                         studentData = s;
+                        studentFirebaseKey = key;
                         isFound = true;
                         break;
                     }
@@ -156,11 +156,9 @@
         document.getElementById('disp-name').value = data.name;
         document.getElementById('disp-dob').value = data.dob || "Office Visit Required";
         
-        // Dynamic Login ID (SNT + Numeric ID + EX)
         let cleanId = data.studentId ? data.studentId.replace(/\D/g, "") : "00";
         document.getElementById('disp-login').value = "SNT" + cleanId + "EX";
 
-        // Handle Courses Key
         const container = document.getElementById('course-container');
         container.innerHTML = "";
         let mainCourse = "CCC"; 
@@ -174,7 +172,6 @@
             container.innerHTML = `<span class="course-badge">General Course</span>`;
         }
 
-        // Exam Module & Fee Logic based on Course
         const moduleSelect = document.getElementById('sel-module');
         moduleSelect.innerHTML = "";
         let cName = mainCourse.toUpperCase();
@@ -204,7 +201,6 @@
         document.getElementById('txn-id').innerText = txn;
         document.getElementById('amount-text').innerText = "₹" + finalFee;
         
-        // UPI Link (Sandeep Kumar)
         const upi = `upi://pay?pa=9580807075@ybl&pn=SNT_COMPUTER_INSTITUTE&am=${finalFee}&cu=INR&tn=Exam_${studentData.studentId}`;
         
         document.getElementById('qrcode').innerHTML = "";
@@ -213,20 +209,41 @@
     }
 
     function completeRegistration() {
+        const moduleName = document.getElementById('sel-module').value;
         const record = {
             studentId: studentData.studentId,
             name: studentData.name,
             loginId: document.getElementById('disp-login').value,
             course: document.getElementById('course-container').innerText,
-            module: document.getElementById('sel-module').value,
+            module: moduleName,
             center: document.getElementById('sel-center').value,
             txnId: document.getElementById('txn-id').innerText,
             amount: finalFee,
             timestamp: new Date().toLocaleString()
         };
 
+        // 1. theoryRegistrations में सेव करें (पुराना कोड)
         db.ref('theoryRegistrations').push(record).then(() => {
-            alert("Registration Confirmed! Please download your receipt.");
+            
+            // 2. student के अंदर extraHistory में भी सेव करें ताकि रसीद पोर्टल पर दिख सके
+            const paymentObj = {
+                reason: "Exam Fee: " + moduleName,
+                amount: finalFee,
+                date: new Date().toLocaleDateString('en-GB')
+            };
+
+            if(studentFirebaseKey) {
+                const currentExtra = studentData.extraHistory || [];
+                currentExtra.push(paymentObj);
+                db.ref('students/' + studentFirebaseKey).update({ extraHistory: currentExtra });
+            }
+
+            // localStorage में सेट करें ताकि रसीद तुरंत खुल जाए
+            localStorage.setItem('lastReceipt', JSON.stringify({ id: studentData.studentId }));
+
+            alert("Registration Confirmed! रसीद जनरेट हो रही है...");
+            
+            // रसीद पोर्टल पर रीडायरेक्ट कर सकते हैं या पेज रीलोड कर सकते हैं
             location.reload();
         });
     }
