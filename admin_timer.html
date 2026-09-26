@@ -9,102 +9,157 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --blue: #1e3a8a; --green: #27ae60; --indigo: #6366f1; --bg: #f1f5f9; }
+        :root { 
+            --primary: #c2410c; /* Rich Orange */
+            --primary-light: #ffedd5; 
+            --accent: #ea580c; 
+            --success: #16a34a; 
+            --bg: #f8fafc; 
+            --text: #334155;
+        }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: var(--blue); margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: flex; justify-content: space-between; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1300px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        h2 { color: var(--primary); margin-top: 0; border-bottom: 2px solid #fed7aa; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 22px; }
+        h3 { color: var(--primary); margin-top: 30px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
         
         .top-bar { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-            gap: 15px; background: #f8fafc; padding: 20px; border-radius: 10px; 
-            align-items: end; margin-bottom: 20px; border: 1px solid #e2e8f0;
+            grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); 
+            gap: 15px; background: #fff7ed; padding: 20px; border-radius: 12px; 
+            align-items: end; margin-bottom: 25px; border: 1px solid #fed7aa;
         }
 
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; }
-        input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { padding: 10px 12px; border: 1px solid #fdba74; border-radius: 8px; font-size: 13px; width: 100%; background: white; outline: none; transition: all 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15); }
 
-        .table-responsive { overflow-x: auto; margin-top: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th, td { border-bottom: 1px solid #e2e8f0; padding: 12px; text-align: center; }
-        th { background: #f8fafc; color: var(--blue); font-size: 13px; font-weight: 600; }
+        .table-responsive { overflow-x: auto; margin-top: 15px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; }
+        table { width: 100%; border-collapse: collapse; min-width: 950px; }
+        th, td { border-bottom: 1px solid #f1f5f9; padding: 14px 12px; text-align: center; font-size: 13px; }
+        th { background: #fff7ed; color: var(--primary); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        tr:hover { background-color: #fafaf9; }
         
-        .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-apply { background: var(--indigo); color: white; height: 40px; }
-        .btn-save { background: var(--green); width: 100%; margin-top: 25px; font-size: 16px; padding: 15px; color: white; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3); }
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-apply { background: var(--accent); color: white; height: 41px; }
+        .btn-apply:hover { background: #c2410c; }
+        .btn-save { background: var(--success); width: 100%; margin-top: 25px; font-size: 16px; padding: 16px; color: white; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
+        .btn-save:hover { background: #15803d; }
+        .btn-refresh { background: #f1f5f9; color: var(--text); font-size: 12px; border: 1px solid #cbd5e1; }
+        .btn-refresh:hover { background: #e2e8f0; }
         
-        .highlight { background-color: #f0fdf4 !important; }
-        .mod-badge { background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-        .status-badge { font-size: 10px; padding: 2px 5px; border-radius: 10px; background: #fee2e2; color: #991b1b; }
+        .highlight { background-color: #fef3c7 !important; }
+        .mod-badge { background: var(--primary-light); color: var(--primary); padding: 5px 10px; border-radius: 6px; font-weight: 600; font-size: 11px; }
+        .status-badge-scheduled { background: #fef3c7; color: #b45309; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .status-badge-completed { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; cursor: pointer; color: #64748b; padding: 8px 16px; border-radius: 8px; transition: 0.2s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        
+        .section-box { display: none; }
+        .section-box.active { display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>
-        <span>Theory Exam Bulk Scheduler</span>
-        <button class="btn" onclick="fetchPendingStudents()" style="background:#eee; font-size:12px;">🔄 Refresh List</button>
+        <span>🔥 SNT Admin: Universal Bulk Scheduler</span>
+        <button class="btn btn-refresh" onclick="fetchStudents()">🔄 Refresh List</button>
     </h2>
 
-    <div class="top-bar">
-        <div class="input-group">
-            <label>1. Filter Course/Module</label>
-            <select id="module-filter" onchange="fetchPendingStudents()">
-                <option value="">-- All Registered --</option>
-                <option value="M1-R5">M1-R5: IT Tools</option>
-                <option value="M2-R5">M2-R5: Web Designing</option>
-                <option value="M3-R5">M3-R5: Python</option>
-                <option value="M4-R5">M4-R5: IoT</option>
-                <option value="CCC">CCC Exam</option>
-                <option value="Sem 1">DCA/ADCA Sem 1</option>
-                <option value="Sem 2">DCA/ADCA Sem 2</option>
-                <option value="Basics">Computer Basics</option>
-            </select>
-        </div>
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('pending')">⏳ Pending Schedules (<span id="count-pending">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('completed')">✅ Completed / Archived Exams (<span id="count-completed">0</span>)</button>
+    </div>
 
-        <div class="input-group">
-            <label>2. Set Exam Date</label>
-            <input type="date" id="g-date">
-        </div>
-
-        <div class="input-group">
-            <label>3. Reporting & Gate</label>
-            <div style="display:flex; gap:5px;">
-                <input type="time" id="g-report" value="09:00">
-                <input type="time" id="g-gate" value="10:00">
+    <!-- PENDING SECTION -->
+    <div id="section-pending" class="section-box active">
+        <div class="top-bar">
+            <div class="input-group">
+                <label>1. Filter Course/Module</label>
+                <select id="module-filter" onchange="fetchStudents()">
+                    <option value="">-- All Registered --</option>
+                    <option value="Combo">Combo Course</option>
+                    <option value="M1-R5">M1-R5: IT Tools</option>
+                    <option value="M2-R5">M2-R5: Web Designing</option>
+                    <option value="M3-R5">M3-R5: Python</option>
+                    <option value="M4-R5">M4-R5: IoT</option>
+                    <option value="CCC">CCC Exam</option>
+                    <option value="Sem 1">DCA/ADCA Sem 1</option>
+                    <option value="Sem 2">DCA/ADCA Sem 2</option>
+                    <option value="Basics">Computer Basics</option>
+                </select>
             </div>
+
+            <div class="input-group">
+                <label>2. Set Exam Date</label>
+                <input type="date" id="g-date">
+            </div>
+
+            <div class="input-group">
+                <label>3. Reporting & Gate</label>
+                <div style="display:flex; gap:6px;">
+                    <input type="time" id="g-report" value="09:00">
+                    <input type="time" id="g-gate" value="10:00">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>4. Exam Timing</label>
+                <input type="text" id="g-duration" value="10:30 AM - 01:00 PM">
+            </div>
+
+            <button class="btn btn-apply" onclick="applyBulkSettings()">Apply to All</button>
         </div>
 
-        <div class="input-group">
-            <label>4. Exam Timing</label>
-            <input type="text" id="g-duration" value="10:30 AM - 01:00 PM">
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Module/Paper</th>
+                        <th>Exam Date</th>
+                        <th>Reporting</th>
+                        <th>Gate Closing</th>
+                        <th>Timing</th>
+                    </tr>
+                </thead>
+                <tbody id="pending-list">
+                    <tr><td colspan="7" style="padding:40px; color:#64748b;">Loading pending students...</td></tr>
+                </tbody>
+            </table>
         </div>
 
-        <button class="btn btn-apply" onclick="applyBulkSettings()">Apply to All</button>
+        <button class="btn btn-save" onclick="saveAndArchive()">🚀 SAVE, PUBLISH & MOVE TO COMPLETED</button>
     </div>
 
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Student ID</th>
-                    <th>Name</th>
-                    <th>Module/Paper</th>
-                    <th>Exam Date</th>
-                    <th>Reporting</th>
-                    <th>Gate Closing</th>
-                    <th>Timing</th>
-                </tr>
-            </thead>
-            <tbody id="student-list">
-                <tr><td colspan="7" style="padding:40px; color:#64748b;">Loading registered students...</td></tr>
-            </tbody>
-        </table>
+    <!-- COMPLETED SECTION -->
+    <div id="section-completed" class="section-box">
+        <h3>📂 History of Students with Completed / Published Schedules</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Module/Paper</th>
+                        <th>Exam Date</th>
+                        <th>Timing</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="completed-list">
+                    <tr><td colspan="6" style="padding:40px; color:#64748b;">Loading completed records...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <button class="btn btn-save" onclick="saveToFirebase()">🚀 SAVE & PUBLISH ALL SCHEDULES</button>
 </div>
 
 <script>
@@ -119,41 +174,90 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 1. Fetch Students who registered for Exam
-    function fetchPendingStudents() {
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.section-box').forEach(sec => sec.classList.remove('active'));
+        
+        if(tabName === 'pending') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('section-pending').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('section-completed').classList.add('active');
+        }
+    }
+
+    // Fetch students and separate based on status (Pending vs Completed)
+    function fetchStudents() {
         const mod = document.getElementById('module-filter').value;
-        const tbody = document.getElementById('student-list');
-        tbody.innerHTML = "<tr><td colspan='7'>Fetching data from cloud...</td></tr>";
+        const pendingTbody = document.getElementById('pending-list');
+        const completedTbody = document.getElementById('completed-list');
+        
+        pendingTbody.innerHTML = "<tr><td colspan='7'>Fetching data from cloud...</td></tr>";
+        completedTbody.innerHTML = "<tr><td colspan='6'>Fetching data from cloud...</td></tr>";
 
         db.ref('theoryRegistrations').once('value', (snapshot) => {
             const data = snapshot.val();
-            tbody.innerHTML = "";
+            pendingTbody.innerHTML = "";
+            completedTbody.innerHTML = "";
             
             if (!data) {
-                tbody.innerHTML = "<tr><td colspan='7'>No registrations found.</td></tr>";
+                pendingTbody.innerHTML = "<tr><td colspan='7'>No registrations found.</td></tr>";
+                completedTbody.innerHTML = "<tr><td colspan='6'>No completed records found.</td></tr>";
+                document.getElementById('count-pending').innerText = 0;
+                document.getElementById('count-completed').innerText = 0;
                 return;
             }
 
+            let pendingCount = 0;
+            let completedCount = 0;
+
             for (let key in data) {
                 let s = data[key];
-                // Filter logic
-                if (!mod || s.module.includes(mod)) {
-                    tbody.innerHTML += `
-                    <tr class="s-row" data-key="${key}">
-                        <td class="r-id"><b>${s.studentId}</b></td>
-                        <td>${s.name}</td>
-                        <td><span class="mod-badge">${s.module}</span></td>
-                        <td><input type="date" class="r-date" value="${s.examDate || ''}"></td>
-                        <td><input type="time" class="r-report" value="${s.reportingTime || '09:00'}"></td>
-                        <td><input type="time" class="r-gate" value="${s.gateClosing || '10:00'}"></td>
-                        <td><input type="text" class="r-time" value="${s.examTiming || '10:30 AM - 01:00 PM'}"></td>
+                let isCompleted = s.status === "Completed" || s.status === "Scheduled";
+
+                if (isCompleted) {
+                    completedCount++;
+                    completedTbody.innerHTML += `
+                    <tr>
+                        <td><b>${s.studentId || 'N/A'}</b></td>
+                        <td>${s.name || ''}</td>
+                        <td><span class="mod-badge">${s.module || ''}</span></td>
+                        <td>${s.examDate || 'Not Set'}</td>
+                        <td>${s.examTiming || 'N/A'}</td>
+                        <td><span class="status-badge-completed">Exam Published</span></td>
                     </tr>`;
+                } else {
+                    // Apply module filter only to pending view
+                    if (!mod || (s.module && s.module.includes(mod))) {
+                        pendingCount++;
+                        pendingTbody.innerHTML += `
+                        <tr class="s-row" data-key="${key}">
+                            <td class="r-id"><b>${s.studentId || ''}</b></td>
+                            <td>${s.name || ''}</td>
+                            <td><span class="mod-badge">${s.module || ''}</span></td>
+                            <td><input type="date" class="r-date" value="${s.examDate || ''}"></td>
+                            <td><input type="time" class="r-report" value="${s.reportingTime || '09:00'}"></td>
+                            <td><input type="time" class="r-gate" value="${s.gateClosing || '10:00'}"></td>
+                            <td><input type="text" class="r-time" value="${s.examTiming || '10:30 AM - 01:00 PM'}"></td>
+                        </tr>`;
+                    }
                 }
             }
+
+            if(pendingTbody.innerHTML === "") {
+                pendingTbody.innerHTML = "<tr><td colspan='7'>No pending students found for this filter.</td></tr>";
+            }
+            if(completedTbody.innerHTML === "") {
+                completedTbody.innerHTML = "<tr><td colspan='6'>No completed exams archived yet.</td></tr>";
+            }
+
+            document.getElementById('count-pending').innerText = pendingCount;
+            document.getElementById('count-completed').innerText = completedCount;
         });
     }
 
-    // 2. Apply top settings to all rows in table
+    // Apply top settings to all rows in table
     function applyBulkSettings() {
         const rows = document.querySelectorAll('.s-row');
         const date = document.getElementById('g-date').value;
@@ -172,10 +276,10 @@
         });
     }
 
-    // 3. Save all updated rows back to Firebase
-    function saveToFirebase() {
+    // Save schedules and change status so they move out of pending list automatically
+    function saveAndArchive() {
         const rows = document.querySelectorAll('.s-row');
-        if (rows.length === 0) return alert("No data to save!");
+        if (rows.length === 0) return alert("No pending data to save!");
 
         let updates = {};
         rows.forEach(row => {
@@ -184,17 +288,17 @@
             updates[`theoryRegistrations/${key}/reportingTime`] = row.querySelector('.r-report').value;
             updates[`theoryRegistrations/${key}/gateClosing`] = row.querySelector('.r-gate').value;
             updates[`theoryRegistrations/${key}/examTiming`] = row.querySelector('.r-time').value;
-            updates[`theoryRegistrations/${key}/status`] = "Scheduled";
+            updates[`theoryRegistrations/${key}/status`] = "Completed"; // Moves them out of pending list view
         });
 
         db.ref().update(updates).then(() => {
-            alert("All schedules have been published online! ✅");
-            fetchPendingStudents();
+            alert("Schedules published successfully and moved to the Completed tab! ✅");
+            fetchStudents();
         }).catch(e => alert("Error: " + e.message));
     }
 
-    // Load initial data
-    window.onload = fetchPendingStudents;
+    // Load initial data on startup
+    window.onload = fetchStudents;
 </script>
 </body>
 </html>
