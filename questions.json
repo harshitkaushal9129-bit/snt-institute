@@ -550,6 +550,19 @@
     { "qe": "What is the main function of the CMOS battery?", "qh": "CMOS बैटरी का मुख्य कार्य क्या है?", "ae": ["To power the CPU", "To keep system time and date", "To cool the PC", "To store BIOS data"], "c": 1 },
     { "qe": "Which protocol is used for file transfer?", "qh": "फाइल ट्रांसफर के लिए किस प्रोटोकॉल का उपयोग किया जाता है?", "ae": ["HTTP", "FTP", "SMTP", "POP3"], "c": 1 },
     { "qe": "What does POST stand for in computer hardware?", "qh": "कंप्यूटर हार्डवेयर में POST का क्या अर्थ है?", "ae": ["Power On Self Test", "Process On Self Test", "Power On Start Task", "None"], "c": 0 }
-]
+],
+      "Combo Course": [
+    { "qe": "What does CPU stand for?", "qh": "CPU का पूर्ण रूप क्या है?", "ae": ["Central Processing Unit", "Computer Processing Unit", "Central Program Utility", "None"], "c": 0 },
+    { "qe": "Which of the following is an input device?", "qh": "इनमें से कौन सा इनपुट डिवाइस है?", "ae": ["Keyboard", "Monitor", "Printer", "Speaker"], "c": 0 },
+    { "qe": "Which shortcut key is used to save a file in MS Word?", "qh": "MS Word में फ़ाइल को सेव करने के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?", "ae": ["Ctrl + S", "Ctrl + C", "Ctrl + V", "Ctrl + P"], "c": 0 },
+    { "qe": "What is the shortcut key for 'Find and Replace' in MS Excel?", "qh": "MS Excel में 'Find and Replace' के लिए शॉर्टकट कुंजी क्या है?", "ae": ["Ctrl + H", "Ctrl + F", "Ctrl + R", "Ctrl + G"], "c": 0 },
+    { "qe": "Which symbol is used to start a formula in MS Excel?", "qh": "MS Excel में किसी फॉर्मूला को शुरू करने के लिए किस प्रतीक का उपयोग किया जाता है?", "ae": ["=", "+", "-", "#"], "c": 0 },
+    { "qe": "Which voucher type is used for Contra entries in Tally?", "qh": "Tally में कॉन्ट्रा एंट्री (Contra entry) के लिए किस वाउचर प्रकार का उपयोग किया जाता है?", "ae": ["F4", "F5", "F6", "F7"], "c": 0 },
+    { "qe": "Which HTML tag is used to create a hyperlink?", "qh": "HTML में हाइपरलिंक बनाने के लिए किस टैग का उपयोग किया जाता है?", "ae": ["<a>", "<link>", "<href>", "<url>"], "c": 0 },
+    { "qe": "Which CSS property is used to change the background color?", "qh": "बैकग्राउंड कलर बदलने के लिए किस CSS प्रॉपर्टी का उपयोग किया जाता है?", "ae": ["background-color", "color", "bg-color", "element-color"], "c": 0 },
+    { "qe": "Which of the following is a non-volatile memory?", "qh": "इनमें से कौन सी नॉन-वोलाटाइल (स्थायी) मेमोरी है?", "ae": ["ROM", "RAM", "Cache", "Register"], "c": 0 },
+    { "qe": "What is the extension of a saved workbook in MS Excel?", "qh": "MS Excel में सेव की गई वर्कबुक का एक्सटेंशन क्या होता है?", "ae": [".xlsx", ".docx", ".pptx", ".txt"], "c": 0 }
+  ]
+
 
 }
