@@ -551,7 +551,7 @@
     { "qe": "Which protocol is used for file transfer?", "qh": "फाइल ट्रांसफर के लिए किस प्रोटोकॉल का उपयोग किया जाता है?", "ae": ["HTTP", "FTP", "SMTP", "POP3"], "c": 1 },
     { "qe": "What does POST stand for in computer hardware?", "qh": "कंप्यूटर हार्डवेयर में POST का क्या अर्थ है?", "ae": ["Power On Self Test", "Process On Self Test", "Power On Start Task", "None"], "c": 0 }
 ],
-      "Combo Course": [
+      "Combo": [
     { "qe": "What does CPU stand for?", "qh": "CPU का पूर्ण रूप क्या है?", "ae": ["Central Processing Unit", "Computer Processing Unit", "Central Program Utility", "None"], "c": 0 },
     { "qe": "Which of the following is an input device?", "qh": "इनमें से कौन सा इनपुट डिवाइस है?", "ae": ["Keyboard", "Monitor", "Printer", "Speaker"], "c": 0 },
     { "qe": "Which shortcut key is used to save a file in MS Word?", "qh": "MS Word में फ़ाइल को सेव करने के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?", "ae": ["Ctrl + S", "Ctrl + C", "Ctrl + V", "Ctrl + P"], "c": 0 },
