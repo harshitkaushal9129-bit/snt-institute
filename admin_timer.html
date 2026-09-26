@@ -10,16 +10,32 @@
 
     <style>
         :root { 
-            --primary: #c2410c; /* Rich Orange */
+            --primary: #c2410c; 
             --primary-light: #ffedd5; 
             --accent: #ea580c; 
             --success: #16a34a; 
+            --danger: #dc2626;
             --bg: #f8fafc; 
             --text: #334155;
         }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1300px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #ff7e5f, #feb47b, #ff9966, #ff5e62, #e65c00);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text); 
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container { max-width: 1300px; margin: auto; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 25px; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
         
         h2 { color: var(--primary); margin-top: 0; border-bottom: 2px solid #fed7aa; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 22px; }
         h3 { color: var(--primary); margin-top: 30px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
@@ -49,10 +65,11 @@
         .btn-save:hover { background: #15803d; }
         .btn-refresh { background: #f1f5f9; color: var(--text); font-size: 12px; border: 1px solid #cbd5e1; }
         .btn-refresh:hover { background: #e2e8f0; }
+        .btn-delete { background: #fee2e2; color: var(--danger); padding: 6px 10px; border-radius: 6px; font-size: 12px; border: 1px solid #fca5a5; }
+        .btn-delete:hover { background: var(--danger); color: white; }
         
         .highlight { background-color: #fef3c7 !important; }
         .mod-badge { background: var(--primary-light); color: var(--primary); padding: 5px 10px; border-radius: 6px; font-weight: 600; font-size: 11px; }
-        .status-badge-scheduled { background: #fef3c7; color: #b45309; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
         .status-badge-completed { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
@@ -61,6 +78,38 @@
         
         .section-box { display: none; }
         .section-box.active { display: block; }
+
+        /* Calculator Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .calculator-modal {
+            background: #1e293b; padding: 25px; border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); width: 300px; border: 2px solid #475569;
+        }
+        .calc-screen {
+            background: #0f172a; color: #38bdf8; font-size: 24px; padding: 15px;
+            text-align: right; border-radius: 10px; margin-bottom: 15px; letter-spacing: 2px;
+            min-height: 55px; border: 1px solid #334155; font-family: monospace;
+        }
+        .calc-keys {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+        }
+        .calc-btn {
+            background: #334155; color: white; border: none; padding: 15px;
+            font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer;
+            transition: 0.1s;
+        }
+        .calc-btn:hover { background: #475569; }
+        .calc-btn:active { transform: scale(0.95); }
+        .calc-btn.clear { background: #991b1b; color: white; }
+        .calc-btn.clear:hover { background: #b91c1c; }
+        .calc-btn.enter { background: var(--success); color: white; grid-column: span 2; }
+        .calc-btn.enter:hover { background: #15803d; }
+        .calc-close { background: transparent; color: #94a3b8; border: none; width: 100%; margin-top: 10px; cursor: pointer; font-size: 13px; }
+        .calc-close:hover { color: white; }
     </style>
 </head>
 <body>
@@ -128,10 +177,11 @@
                         <th>Reporting</th>
                         <th>Gate Closing</th>
                         <th>Timing</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="pending-list">
-                    <tr><td colspan="7" style="padding:40px; color:#64748b;">Loading pending students...</td></tr>
+                    <tr><td colspan="8" style="padding:40px; color:#64748b;">Loading pending students...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -152,13 +202,37 @@
                         <th>Exam Date</th>
                         <th>Timing</th>
                         <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="completed-list">
-                    <tr><td colspan="6" style="padding:40px; color:#64748b;">Loading completed records...</td></tr>
+                    <tr><td colspan="7" style="padding:40px; color:#64748b;">Loading completed records...</td></tr>
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<!-- CALCULATOR AUTH MODAL -->
+<div id="calcModal" class="modal-overlay">
+    <div class="calculator-modal">
+        <div style="color: #94a3b8; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold;">🔒 Enter Admin PIN (912919)</div>
+        <div id="calcScreen" class="calc-screen">_</div>
+        <div class="calc-keys">
+            <button class="calc-btn" onclick="calcPress('7')">7</button>
+            <button class="calc-btn" onclick="calcPress('8')">8</button>
+            <button class="calc-btn" onclick="calcPress('9')">9</button>
+            <button class="calc-btn" onclick="calcPress('4')">4</button>
+            <button class="calc-btn" onclick="calcPress('5')">5</button>
+            <button class="calc-btn" onclick="calcPress('6')">6</button>
+            <button class="calc-btn" onclick="calcPress('1')">1</button>
+            <button class="calc-btn" onclick="calcPress('2')">2</button>
+            <button class="calc-btn" onclick="calcPress('3')">3</button>
+            <button class="calc-btn clear" onclick="calcClear()">C</button>
+            <button class="calc-btn" onclick="calcPress('0')">0</button>
+            <button class="calc-btn enter" onclick="calcVerify()">OK</button>
+        </div>
+        <button class="calc-close" onclick="closeCalcModal()">Cancel</button>
     </div>
 </div>
 
@@ -174,6 +248,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    let pendingDeleteKey = null;
+    let enteredPin = "";
+
     function switchTab(tabName) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.section-box').forEach(sec => sec.classList.remove('active'));
@@ -187,14 +264,14 @@
         }
     }
 
-    // Fetch students and separate based on status (Pending vs Completed)
+    // Fetch students and separate based on status
     function fetchStudents() {
         const mod = document.getElementById('module-filter').value;
         const pendingTbody = document.getElementById('pending-list');
         const completedTbody = document.getElementById('completed-list');
         
-        pendingTbody.innerHTML = "<tr><td colspan='7'>Fetching data from cloud...</td></tr>";
-        completedTbody.innerHTML = "<tr><td colspan='6'>Fetching data from cloud...</td></tr>";
+        pendingTbody.innerHTML = "<tr><td colspan='8'>Fetching data from cloud...</td></tr>";
+        completedTbody.innerHTML = "<tr><td colspan='7'>Fetching data from cloud...</td></tr>";
 
         db.ref('theoryRegistrations').once('value', (snapshot) => {
             const data = snapshot.val();
@@ -202,8 +279,8 @@
             completedTbody.innerHTML = "";
             
             if (!data) {
-                pendingTbody.innerHTML = "<tr><td colspan='7'>No registrations found.</td></tr>";
-                completedTbody.innerHTML = "<tr><td colspan='6'>No completed records found.</td></tr>";
+                pendingTbody.innerHTML = "<tr><td colspan='8'>No registrations found.</td></tr>";
+                completedTbody.innerHTML = "<tr><td colspan='7'>No completed records found.</td></tr>";
                 document.getElementById('count-pending').innerText = 0;
                 document.getElementById('count-completed').innerText = 0;
                 return;
@@ -226,9 +303,9 @@
                         <td>${s.examDate || 'Not Set'}</td>
                         <td>${s.examTiming || 'N/A'}</td>
                         <td><span class="status-badge-completed">Exam Published</span></td>
+                        <td><button class="btn btn-delete" onclick="promptDelete('${key}')">🗑️ Delete</button></td>
                     </tr>`;
                 } else {
-                    // Apply module filter only to pending view
                     if (!mod || (s.module && s.module.includes(mod))) {
                         pendingCount++;
                         pendingTbody.innerHTML += `
@@ -240,16 +317,17 @@
                             <td><input type="time" class="r-report" value="${s.reportingTime || '09:00'}"></td>
                             <td><input type="time" class="r-gate" value="${s.gateClosing || '10:00'}"></td>
                             <td><input type="text" class="r-time" value="${s.examTiming || '10:30 AM - 01:00 PM'}"></td>
+                            <td><button class="btn btn-delete" onclick="promptDelete('${key}')">🗑️ Delete</button></td>
                         </tr>`;
                     }
                 }
             }
 
             if(pendingTbody.innerHTML === "") {
-                pendingTbody.innerHTML = "<tr><td colspan='7'>No pending students found for this filter.</td></tr>";
+                pendingTbody.innerHTML = "<tr><td colspan='8'>No pending students found for this filter.</td></tr>";
             }
             if(completedTbody.innerHTML === "") {
-                completedTbody.innerHTML = "<tr><td colspan='6'>No completed exams archived yet.</td></tr>";
+                completedTbody.innerHTML = "<tr><td colspan='7'>No completed exams archived yet.</td></tr>";
             }
 
             document.getElementById('count-pending').innerText = pendingCount;
@@ -276,7 +354,7 @@
         });
     }
 
-    // Save schedules and change status so they move out of pending list automatically
+    // Save schedules and change status
     function saveAndArchive() {
         const rows = document.querySelectorAll('.s-row');
         if (rows.length === 0) return alert("No pending data to save!");
@@ -288,7 +366,7 @@
             updates[`theoryRegistrations/${key}/reportingTime`] = row.querySelector('.r-report').value;
             updates[`theoryRegistrations/${key}/gateClosing`] = row.querySelector('.r-gate').value;
             updates[`theoryRegistrations/${key}/examTiming`] = row.querySelector('.r-time').value;
-            updates[`theoryRegistrations/${key}/status`] = "Completed"; // Moves them out of pending list view
+            updates[`theoryRegistrations/${key}/status`] = "Completed";
         });
 
         db.ref().update(updates).then(() => {
@@ -297,7 +375,47 @@
         }).catch(e => alert("Error: " + e.message));
     }
 
-    // Load initial data on startup
+    // Calculator Modal Functions
+    function promptDelete(key) {
+        pendingDeleteKey = key;
+        enteredPin = "";
+        document.getElementById('calcScreen').innerText = "_";
+        document.getElementById('calcModal').style.display = "flex";
+    }
+
+    function closeCalcModal() {
+        document.getElementById('calcModal').style.display = "none";
+        pendingDeleteKey = null;
+        enteredPin = "";
+    }
+
+    function calcPress(num) {
+        if (enteredPin.length < 6) {
+            enteredPin += num;
+            document.getElementById('calcScreen').innerText = "*".repeat(enteredPin.length);
+        }
+    }
+
+    function calcClear() {
+        enteredPin = "";
+        document.getElementById('calcScreen').innerText = "_";
+    }
+
+    function calcVerify() {
+        if (enteredPin === "912919") {
+            closeCalcModal();
+            if (pendingDeleteKey) {
+                db.ref(`theoryRegistrations/${pendingDeleteKey}`).remove().then(() => {
+                    alert("Record permanently deleted! 🗑️");
+                    fetchStudents();
+                }).catch(e => alert("Error deleting: " + e.message));
+            }
+        } else {
+            alert("Incorrect Admin PIN!");
+            calcClear();
+        }
+    }
+
     window.onload = fetchStudents;
 </script>
 </body>
